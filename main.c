@@ -51,25 +51,9 @@ Ihandle* create_matrix() {
 //
 	IupSetAttribute(mat, "NUMCOL_VISIBLE", "8");
 	IupSetAttribute(mat, "NUMLIN_VISIBLE", "20");
-	return mat;
-}
-
-int main(int argc, char **argv) {
-	Ihandle *dlg, *labelC, *labelF, *tempC, *tempF, *hbox, *list1, *mat;
-
-	IupOpen(&argc, &argv);
-	IupControlsOpen();
-
-	list1 = IupList(NULL);
-
-	mat = create_matrix();
-
-	IupSetAttributes(list1,
-			"MULTIPLE=YES, TIP=Edit+Drop, VALUE=\"Edit Here\", NAME=list1");
-	//IupSetStrAttribute(list1, "1", "5000");
 
 	DockerContainersList* cl = list_containers();
-	char*id = (char*) malloc(100 * sizeof(char));
+	char*id = (char*)malloc(100 * sizeof(char));
 	for (int i = 0; i < cl->num_containers; i++) {
 		sprintf(id, "%d:0", i + 1);
 		IupSetAttribute(mat, id, cl->containers[i]->id);
@@ -90,11 +74,22 @@ int main(int argc, char **argv) {
 	}
 	free(id);
 
-	hbox = IupVbox(mat, NULL);
-	IupSetAttribute(hbox, "MARGIN", "10x10");
-	IupSetAttribute(hbox, "GAP", "10");
-	IupSetAttribute(hbox, "ALIGNMENT", "ACENTER");
-	dlg = IupDialog(hbox);
+	return mat;
+}
+
+int main(int argc, char **argv) {
+	Ihandle *dlg, *vbox, *mat;
+
+	IupOpen(&argc, &argv);
+	IupControlsOpen();
+
+	mat = create_matrix();
+
+	vbox = IupVbox(mat, NULL);
+	IupSetAttribute(vbox, "MARGIN", "10x10");
+	IupSetAttribute(vbox, "GAP", "10");
+	IupSetAttribute(vbox, "ALIGNMENT", "ACENTER");
+	dlg = IupDialog(vbox);
 	IupSetAttribute(dlg, "TITLE", "V-Rex: Docker UI");
 
 	IupShowXY(dlg, IUP_CENTER, IUP_CENTER);
