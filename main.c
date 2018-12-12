@@ -34,7 +34,7 @@ Ihandle* create_matrix() {
 	IupSetAttribute(mat, "0:7", "Status");
 
 	IupSetAttribute(mat, "RESIZEMATRIX", "YES");
-//	IupSetAttribute(mat, "RESIZEDRAG", "Yes");
+	IupSetAttribute(mat, "RESIZEDRAG", "Yes");
 //
 //	IupSetAttribute(mat, "FONT3:3", "Helvetica, 24");
 //	IupSetAttribute(mat, "TOGGLECENTERED", "Yes");
@@ -46,8 +46,8 @@ Ihandle* create_matrix() {
 ////	IupSetAttribute(mat, "FRAMEVERTCOLOR*:4", "0 255 0");
 ////	IupSetAttribute(mat, "FRAMEVERTCOLOR*:5", "BGCOLOR");
 //
-//	IupSetAttribute(mat, "NUMCOL_NOSCROLL", "1");
-//	IupSetAttribute(mat, "NOSCROLLASTITLE", "Yes");
+	IupSetAttribute(mat, "NUMCOL_NOSCROLL", "1");
+	IupSetAttribute(mat, "NOSCROLLASTITLE", "Yes");
 //
 	IupSetAttribute(mat, "NUMCOL_VISIBLE", "8");
 	IupSetAttribute(mat, "NUMLIN_VISIBLE", "20");

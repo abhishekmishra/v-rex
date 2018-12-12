@@ -2,6 +2,13 @@
     "version": "0.2.1",
     "tasks": [
         {
+            "taskName": "clean-build-run-v-rex",
+            "appliesTo": "/",
+            "type": "default",
+            "command": "${env.COMSPEC}",
+            "args": [ "PATH=C:\\cygwin64\\bin;%PATH% && c:\\cygwin64\\bin\\bash -c \"make -f Makefile.win64 clean all; /cygdrive/c/Users/abhis/code/v-rex/run_cygwin_vrex.sh\"" ]
+        },
+        {
             "taskName": "run-v-rex",
             "appliesTo": "/",
             "type": "default",
@@ -13,7 +20,7 @@
             "appliesTo": "/",
             "type": "default",
             "command": "${env.COMSPEC}",
-            "args": [ "PATH=C:\\cygwin64\\bin;%PATH% && c:\\cygwin64\\bin\\bash -c \"make -f Makefile.win64 all\"" ]
+            "args": [ "PATH=C:\\cygwin64\\bin;%PATH% && c:\\cygwin64\\bin\\bash -c \"make -f Makefile.win64 clean all\"" ]
         },
         {
             "taskName": "clean-v-rex",
