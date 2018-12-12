@@ -1,0 +1,20 @@
+CLD_HOME=/cygdrive/c/Users/abhis/code/clibdocker
+IUP_HOME=/cygdrive/e/IUP/iup-3.25_Win64_dllw6_lib
+CD_HOME=/cygdrive/e/IUP/cd-5.11.1_Win64_dllw6_lib
+IM_HOME=/cygdrive/e/IUP/im-3.12_Win64_dllw6_lib
+#LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(IUP_HOME):$(CD_HOME):$(IM_HOME)
+
+CC=gcc
+CFLAGS=-std=c11 `pkg-config --cflags json-c` `pkg-config --cflags libcurl` -I$(IUP_HOME)/include -I$(CLD_HOME)
+LIBS=$(CLD_HOME)/docker_*.dll `pkg-config --libs json-c` `pkg-config --libs libcurl` -liupimglib -liup -liupcontrols -liupcd -lcd -L$(CD_HOME) -L$(IUP_HOME) -L$(IM_HOME)
+
+all:		v-rex
+
+v-rex:		main.dll 
+		$(CC) $(CFLAGS) -o v-rex main.dll $(LIBS)
+
+main.dll: main.c
+		$(CC) $(CFLAGS) -c -o main.dll main.c $(LIBS)
+
+clean:
+		rm *.dll v-rex.exe
