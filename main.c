@@ -1,12 +1,9 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <docker_containers.h>
-#include <docker_connection_util.h>
 #include <curl/curl.h>
+#include <docker_containers.h>
 #include <iup.h>
 #include <iupcontrols.h>
-#include <iupcbs.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 DockerContainersList* list_containers() {
 	curl_global_init(CURL_GLOBAL_ALL);
@@ -17,7 +14,7 @@ DockerContainersList* list_containers() {
 			sizeof(DockerContainersListFilter));
 	filter->name = (char**)malloc(sizeof(char*));
 	filter->num_name = 1;
-	filter->name[0] = "/registryui";
+	filter->name[0] = "/registry";
 	DockerContainersList* containers = docker_containers_list(1, 5, 1, filter);
 
 	curl_global_cleanup();
