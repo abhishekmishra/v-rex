@@ -11,17 +11,21 @@
 DockerContainersList* list_containers() {
 	curl_global_init(CURL_GLOBAL_ALL);
 
-	printf("Docker containers list");
+	printf("Docker containers list.\n\n");
 
-	DockerContainersList* containers = docker_containers_list();
+	DockerContainersList* containers = docker_containers_list(0, 0, 1, NULL);
 
 	curl_global_cleanup();
 	return containers;
 }
 
 Ihandle* create_matrix() {
+	DockerContainersList* cl = list_containers();
+	char*id = (char*) malloc(100 * sizeof(char));
+
 	Ihandle* mat = IupMatrix(NULL);
-	IupSetAttribute(mat, "NUMLIN", "20");
+	sprintf(id, "%d", cl->num_containers);
+	IupSetAttribute(mat, "NUMLIN", id);
 	IupSetAttribute(mat, "NUMCOL", "8");
 
 	IupSetAttribute(mat, "0:0", "Id");
@@ -30,8 +34,9 @@ Ihandle* create_matrix() {
 	IupSetAttribute(mat, "0:3", "Command");
 	IupSetAttribute(mat, "0:4", "Public Port");
 	IupSetAttribute(mat, "0:5", "Private Port");
-	IupSetAttribute(mat, "0:6", "State");
-	IupSetAttribute(mat, "0:7", "Status");
+	IupSetAttribute(mat, "0:6", "Size of Root");
+	IupSetAttribute(mat, "0:7", "State");
+	IupSetAttribute(mat, "0:8", "Status");
 
 	IupSetAttribute(mat, "RESIZEMATRIX", "YES");
 	IupSetAttribute(mat, "RESIZEDRAG", "Yes");
@@ -52,8 +57,6 @@ Ihandle* create_matrix() {
 	IupSetAttribute(mat, "NUMCOL_VISIBLE", "8");
 	IupSetAttribute(mat, "NUMLIN_VISIBLE", "20");
 
-	DockerContainersList* cl = list_containers();
-	char*id = (char*)malloc(100 * sizeof(char));
 	for (int i = 0; i < cl->num_containers; i++) {
 		sprintf(id, "%d:0", i + 1);
 		IupSetAttribute(mat, id, cl->containers[i]->id);
@@ -64,12 +67,16 @@ Ihandle* create_matrix() {
 		sprintf(id, "%d:3", i + 1);
 		IupSetAttribute(mat, id, cl->containers[i]->command);
 		sprintf(id, "%d:4", i + 1);
-		IupSetInt(mat, id, cl->containers[i]->ports[0]->public_port);
-		sprintf(id, "%d:5", i + 1);
-		IupSetInt(mat, id, cl->containers[i]->ports[0]->private_port);
+		if (cl->containers[i]->num_ports > 0) {
+			IupSetInt(mat, id, cl->containers[i]->ports[0]->public_port);
+			sprintf(id, "%d:5", i + 1);
+			IupSetInt(mat, id, cl->containers[i]->ports[0]->private_port);
+		}
 		sprintf(id, "%d:6", i + 1);
-		IupSetAttribute(mat, id, cl->containers[i]->state);
+		IupSetInt(mat, id, cl->containers[i]->size_root_fs);
 		sprintf(id, "%d:7", i + 1);
+		IupSetAttribute(mat, id, cl->containers[i]->state);
+		sprintf(id, "%d:8", i + 1);
 		IupSetAttribute(mat, id, cl->containers[i]->status);
 	}
 	free(id);
