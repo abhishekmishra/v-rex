@@ -13,7 +13,12 @@ DockerContainersList* list_containers() {
 
 	printf("Docker containers list.\n\n");
 
-	DockerContainersList* containers = docker_containers_list(0, 0, 1, NULL);
+	DockerContainersListFilter* filter = (DockerContainersListFilter*) malloc(
+			sizeof(DockerContainersListFilter));
+	filter->name = (char**)malloc(sizeof(char*));
+	filter->num_name = 1;
+	filter->name[0] = "/registryui";
+	DockerContainersList* containers = docker_containers_list(1, 5, 1, filter);
 
 	curl_global_cleanup();
 	return containers;
