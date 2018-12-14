@@ -10,11 +10,8 @@ DockerContainersList* list_containers() {
 
 	printf("Docker containers list.\n\n");
 
-	DockerContainersListFilter* filter = (DockerContainersListFilter*) malloc(
-			sizeof(DockerContainersListFilter));
-	filter->name = (char**)malloc(sizeof(char*));
-	filter->num_name = 1;
-	filter->name[0] = "/registry";
+	DockerContainersListFilter* filter = make_docker_containers_list_filter();
+	containers_filter_add_name(filter, "/registry");
 	DockerContainersList* containers = docker_containers_list(1, 5, 1, filter);
 
 	curl_global_cleanup();
