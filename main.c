@@ -5,21 +5,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-DockerContainersList* list_containers() {
+docker_containers_list* list_containers() {
 	curl_global_init(CURL_GLOBAL_ALL);
 
 	printf("Docker containers list.\n\n");
 
-	DockerContainersListFilter* filter = make_docker_containers_list_filter();
+	docker_containers_list_filter* filter = make_docker_containers_list_filter();
 	containers_filter_add_name(filter, "/registry");
-	DockerContainersList* containers = docker_containers_list(1, 5, 1, filter);
+	docker_containers_list* containers = docker_container_list(1, 5, 1, filter);
 
 	curl_global_cleanup();
 	return containers;
 }
 
 Ihandle* create_matrix() {
-	DockerContainersList* cl = list_containers();
+	docker_containers_list* cl = list_containers();
 	char*id = (char*) malloc(100 * sizeof(char));
 
 	Ihandle* mat = IupMatrix(NULL);
