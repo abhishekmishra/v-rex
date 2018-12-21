@@ -23,7 +23,7 @@ Ihandle* create_matrix() {
 	char*id = (char*) malloc(100 * sizeof(char));
 
 	Ihandle* mat = IupMatrix(NULL);
-	sprintf(id, "%d", cl->num_containers);
+	sprintf(id, "%d", docker_containers_list_length(cl));
 	IupSetAttribute(mat, "NUMLIN", id);
 	IupSetAttribute(mat, "NUMCOL", "8");
 
@@ -56,27 +56,29 @@ Ihandle* create_matrix() {
 	IupSetAttribute(mat, "NUMCOL_VISIBLE", "8");
 	IupSetAttribute(mat, "NUMLIN_VISIBLE", "20");
 
-	for (int i = 0; i < cl->num_containers; i++) {
+	for (int i = 0; i < docker_containers_list_length(cl); i++) {
+		docker_container_list_item* item = docker_containers_list_get_idx(cl, i);
 		sprintf(id, "%d:0", i + 1);
-		IupSetAttribute(mat, id, cl->containers[i]->id);
+		IupSetAttribute(mat, id, docker_container_list_item_get_id(item));
 		sprintf(id, "%d:1", i + 1);
-		IupSetAttribute(mat, id, cl->containers[i]->names[0]);
+		IupSetAttribute(mat, id,  docker_container_list_item_names_get_idx(item, 0));
 		sprintf(id, "%d:2", i + 1);
-		IupSetAttribute(mat, id, cl->containers[i]->image);
+		IupSetAttribute(mat, id, docker_container_list_item_get_image(item));
 		sprintf(id, "%d:3", i + 1);
-		IupSetAttribute(mat, id, cl->containers[i]->command);
+		IupSetAttribute(mat, id,docker_container_list_item_get_command(item));
 		sprintf(id, "%d:4", i + 1);
-		if (cl->containers[i]->num_ports > 0) {
-			IupSetInt(mat, id, cl->containers[i]->ports[0]->public_port);
+		if (docker_container_list_item_ports_length(item) > 0) {
+			docker_container_ports* first_port = docker_container_list_item_ports_get_idx(item, 0);
+			IupSetInt(mat, id, docker_container_ports_get_public_port(first_port));
 			sprintf(id, "%d:5", i + 1);
-			IupSetInt(mat, id, cl->containers[i]->ports[0]->private_port);
+			IupSetInt(mat, id, docker_container_ports_get_private_port(first_port));
 		}
 		sprintf(id, "%d:6", i + 1);
-		IupSetInt(mat, id, cl->containers[i]->size_root_fs);
+		IupSetInt(mat, id, docker_container_list_item_get_size_root_fs(item));
 		sprintf(id, "%d:7", i + 1);
-		IupSetAttribute(mat, id, cl->containers[i]->state);
+		IupSetAttribute(mat, id, docker_container_list_item_get_state(item));
 		sprintf(id, "%d:8", i + 1);
-		IupSetAttribute(mat, id, cl->containers[i]->status);
+		IupSetAttribute(mat, id, docker_container_list_item_get_status(item));
 	}
 	free(id);
 

@@ -1,0 +1,234 @@
+/*
+ * AUTHOR: Jay Schmidgall <jay.schmidgall@spdbump.sungardss.com>
+ *
+ * $Id: multifixed.c,v 1.11 2005/03/17 21:16:48 tobiasoed Exp $
+ */
+
+#ifdef HAVE_CONFIG_H
+#include <XbaeConfig.h>
+#endif
+#include <stdlib.h>
+#include <stdio.h>
+#ifdef USE_EDITRES
+#include <X11/Intrinsic.h>
+#include <X11/Xmu/Editres.h>
+#endif
+#include <Xm/Label.h>
+#include <Xbae/Matrix.h>
+
+#define USE_RENDER_TABLE 0
+
+static String fallback[] = {
+	"Multifixed*mw.shadowType:		SHADOW_ETCHED_OUT",
+	"Multifixed*mw.shadowThickness:		8",
+	"Multifixed*mw.cellShadowThickness:	2",
+	"Multifixed*mw.gridType:		GRID_CELL_LINE",
+	"Multifixed*mw.cellShadowType:		shadow_in",
+	"Multifixed*mw.visibleColumns:		2",
+	"Multifixed*mw.visibleRows:		2",
+	"Multifixed*mw.rows:			10",
+	"Multifixed*mw.columns:			10",
+	"Multifixed*mw.fixedRows:		2",
+	"Multifixed*mw.fixedColumns:		2",
+	"Multifixed*mw.trailingFixedRows:	2",
+	"Multifixed*mw.trailingFixedColumns:	2",
+	"Multifixed*mw.traverseFixedCells:	True",
+	"Multifixed*mw.columnWidths:		10, 5, 10, 5, 10, 5,"
+	"					10, 5, 10, 5, 10, 5",
+	"Multifixed*mw.columnLabels:		Zero, One, Two, Three, Four,"
+	"					Five, Six, Seven, Eight, Nine",
+	"Multifixed*mw.rowLabels:		0, 1, 2, 3, 4, 5, 6, 7, 8, 9",
+	#if USE_RENDER_TABLE
+    "Multifixed*mw.renderTable: labels, italic, bold",
+    "Multifixed*mw.renderTable.fontType:        FONT_IS_FONT",
+    "Multifixed*mw.renderTable.fontName:        -*-helvetica-medium-r-*-*-10-*-*-*-*-*-*-*",
+    "Multifixed*mw.renderTable.labels.fontType: FONT_IS_FONT",
+    "Multifixed*mw.renderTable.labels.fontName: -*-helvetica-bold-r-*-*-14-*-*-*-*-*-*-*",
+    "Multifixed*mw.renderTable.italic.fontType: FONT_IS_FONT",
+    "Multifixed*mw.renderTable.italic.fontName: -*-helvetica-medium-o-*-*-10-*-*-*-*-*-*-*",
+    "Multifixed*mw.renderTable.bold.fontType:   FONT_IS_FONT",
+    "Multifixed*mw.renderTable.bold.fontName:   -*-helvetica-bold-r-*-*-10-*-*-*-*-*-*-*",
+    #else
+    "Multifixed*mw.fontList:                    -*-helvetica-medium-r-*-*-10-*-*-*-*-*-*-*,"
+    "                                           -*-helvetica-bold-r-*-*-10-*-*-*-*-*-*-*=bold,"
+    "                                           -*-helvetica-medium-o-*-*-10-*-*-*-*-*-*-*=italic",
+    "Multifixed*mw.labelFont: -*-helvetica-bold-r-*-*-14-*-*-*-*-*-*-*",
+    #endif
+    #if 0
+	"Multifixed*mw.cellShadowThickness:		1",
+	"Multifixed*mw.textShadowThickness:		0",
+	"Multifixed*mw.cellHighlightThickness:		0",
+	"Multifixed*mw.cellMarginHeight:		0",
+	"Multifixed*mw.cellMarginWidth:		1",
+    #endif
+	NULL
+};
+
+void
+LoadMatrix(Widget w)
+{
+    String *cells[10];
+    static String rows[10][10] = {
+	{ "0,Zero", "0,One",  "0,Two",    "0,Three",  "0,Four",
+	  "0,Five", "0,Six",  "0, Seven", "0, Eight", "0, Nine" },
+	{ "1,Zero", "1,One",  "1,Two",    "1,Three",  "1,Four",
+	  "1,Five", "1,Six",  "1, Seven", "1, Eight", "1, Nine" },
+	{ "2,Zero", "2,One",  "2,Two",    "2,Three",  "2,Four",
+	  "2,Five", "2,Six",  "2, Seven", "2, Eight", "2, Nine" },
+	{ "3,Zero", "3,One",  "3,Two",    "3,Three",  "3,Four",
+	  "3,Five", "3,Six",  "3, Seven", "3, Eight", "3, Nine" },
+	{ "4,Zero", "4,One",  "4,Two",    "4,Three",  "4,Four",
+	  "4,Five", "4,Six",  "4, Seven", "4, Eight", "4, Nine" },
+	{ "5,Zero", "5,One",  "5,Two",    "5,Three",  "5,Four",
+	  "5,Five", "5,Six",  "5, Seven", "5, Eight", "5, Nine" },
+	{ "6,Zero", "6,One",  "6,Two",    "6,Three",  "6,Four",
+	  "6,Five", "6,Six",  "6, Seven", "6, Eight", "6, Nine" },
+	{ "7,Zero", "7,One",  "7,Two",    "7,Three",  "7,Four",
+	  "7,Five", "7,Six",  "7, Seven", "7, Eight", "7, Nine" },
+	{ "8,Zero", "8,One",  "8,Two",    "8,Three",  "8,Four",
+	  "8,Five", "8,Six",  "8, Seven", "8, Eight", "8, Nine" },
+	{ "9,Zero", "9,One",  "9,Two",    "9,Three",  "9,Four",
+	  "9,Five", "9,Six",  "9, Seven", "9, Eight", "9, Nine" }
+    };
+
+    cells[0] = &rows[0][0];
+    cells[1] = &rows[1][0];
+    cells[2] = &rows[2][0];
+    cells[3] = &rows[3][0];
+    cells[4] = &rows[4][0];
+    cells[5] = &rows[5][0];
+    cells[6] = &rows[6][0];
+    cells[7] = &rows[7][0];
+    cells[8] = &rows[8][0];
+    cells[9] = &rows[9][0];
+
+    XtVaSetValues(w,
+		  XmNcells,     cells,
+		  NULL);
+}
+
+void
+bold(XtPointer data)
+{
+    Widget mw = (Widget)data;
+
+    static int row = 0;
+    static int column = 0;
+    int n_rows = XbaeMatrixNumRows(mw);
+    int n_columns = XbaeMatrixNumColumns(mw);
+
+//    if (column % 2) {
+//            XbaeMatrixSetCellTag(mw, row, column, "italic");
+//    } else {
+//            XbaeMatrixSetCellTag(mw, row, column, NULL);
+//    }
+//
+    if (column < n_columns - 1) {
+        column++;
+    } else {
+        column = 0;
+        if (row < n_rows - 1) {
+            row++;
+        } else {
+            row = 0;
+        }
+    }
+
+//    XbaeMatrixSetCellTag(mw, row, column, "bold");
+
+//    XtAppAddTimeOut(
+//	    XtWidgetToApplicationContext(mw), 200, (XtTimerCallbackProc)bold,
+//	    (XtPointer)mw);
+}
+
+void
+labelCB(Widget mw, XtPointer cd, XtPointer cb)
+{
+    XbaeMatrixLabelActivateCallbackStruct *cbs =
+	( XbaeMatrixLabelActivateCallbackStruct * )cb;
+
+    if( cbs->row_label )
+	if( XbaeMatrixIsRowSelected( mw, cbs->row ) )
+	    XbaeMatrixDeselectRow( mw, cbs->row );
+	else
+	    XbaeMatrixSelectRow( mw, cbs->row );
+    else
+	if( XbaeMatrixIsColumnSelected( mw, cbs->column ) )
+	    XbaeMatrixDeselectColumn( mw, cbs->column );
+	else
+	    XbaeMatrixSelectColumn( mw, cbs->column );
+}
+
+
+int
+main(int argc, char *argv[])
+{
+    Widget toplevel, mw;
+    XtAppContext app;
+    int row, column, n_rows, n_columns;
+
+    toplevel = XtVaAppInitialize(&app, "Multifixed",
+				 NULL, 0,
+				 &argc, argv,
+				 fallback,
+				 NULL);
+
+#ifdef USE_EDITRES
+    XtAddEventHandler( toplevel, (EventMask)0, True,
+                       _XEditResCheckMessages, NULL);
+#endif
+
+    XFontStruct *plain_font = XLoadQueryFont(
+		XtDisplay(toplevel),
+		"-*-courier-medium-r-*-*-16-*-*-*-*-*-*-*");
+
+#if 1
+    XmFontListEntry font_list_entry = XmFontListEntryCreate(
+        XmFONTLIST_DEFAULT_TAG,
+        XmFONT_IS_FONT,
+        plain_font);
+
+    XmFontList plain_font_list = XmFontListAppendEntry(
+		NULL,
+		font_list_entry);
+#else
+    XmFontList plain_font_list = XmFontListCreate(
+		plain_font,
+		XmSTRING_DEFAULT_CHARSET);
+#endif
+
+    printf("plain font: %d plain font list %d\n",plain_font == NULL, plain_font_list == NULL);
+
+    mw = XtVaCreateManagedWidget("mw",
+				 xbaeMatrixWidgetClass, toplevel,
+                 XmNlabelFont,	    plain_font_list,
+	             XmNfontList,	    plain_font_list,
+				 NULL);
+
+    XmFontListEntryFree(&font_list_entry);
+    XmFontListFree(plain_font_list);
+
+    LoadMatrix(mw);
+    n_rows = XbaeMatrixNumRows(mw);
+    n_columns = XbaeMatrixNumColumns(mw);
+//
+//    for(row = 0; row < n_rows; row++) {
+//        for(column = 0; column < n_columns; column++) {
+//            if (column % 2) {
+//                XbaeMatrixSetCellTag(mw, row, column, "italic");
+//            }
+//        }
+//    }
+//
+//    bold(mw);
+
+    XtAddCallback(mw, XmNlabelActivateCallback, labelCB, NULL);
+
+    XtRealizeWidget(toplevel);
+    XtAppMainLoop(app);
+
+    /*NOTREACHED*/
+
+    return 0;
+}
+
