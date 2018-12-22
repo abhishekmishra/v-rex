@@ -14,7 +14,7 @@
 #include <docker_containers.h>
 #include <log.h>
 
-#define USE_RENDER_TABLE 1
+#define USE_RENDER_TABLE 0
 
 void handle_error(docker_result* res) {
 	docker_simple_error_handler_log(res);
@@ -29,7 +29,9 @@ docker_containers_list* list_containers(Widget mw) {
 
 	curl_global_init(CURL_GLOBAL_ALL);
 
-	if (make_docker_context_socket(&ctx, "/var/run/docker.sock") == E_SUCCESS) {
+//	if (make_docker_context_socket(&ctx, "/var/run/docker.sock") == E_SUCCESS) {
+	if (make_docker_context_url(&ctx, "http://192.168.1.33:2376/")
+			== E_SUCCESS) {
 		printf("Docker containers list.\n\n");
 		docker_containers_list_filter* filter;
 		make_docker_containers_list_filter(&filter);
@@ -129,18 +131,14 @@ static String fallback[] =
 				"Multifixed*mw.renderTable.labels.fontType: FONT_IS_FONT",
 				"Multifixed*mw.renderTable.labels.fontName: -*-terminus-bold-r-*-*-14-*-*-*-*-*-*-*",
 				"Multifixed*mw.renderTable.italic.fontType: FONT_IS_FONT",
-				"Multifixed*mw.renderTable.italic.fontName: -*-helvetica-medium-o-*-*-12-*-*-*-*-*-*-*",
+				"Multifixed*mw.renderTable.italic.fontName: -*-terminus-medium-r-*-*-12-*-*-*-*-*-*-*",
 				"Multifixed*mw.renderTable.bold.fontType:   FONT_IS_FONT",
-				"Multifixed*mw.renderTable.bold.fontName:   -*-helvetica-bold-r-*-*-12-*-*-*-*-*-*-*",
+				"Multifixed*mw.renderTable.bold.fontName:   -*-terminus-bold-r-*-*-12-*-*-*-*-*-*-*",
 #endif
-				"*.renderTable: variable",
-				"*.renderTable.variable.fontName: Sans",
-				"*.renderTable.variable.fontSize: 8",
-				"*.renderTable.variable.fontType: FONT_IS_XFT",
-				"Multifixed*mw.fontList: -*-helvetica-medium-r-*-*-10-*-*-*-*-*-*-*,"
-						"-*-helvetica-bold-r-*-*-10-*-*-*-*-*-*-*=bold,"
-						"-*-helvetica-medium-o-*-*-10-*-*-*-*-*-*-*=italic",
-				"Multifixed*mw.labelFont: -*-helvetica-bold-r-*-*-14-*-*-*-*-*-*-*",
+				"Multifixed*mw.fontList: -*-terminus-medium-r-*-*-10-*-*-*-*-*-*-*,"
+						"-*-terminus-bold-r-*-*-10-*-*-*-*-*-*-*=bold,"
+						"-*-terminus-medium-r-*-*-10-*-*-*-*-*-*-*=italic",
+				"Multifixed*mw.labelFont: -*-terminus-bold-r-*-*-14-*-*-*-*-*-*-*",
 				"Multifixed*mw.cellShadowThickness:		1",
 				"Multifixed*mw.textShadowThickness:		0",
 				"Multifixed*mw.cellHighlightThickness:		2",
@@ -182,7 +180,7 @@ int main(int argc, char *argv[]) {
 	docker_log_set_level(LOG_INFO);
 
 	XFontStruct *plain_font = XLoadQueryFont(XtDisplay(toplevel),
-			"-*-lucida-medium-r-*-*-14-*-*-*-*-*-*-*");
+			"-*-terminus-medium-r-*-*-14-*-*-*-*-*-*-*");
 	XmFontListEntry font_list_entry = XmFontListEntryCreate(
 	XmFONTLIST_DEFAULT_TAG, XmFONT_IS_FONT, plain_font);
 
