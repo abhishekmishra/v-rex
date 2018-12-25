@@ -10,8 +10,13 @@
 #include <X11/Intrinsic.h>
 #include <X11/Xmu/Editres.h>
 #endif
+
+#include <Xm/MainW.h>
 #include <Xm/Label.h>
 #include <Xbae/Matrix.h>
+#include <Xm/CascadeB.h>
+#include <Xm/PushB.h>
+#include <Xm/RowColumn.h>
 
 #include <docker_containers.h>
 #include <log.h>
@@ -24,14 +29,20 @@ void handle_error(docker_result* res) {
 	docker_simple_error_handler_log(res);
 }
 
-void* list_containers(Widget* win) {
-	Widget mw = *win;
+void add_column(Widget mw, char* name, int num, int width) {
+	XbaeMatrixSetColumnLabel(mw, num, name);
+	XbaeMatrixSetColumnWidth(mw, num, width);
+}
+
+void list_containers(Widget* matrix_w) {
+	Widget mw = *matrix_w;
 	char* id;
 	docker_context* ctx;
 	docker_result* res;
 	docker_containers_list_filter* filter;
 	docker_containers_list* containers;
 
+	XtAppLock(matrix_w);
 	curl_global_init(CURL_GLOBAL_ALL);
 
 //	if (make_docker_context_socket(&ctx, "/var/run/docker.sock") == E_SUCCESS) {
@@ -43,113 +54,121 @@ void* list_containers(Widget* win) {
 //		containers_filter_add_name(filter, "/registryui");
 //		containers_filter_add_id(filter, id);
 		docker_containers_list* containers;
-		docker_container_list(ctx, &res, &containers, 1, 25, 1, filter);
+		docker_container_list(ctx, &res, &containers, 0, -1, 1, filter);
 		handle_error(res);
 		docker_log_info("Read %d containers.\n",
 				docker_containers_list_length(containers));
-		XbaeMatrixSetColumnLabel(mw, 0, "Id");
-		XbaeMatrixSetColumnWidth(mw, 0, 30);
-		XbaeMatrixSetColumnLabel(mw, 1, "Name");
-		XbaeMatrixSetColumnWidth(mw, 1, 30);
-		XbaeMatrixSetColumnLabel(mw, 2, "Image");
-		XbaeMatrixSetColumnWidth(mw, 2, 20);
-		XbaeMatrixSetColumnLabel(mw, 3, "Command");
-		XbaeMatrixSetColumnWidth(mw, 3, 30);
-		XbaeMatrixSetColumnLabel(mw, 4, "Public Port");
-		XbaeMatrixSetColumnWidth(mw, 4, 20);
-		XbaeMatrixSetColumnLabel(mw, 5, "Private Port");
-		XbaeMatrixSetColumnWidth(mw, 5, 20);
-		XbaeMatrixSetColumnLabel(mw, 6, "FS Size");
-		XbaeMatrixSetColumnWidth(mw, 6, 10);
-		XbaeMatrixSetColumnLabel(mw, 7, "State");
-		XbaeMatrixSetColumnWidth(mw, 7, 10);
-		XbaeMatrixSetColumnLabel(mw, 8, "Status");
-		XbaeMatrixSetColumnWidth(mw, 8, 20);
+		int col_num = 0;
+		add_column(mw, "Name", col_num, 20);
+		col_num++;
+//		add_column(mw, "Id", col_num, 30);
+//		col_num++;
+		add_column(mw, "Image", col_num, 20);
+		col_num++;
+		add_column(mw, "Command", col_num, 20);
+		col_num++;
+		add_column(mw, "FS Size", col_num, 10);
+		col_num++;
+		add_column(mw, "State", col_num, 30);
+//		col_num++;
+//		add_column(mw, "Status", col_num, 20);
 		for (int i = 0; i < docker_containers_list_length(containers); i++) {
+			col_num = 0;
 			char** rows;
 			rows = (char**) XtCalloc(10, sizeof(String));
 
 			docker_container_list_item* item = docker_containers_list_get_idx(
 					containers, i);
-			rows[0] = docker_container_list_item_get_id(item);
-			rows[1] = docker_container_list_item_names_get_idx(item, 0);
-			rows[2] = docker_container_list_item_get_image(item);
-			rows[3] = docker_container_list_item_get_command(item);
-			char* port = (char*) XtCalloc(10, sizeof(char));
+			rows[col_num++] = docker_container_list_item_names_get_idx(item, 0);
+//			rows[1] = docker_container_list_item_get_id(item);
+			rows[col_num++] = docker_container_list_item_get_image(item);
+			rows[col_num++] = docker_container_list_item_get_command(item);
+//			char* root_fs_size = (char*) XtCalloc(10, sizeof(char));
 			if (docker_container_list_item_ports_length(item) > 0) {
 				docker_container_ports* first_port =
 						docker_container_list_item_ports_get_idx(item, 0);
-				sprintf(port, "%ld",
-						docker_container_ports_get_public_port(first_port));
-				rows[4] = port;
-				sprintf(port, "%ld",
-						docker_container_ports_get_private_port(first_port));
-				rows[5] = port;
+				if (first_port
+						&& docker_container_ports_get_public_port(first_port)
+								> 0
+						&& docker_container_ports_get_private_port(first_port)
+								> 0) {
+					char* ports_str = (char*) XtCalloc(128, sizeof(char));
+					sprintf(ports_str, "%ld:%ld",
+							docker_container_ports_get_public_port(first_port),
+							docker_container_ports_get_private_port(
+									first_port));
+					rows[col_num++] = ports_str;
+				}
 			}
-			sprintf(port, "%lld",
-					docker_container_list_item_get_size_root_fs(item));
-			rows[6] = port;
-			rows[7] = docker_container_list_item_get_state(item);
-			rows[8] = docker_container_list_item_get_status(item);
+//			sprintf(root_fs_size, "%lld",
+//					docker_container_list_item_get_size_root_fs(item));
+//			rows[col_num++] = root_fs_size;
+			char* status = (char*) XtCalloc(1024, sizeof(char));
+			strcpy(status, docker_container_list_item_get_state(item));
+			strcat(status, ":");
+			strcat(status, docker_container_list_item_get_status(item));
+			rows[col_num++] = status;
 
 			XbaeMatrixAddRows(mw, XbaeMatrixNumRows(mw), rows, NULL, NULL, 1);
 			free(rows);
 		}
 	}
 	curl_global_cleanup();
-//	return containers;
+	Widget top = XtParent(mw);
+	docker_log_info("Found parent %s.", XtName(top));
+	Widget toolbar = XtNameToWidget(top, "toolbar");
+	docker_log_info("Found toolbar %s.", XtName(toolbar));
+	Widget refresh = XtNameToWidget(toolbar, "Refresh");
+	docker_log_info("Found refresh %s.", XtName(refresh));
+	XtSetSensitive(refresh, True);
+	XmUpdateDisplay(top);
+	XtAppUnlock(matrix_w);
+	int ret = 0;
+	pthread_exit(&ret);
 }
 
-static String fallback[] =
-		{ "Multifixed*mw.shadowType:		SHADOW_ETCHED_OUT",
-				"Multifixed*mw.shadowThickness:		1",
-				"Multifixed*mw.cellShadowThickness:	1",
-				"Multifixed*mw.gridType:		GRID_CELL_LINE",
-				"Multifixed*mw.cellShadowType:		shadow_in",
-				"Multifixed*mw.visibleColumns:		9",
-				"Multifixed*mw.visibleRows:		0", "Multifixed*mw.rows:			0",
-				"Multifixed*mw.columns:			9", "Multifixed*mw.fixedRows:		0",
-				"Multifixed*mw.fixedColumns:		1",
-				"Multifixed*mw.trailingFixedRows:	0",
-				"Multifixed*mw.trailingFixedColumns:	0",
-				"Multifixed*mw.traverseFixedCells:	True",
-				"Multifixed*mw.multiLineCell:	True",
-				"Multifixed*mw.wrapType: 	wrap_continuous", //other option is wrap_word
-				"Multifixed*mw.fill: 	False", "Multifixed*mw.horzFill: 	False",
-				"Multifixed*mw.vertFill: 	False", "Multifixed*mw.height: 	800",
-				"Multifixed*mw.width: 	1024",
-				"Multifixed*mw.gridLineColor: 	#A0A0A0",
-				"Multifixed*mw.background: 	#D3D3D3",
-				"Multifixed*mw.foreground: 	#111111",
-				"Multifixed*mw.columnLabelColor: 	#0000CD",
-				"Multifixed*mw.highlightColor: 	#6495ED",
-				"Multifixed*mw.rowHeight: 	200",
-//				"Multifixed*mw.columnWidths:		10, 5, 10, 5, 10, 5,"
+void load_containers_list(Widget matrix_w) {
+	int num_rows = XbaeMatrixNumRows(matrix_w);
+	if (num_rows > 0) {
+		XbaeMatrixDeleteRows(matrix_w, 0, num_rows);
+	}
+
+	pthread_t thread_id;
+	pthread_create(&thread_id, NULL, list_containers, &matrix_w);
+}
+
+static String fallback[] = { "V-Rex*main_w.width:		1024",
+		"V-Rex*.background:		#111111", "V-Rex*.foreground:		#D3D3D3",
+		"V-Rex*main_w.height:		768", "V-Rex*mw.shadowType:		SHADOW_ETCHED_OUT",
+		"V-Rex*mw.shadowThickness:		1", "V-Rex*mw.cellShadowThickness:	1",
+		"V-Rex*mw.gridType:		GRID_CELL_LINE",
+		"V-Rex*mw.cellShadowType:		shadow_in", "V-Rex*mw.visibleColumns:		5",
+		"V-Rex*mw.visibleRows:		0", "V-Rex*mw.rows:			0",
+		"V-Rex*mw.columns:			5", "V-Rex*mw.fixedRows:		0",
+		"V-Rex*mw.fixedColumns:		1", "V-Rex*mw.trailingFixedRows:	0",
+		"V-Rex*mw.trailingFixedColumns:	0", "V-Rex*mw.traverseFixedCells:	True",
+		"V-Rex*mw.multiLineCell:	True",
+		"V-Rex*mw.wrapType: 	wrap_continuous", //other option is wrap_word
+		"V-Rex*mw.fill: 	False", "V-Rex*mw.horzFill: 	False",
+		"V-Rex*mw.vertFill: 	False", "V-Rex*mw.height: 	800",
+		"V-Rex*mw.width: 	1024", "V-Rex*mw.gridLineColor: 	#A0A0A0",
+		"V-Rex*mw.background: 	#111111", "V-Rex*mw.foreground: 	#D3D3D3",
+		"V-Rex*mw.columnLabelColor: 	#a0a0ff",
+		"V-Rex*mw.highlightColor: 	#6495ED", "V-Rex*mw.rowHeight: 	200",
+
+//				"V-Rex*mw.columnWidths:		10, 5, 10, 5, 10, 5,"
 //						"					10, 5, 10, 5, 10, 5",
-//				"Multifixed*mw.columnLabels:		Zero, One, Two, Three, Four,"
+//				"V-Rex*mw.columnLabels:		Zero, One, Two, Three, Four,"
 //						"					Five, Six, Seven, Eight, Nine",
-//				"Multifixed*mw.rowLabels:		0, 1, 2, 3, 4, 5, 6, 7, 8, 9",
-#if USE_RENDER_TABLE
-				"Multifixed*mw.renderTable: labels, italic, bold",
-				"Multifixed*mw.renderTable.fontType:        FONT_IS_FONT",
-				"Multifixed*mw.renderTable.fontName:        -*-terminus-medium-r-*-*-12-*-*-*-*-*-*-*",
-				"Multifixed*mw.renderTable.labels.fontType: FONT_IS_FONT",
-				"Multifixed*mw.renderTable.labels.fontName: -*-terminus-bold-r-*-*-14-*-*-*-*-*-*-*",
-				"Multifixed*mw.renderTable.italic.fontType: FONT_IS_FONT",
-				"Multifixed*mw.renderTable.italic.fontName: -*-terminus-medium-r-*-*-12-*-*-*-*-*-*-*",
-				"Multifixed*mw.renderTable.bold.fontType:   FONT_IS_FONT",
-				"Multifixed*mw.renderTable.bold.fontName:   -*-terminus-bold-r-*-*-12-*-*-*-*-*-*-*",
-#endif
-				"Multifixed*mw.fontList: -*-terminus-medium-r-*-*-10-*-*-*-*-*-*-*,"
-						"-*-terminus-bold-r-*-*-10-*-*-*-*-*-*-*=bold,"
-						"-*-terminus-medium-r-*-*-10-*-*-*-*-*-*-*=italic",
-				"Multifixed*mw.labelFont: -*-terminus-bold-r-*-*-14-*-*-*-*-*-*-*",
-				"Multifixed*mw.cellShadowThickness:		1",
-				"Multifixed*mw.textShadowThickness:		0",
-				"Multifixed*mw.cellHighlightThickness:		2",
-				"Multifixed*mw.cellMarginHeight:		0",
-				"Multifixed*mw.cellMarginWidth:		1",
-				NULL };
+//				"V-Rex*mw.rowLabels:		0, 1, 2, 3, 4, 5, 6, 7, 8, 9",
+		"V-Rex*mw.fontList: -*-terminus-medium-r-*-*-10-*-*-*-*-*-*-*,"
+				"-*-terminus-bold-r-*-*-10-*-*-*-*-*-*-*=bold,"
+				"-*-terminus-medium-r-*-*-10-*-*-*-*-*-*-*=italic",
+		"V-Rex*mw.labelFont: -*-terminus-bold-r-*-*-14-*-*-*-*-*-*-*",
+		"V-Rex*mw.cellShadowThickness:		0", "V-Rex*mw.textShadowThickness:		0",
+		"V-Rex*mw.cellHighlightThickness:		2", "V-Rex*mw.cellMarginHeight:		0",
+		"V-Rex*mw.cellMarginWidth:		1",
+		NULL };
 
 void labelCB(Widget mw, XtPointer cd, XtPointer cb) {
 	XbaeMatrixLabelActivateCallbackStruct *cbs =
@@ -167,46 +186,116 @@ void labelCB(Widget mw, XtPointer cd, XtPointer cb) {
 }
 
 void cellCB(Widget mw, XtPointer cd, XtPointer cb) {
-	XbaeMatrixEnterCellCallbackStruct *cbs = (XbaeMatrixEnterCellCallbackStruct*)cb;
+	XbaeMatrixEnterCellCallbackStruct *cbs =
+			(XbaeMatrixEnterCellCallbackStruct*) cb;
 	cbs->map = True;
 	cbs->doit = False;
 	cbs->select_text = True;
 }
 
-void *myThreadFun(int *i)
+void quit_call()
+
 {
-    sleep(1);
-//    printf("Printing GeeksQuiz from Thread \n");
-    printf("%d", *i);
-    return NULL;
+	docker_log_info("Quitting program\n");
+	exit(0);
+}
+
+void help_call()
+
+{
+	docker_log_info("Sorry, I'm Not Much Help\n");
+}
+
+void refresh_call(Widget widget, XtPointer client_data, XtPointer call_data) {
+	XtSetSensitive(widget, False);
+	Widget top = XtParent(XtParent(widget));
+	load_containers_list(XtNameToWidget(top, "mw"));
+	docker_log_debug("Refresh button name - %s", XtName(widget));
+}
+
+void create_menubar(Widget main_w) {
+	Widget menu_bar, quit, help;
+	Arg arg[1];
+	menu_bar = XmCreateMenuBar(main_w, "main_list", NULL, 0);
+	XtManageChild(menu_bar);
+
+	/* create quit widget + callback */
+
+	quit = XtVaCreateManagedWidget("Quit", xmCascadeButtonWidgetClass, menu_bar,
+	XmNmnemonic, 'Q',
+	NULL);
+
+	XtAddCallback(quit, XmNactivateCallback, quit_call, NULL);
+
+//	/* create help widget + callback */
+//
+//	help = XtVaCreateManagedWidget("Help", xmCascadeButtonWidgetClass, menu_bar,
+//	XmNmnemonic, 'H',
+//	NULL);
+//
+//	XtAddCallback(help, XmNactivateCallback, help_call, NULL);
+//
+//	/* Tell the menubar which button is the help menu  */
+//
+//	XtSetArg(arg[0], XmNmenuHelpWidget, help);
+//	XtSetValues(menu_bar, arg, 1);
+	XtVaSetValues(main_w,
+	XmNmenuBar, menu_bar, NULL);
+}
+
+void create_toolbar(Widget main_w) {
+	Widget toolbar, refreshButton, showRunningButton, showAllButton;
+	toolbar = XtVaCreateManagedWidget("toolbar", xmRowColumnWidgetClass, main_w,
+	XmNorientation, XmHORIZONTAL,
+	NULL);
+
+	XtManageChild(toolbar);
+	refreshButton = XtVaCreateManagedWidget("Refresh", xmPushButtonWidgetClass,
+			toolbar,
+			NULL);
+	XtManageChild(refreshButton);
+
+	XtAddCallback(refreshButton, XmNactivateCallback, refresh_call, NULL);
+
+	showRunningButton = XtVaCreateManagedWidget("Show Running",
+			xmPushButtonWidgetClass, toolbar,
+			NULL);
+
+	showAllButton = XtVaCreateManagedWidget("Show All", xmPushButtonWidgetClass,
+			toolbar,
+			NULL);
+
+	XtVaSetValues(main_w,
+	XmNcommandWindow, toolbar,
+	NULL);
+
+	Widget refresh = XtNameToWidget(main_w, "toolbar");
+	docker_log_info("Found toolbar %s.", XtName(refresh));
 }
 
 int main(int argc, char *argv[]) {
-	Widget toplevel, mw;
+	Widget toplevel, main_w, matrix_w;
 	XtAppContext app;
 	int row, column, n_rows, n_columns;
+	docker_log_set_level(LOG_DEBUG);
+
 	if (XInitThreads() != True) {
 		docker_log_error("X could not initialize threads, will exit now.");
 		exit(VREX_X_HAS_NO_THREADS);
 	} else {
 		docker_log_info("XInitThreads successful.");
 	}
+	Boolean has_threads = XtToolkitThreadInitialize();
+	if (has_threads) {
+		docker_log_info("Threading is enabled.");
+	} else {
+		docker_log_debug("Threading is disabled. Exit.");
+		exit(VREX_X_HAS_NO_THREADS);
+	}
 
-	toplevel = XtVaAppInitialize(&app, "Multifixed",
+	toplevel = XtVaAppInitialize(&app, "V-Rex",
 	NULL, 0, &argc, argv, fallback,
 	NULL);
-
-	Boolean has_threads = XtToolkitThreadInitialize();
-	printf("%d has thread\n", has_threads);
-
-//    pthread_t thread_id;
-//    printf("Before Thread\n");
-//    int x = 100;
-//    pthread_create(&thread_id, NULL, myThreadFun, &x);
-//    pthread_join(thread_id, NULL);
-//    printf("After Thread\n");
-
-	docker_log_set_level(LOG_INFO);
 
 	XFontStruct *plain_font = XLoadQueryFont(XtDisplay(toplevel),
 			"-*-terminus-medium-r-*-*-14-*-*-*-*-*-*-*");
@@ -216,43 +305,37 @@ int main(int argc, char *argv[]) {
 	XmFontList plain_font_list = XmFontListAppendEntry(
 	NULL, font_list_entry);
 
-	printf("plain font: %d plain font list %d\n", plain_font == NULL,
+	docker_log_info("plain font: %d plain font list %d", plain_font == NULL,
 			plain_font_list == NULL);
 
-	mw = XtVaCreateManagedWidget("mw", xbaeMatrixWidgetClass, toplevel,
+	main_w = XtVaCreateManagedWidget("main_w", xmMainWindowWidgetClass,
+			toplevel,
+			NULL);
+
+	matrix_w = XtVaCreateManagedWidget("mw", xbaeMatrixWidgetClass, main_w,
 	XmNlabelFont, plain_font_list,
 	XmNfontList, plain_font_list,
+	NULL);
+
+	XtVaSetValues(main_w, XmNworkWindow, matrix_w,
 	NULL);
 
 	XmFontListEntryFree(&font_list_entry);
 	XmFontListFree(plain_font_list);
 
-    pthread_t thread_id;
-    printf("Before Thread\n");
-    int x = 100;
+	XtAddCallback(matrix_w, XmNlabelActivateCallback, labelCB, NULL);
+	XtAddCallback(matrix_w, XmNenterCellCallback, cellCB, NULL);
 
-	XtAddCallback(mw, XmNlabelActivateCallback, labelCB, NULL);
-	XtAddCallback(mw, XmNenterCellCallback, cellCB, NULL);
+	create_toolbar(main_w);
+	create_menubar(main_w);
 
+//	load_containers_list(matrix_w);
 	XtRealizeWidget(toplevel);
-    pthread_create(&thread_id, NULL, list_containers, &mw);
-	XtAppMainLoop(app);
 
-//
-//	list_containers(mw);
-//	LoadMatrix(mw);
-//	n_rows = XbaeMatrixNumRows(mw);
-//	n_columns = XbaeMatrixNumColumns(mw);
-//
-//    for(row = 0; row < n_rows; row++) {
-//        for(column = 0; column < n_columns; column++) {
-//            if (column % 2) {
-//                XbaeMatrixSetCellTag(mw, row, column, "italic");
-//            }
-//        }
-//    }
-//
-//    bold(mw);
+	pthread_t thread_id;
+	pthread_create(&thread_id, NULL, list_containers, &matrix_w);
+
+	XtAppMainLoop(app);
 
 	/*NOTREACHED*/
 
