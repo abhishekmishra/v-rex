@@ -3,6 +3,8 @@
 #endif
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <pthread.h>
 #include <curl/curl.h>
 #ifdef USE_EDITRES
 #include <X11/Intrinsic.h>
@@ -16,11 +18,14 @@
 
 #define USE_RENDER_TABLE 0
 
+#define VREX_X_HAS_NO_THREADS -2
+
 void handle_error(docker_result* res) {
 	docker_simple_error_handler_log(res);
 }
 
-docker_containers_list* list_containers(Widget mw) {
+void* list_containers(Widget* win) {
+	Widget mw = *win;
 	char* id;
 	docker_context* ctx;
 	docker_result* res;
@@ -92,7 +97,7 @@ docker_containers_list* list_containers(Widget mw) {
 		}
 	}
 	curl_global_cleanup();
-	return containers;
+//	return containers;
 }
 
 static String fallback[] =
@@ -168,14 +173,38 @@ void cellCB(Widget mw, XtPointer cd, XtPointer cb) {
 	cbs->select_text = True;
 }
 
+void *myThreadFun(int *i)
+{
+    sleep(1);
+//    printf("Printing GeeksQuiz from Thread \n");
+    printf("%d", *i);
+    return NULL;
+}
+
 int main(int argc, char *argv[]) {
 	Widget toplevel, mw;
 	XtAppContext app;
 	int row, column, n_rows, n_columns;
+	if (XInitThreads() != True) {
+		docker_log_error("X could not initialize threads, will exit now.");
+		exit(VREX_X_HAS_NO_THREADS);
+	} else {
+		docker_log_info("XInitThreads successful.");
+	}
 
 	toplevel = XtVaAppInitialize(&app, "Multifixed",
 	NULL, 0, &argc, argv, fallback,
 	NULL);
+
+	Boolean has_threads = XtToolkitThreadInitialize();
+	printf("%d has thread\n", has_threads);
+
+//    pthread_t thread_id;
+//    printf("Before Thread\n");
+//    int x = 100;
+//    pthread_create(&thread_id, NULL, myThreadFun, &x);
+//    pthread_join(thread_id, NULL);
+//    printf("After Thread\n");
 
 	docker_log_set_level(LOG_INFO);
 
@@ -198,10 +227,22 @@ int main(int argc, char *argv[]) {
 	XmFontListEntryFree(&font_list_entry);
 	XmFontListFree(plain_font_list);
 
-	list_containers(mw);
+    pthread_t thread_id;
+    printf("Before Thread\n");
+    int x = 100;
+
+	XtAddCallback(mw, XmNlabelActivateCallback, labelCB, NULL);
+	XtAddCallback(mw, XmNenterCellCallback, cellCB, NULL);
+
+	XtRealizeWidget(toplevel);
+    pthread_create(&thread_id, NULL, list_containers, &mw);
+	XtAppMainLoop(app);
+
+//
+//	list_containers(mw);
 //	LoadMatrix(mw);
-	n_rows = XbaeMatrixNumRows(mw);
-	n_columns = XbaeMatrixNumColumns(mw);
+//	n_rows = XbaeMatrixNumRows(mw);
+//	n_columns = XbaeMatrixNumColumns(mw);
 //
 //    for(row = 0; row < n_rows; row++) {
 //        for(column = 0; column < n_columns; column++) {
@@ -212,12 +253,6 @@ int main(int argc, char *argv[]) {
 //    }
 //
 //    bold(mw);
-
-	XtAddCallback(mw, XmNlabelActivateCallback, labelCB, NULL);
-	XtAddCallback(mw, XmNenterCellCallback, cellCB, NULL);
-
-	XtRealizeWidget(toplevel);
-	XtAppMainLoop(app);
 
 	/*NOTREACHED*/
 
