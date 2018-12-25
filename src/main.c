@@ -17,22 +17,27 @@
 #include <Xm/CascadeB.h>
 #include <Xm/PushB.h>
 #include <Xm/RowColumn.h>
+#include <Xm/Form.h>
 
 #include <docker_containers.h>
 #include <log.h>
+
+#include "ps_window.h"
 
 #define USE_RENDER_TABLE 0
 
 #define VREX_X_HAS_NO_THREADS -2
 
+//#define VREX_USE_THREADS 0
+
 void handle_error(docker_result* res) {
 	docker_simple_error_handler_log(res);
 }
 
-void add_column(Widget mw, char* name, int num, int width) {
-	XbaeMatrixSetColumnLabel(mw, num, name);
-	XbaeMatrixSetColumnWidth(mw, num, width);
-}
+//void add_column(Widget mw, char* name, int num, int width) {
+//	XbaeMatrixSetColumnLabel(mw, num, name);
+//	XbaeMatrixSetColumnWidth(mw, num, width);
+//}
 
 void list_containers(Widget* matrix_w) {
 	Widget mw = *matrix_w;
@@ -43,6 +48,7 @@ void list_containers(Widget* matrix_w) {
 	docker_containers_list* containers;
 
 	curl_global_init(CURL_GLOBAL_ALL);
+	char* first_id = NULL;
 
 //	if (make_docker_context_socket(&ctx, "/var/run/docker.sock") == E_SUCCESS) {
 	if (make_docker_context_url(&ctx, "http://192.168.1.33:2376/")
@@ -79,6 +85,9 @@ void list_containers(Widget* matrix_w) {
 			docker_container_list_item* item = docker_containers_list_get_idx(
 					containers, i);
 			rows[col_num++] = docker_container_list_item_names_get_idx(item, 0);
+			if(i == 0) {
+				first_id = docker_container_list_item_get_id(item);
+			}
 //			rows[1] = docker_container_list_item_get_id(item);
 			rows[col_num++] = docker_container_list_item_get_image(item);
 			rows[col_num++] = docker_container_list_item_get_command(item);
@@ -113,16 +122,23 @@ void list_containers(Widget* matrix_w) {
 		}
 	}
 	curl_global_cleanup();
-	Widget top = XtParent(mw);
+	Widget top = XtParent(XtParent(mw));
 	docker_log_info("Found parent %s.", XtName(top));
 	Widget toolbar = XtNameToWidget(top, "toolbar");
 	docker_log_info("Found toolbar %s.", XtName(toolbar));
 	Widget refresh = XtNameToWidget(toolbar, "Refresh");
 	docker_log_info("Found refresh %s.", XtName(refresh));
+
+	if(first_id) {
+		set_ps_window_docker_id(XtNameToWidget(XtParent(mw), "ps_w"), ctx, first_id);
+	}
+
 	XtSetSensitive(refresh, True);
-	XmUpdateDisplay(top);
+	XmUpdateDisplay(XtParent(mw));
+#ifdef VREX_USE_THREADS
 	int ret = 0;
 	pthread_exit(&ret);
+#endif
 }
 
 void load_containers_list(Widget matrix_w) {
@@ -131,8 +147,12 @@ void load_containers_list(Widget matrix_w) {
 		XbaeMatrixDeleteRows(matrix_w, 0, num_rows);
 	}
 
+#ifdef VREX_USE_THREADS
 	pthread_t thread_id;
 	pthread_create(&thread_id, NULL, list_containers, &matrix_w);
+#else
+	list_containers(&matrix_w);
+#endif
 }
 
 static String fallback[] = { "V-Rex*main_w.width:		1024",
@@ -151,7 +171,7 @@ static String fallback[] = { "V-Rex*main_w.width:		1024",
 		"V-Rex*mw.vertFill: 	False", "V-Rex*mw.height: 	800",
 		"V-Rex*mw.width: 	1024", "V-Rex*mw.gridLineColor: 	#A0A0A0",
 		"V-Rex*mw.background: 	#111111", "V-Rex*mw.foreground: 	#D3D3D3",
-		"V-Rex*mw.columnLabelColor: 	#a0a0ff",
+		"V-Rex*.columnLabelColor: 	#a0a0ff",
 		"V-Rex*mw.highlightColor: 	#6495ED", "V-Rex*mw.rowHeight: 	200",
 
 //				"V-Rex*mw.columnWidths:		10, 5, 10, 5, 10, 5,"
@@ -207,7 +227,7 @@ void help_call()
 void refresh_call(Widget widget, XtPointer client_data, XtPointer call_data) {
 	XtSetSensitive(widget, False);
 	Widget top = XtParent(XtParent(widget));
-	load_containers_list(XtNameToWidget(top, "mw"));
+	load_containers_list(XtNameToWidget(XtNameToWidget(top, "main_form_w"), "mw"));
 	docker_log_debug("Refresh button name - %s", XtName(widget));
 }
 
@@ -271,12 +291,7 @@ void create_toolbar(Widget main_w) {
 	docker_log_info("Found toolbar %s.", XtName(refresh));
 }
 
-int main(int argc, char *argv[]) {
-	Widget toplevel, main_w, matrix_w;
-	XtAppContext app;
-	int row, column, n_rows, n_columns;
-	docker_log_set_level(LOG_DEBUG);
-
+void exit_if_no_threads() {
 	if (XInitThreads() != True) {
 		docker_log_error("X could not initialize threads, will exit now.");
 		exit(VREX_X_HAS_NO_THREADS);
@@ -290,6 +305,15 @@ int main(int argc, char *argv[]) {
 		docker_log_debug("Threading is disabled. Exit.");
 		exit(VREX_X_HAS_NO_THREADS);
 	}
+}
+
+int main(int argc, char *argv[]) {
+	Widget toplevel, main_w, matrix_w, main_form_w, ps_w;
+	XtAppContext app;
+	int row, column, n_rows, n_columns;
+	docker_log_set_level(LOG_DEBUG);
+
+	exit_if_no_threads();
 
 	toplevel = XtVaAppInitialize(&app, "V-Rex",
 	NULL, 0, &argc, argv, fallback,
@@ -310,12 +334,24 @@ int main(int argc, char *argv[]) {
 			toplevel,
 			NULL);
 
-	matrix_w = XtVaCreateManagedWidget("mw", xbaeMatrixWidgetClass, main_w,
+	main_form_w = XtVaCreateManagedWidget("main_form_w", xmFormWidgetClass,
+			main_w, NULL);
+
+	matrix_w = XtVaCreateManagedWidget("mw", xbaeMatrixWidgetClass, main_form_w,
+	/* attach to top, left of form */
+	XmNtopAttachment, XmATTACH_FORM,
+	XmNleftAttachment, XmATTACH_FORM,
+	XmNrightAttachment, XmATTACH_POSITION,
+	XmNrightPosition, 50,
+	XmNbottomAttachment, XmATTACH_POSITION,
+	XmNbottomPosition, 50,
 	XmNlabelFont, plain_font_list,
 	XmNfontList, plain_font_list,
 	NULL);
 
-	XtVaSetValues(main_w, XmNworkWindow, matrix_w,
+	make_ps_window(main_form_w, &ps_w);
+
+	XtVaSetValues(main_w, XmNworkWindow, main_form_w,
 	NULL);
 
 	XmFontListEntryFree(&font_list_entry);
@@ -330,8 +366,12 @@ int main(int argc, char *argv[]) {
 //	load_containers_list(matrix_w);
 	XtRealizeWidget(toplevel);
 
+#ifdef VREX_USE_THREADS
 	pthread_t thread_id;
 	pthread_create(&thread_id, NULL, list_containers, &matrix_w);
+#else
+	list_containers(&matrix_w);
+#endif
 
 	XtAppMainLoop(app);
 
