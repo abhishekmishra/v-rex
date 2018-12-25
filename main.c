@@ -42,7 +42,6 @@ void list_containers(Widget* matrix_w) {
 	docker_containers_list_filter* filter;
 	docker_containers_list* containers;
 
-	XtAppLock(matrix_w);
 	curl_global_init(CURL_GLOBAL_ALL);
 
 //	if (make_docker_context_socket(&ctx, "/var/run/docker.sock") == E_SUCCESS) {
@@ -122,7 +121,6 @@ void list_containers(Widget* matrix_w) {
 	docker_log_info("Found refresh %s.", XtName(refresh));
 	XtSetSensitive(refresh, True);
 	XmUpdateDisplay(top);
-	XtAppUnlock(matrix_w);
 	int ret = 0;
 	pthread_exit(&ret);
 }
