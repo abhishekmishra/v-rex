@@ -125,8 +125,8 @@ void docker_version_show(Widget widget, XtPointer client_data,
 	dialog = XmCreateMessageDialog(widget, "V-Rex: docker version info", arg,
 			n);
 	XtManageChild(dialog);
-	XtSetSensitive(XtNameToWidget(dialog, "Help"), False);
 	XtUnmanageChild(XtNameToWidget(dialog, "Cancel"));
+	XtUnmanageChild(XtNameToWidget(dialog, "Help"));
 	XmStringFree(xms);
 }
 
