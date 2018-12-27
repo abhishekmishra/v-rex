@@ -3,7 +3,6 @@
 	<name>v-rex</name>
 	<comment></comment>
 	<projects>
-		<project>clibdocker</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

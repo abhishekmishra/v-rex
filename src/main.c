@@ -22,6 +22,7 @@
 #include <docker_containers.h>
 #include <log.h>
 
+#include "vrex_util.h"
 #include "ps_window.h"
 
 #define USE_RENDER_TABLE 0

@@ -7,11 +7,7 @@
 #include <stdlib.h>
 #include <log.h>
 #include "ps_window.h"
-
-void add_column(Widget mw, char* name, int num, int width) {
-	XbaeMatrixSetColumnLabel(mw, num, name);
-	XbaeMatrixSetColumnWidth(mw, num, width);
-}
+#include "vrex_util.h"
 
 /**
  * Create a new ps_window
