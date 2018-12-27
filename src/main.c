@@ -5,10 +5,10 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <curl/curl.h>
-#ifdef USE_EDITRES
+//#ifdef USE_EDITRES
 #include <X11/Intrinsic.h>
 #include <X11/Xmu/Editres.h>
-#endif
+//#endif
 
 #include <Xm/MainW.h>
 #include <Xm/Label.h>
@@ -17,6 +17,7 @@
 #include <Xm/PushB.h>
 #include <Xm/RowColumn.h>
 #include <Xm/Form.h>
+#include <Xm/MessageB.h>
 
 #include "docker_connection_util.h"
 #include "docker_system.h"
@@ -36,9 +37,9 @@ static String fallback[] = { "V-Rex*main_w.width:		1024",
 		"V-Rex*main_w.height:		768", "V-Rex*mw.shadowType:		SHADOW_ETCHED_OUT",
 		"V-Rex*mw.shadowThickness:		1", "V-Rex*mw.cellShadowThickness:	1",
 		"V-Rex*mw.gridType:		GRID_CELL_LINE",
-		"V-Rex*mw.cellShadowType:		shadow_in", "V-Rex*mw.visibleColumns:		5",
+		"V-Rex*mw.cellShadowType:		shadow_in", "V-Rex*mw.visibleColumns:		4",
 		"V-Rex*mw.visibleRows:		0", "V-Rex*mw.rows:			0",
-		"V-Rex*mw.columns:			5", "V-Rex*mw.fixedRows:		0",
+		"V-Rex*mw.columns:			4", "V-Rex*mw.fixedRows:		0",
 		"V-Rex*mw.fixedColumns:		1", "V-Rex*mw.trailingFixedRows:	0",
 		"V-Rex*mw.trailingFixedColumns:	0", "V-Rex*mw.traverseFixedCells:	True",
 		"V-Rex*mw.multiLineCell:	True",
@@ -86,8 +87,51 @@ void refresh_call(Widget widget, XtPointer client_data, XtPointer call_data) {
 	docker_log_debug("Refresh button name - %s", XtName(widget));
 }
 
-void create_menubar(Widget main_w) {
-	Widget menu_bar, quit, help;
+void docker_version_show(Widget widget, XtPointer client_data,
+		XtPointer call_data) {
+	docker_context* ctx = (docker_context*) client_data;
+	docker_result* res;
+	docker_version* version;
+	Widget dialog;
+	Arg arg[5];
+	XmString xms;
+	int n = 0;
+
+	if (docker_system_version(ctx, &res, &version) == E_SUCCESS) {
+		char* version_msg = (char*) XtCalloc(1024, sizeof(char));
+		sprintf(version_msg, "Docker Version: %s\n"
+				"OS (Kernel): %s (%s)\n"
+				"Arch: %s\n"
+				"API Version: %s\n"
+				"Min API Version: %s\n"
+				"Go Version: %s\n"
+				"Git Commit: %s\n"
+				"Build Time: %s\n"
+				"Experimental (1 means True): %d", version->version,
+				version->os, version->kernel_version, version->arch,
+				version->api_version, version->min_api_version,
+				version->go_version, version->git_commit, version->build_time,
+				version->experimental);
+		xms = XmStringCreateLocalized(version_msg);
+	} else {
+		xms =
+				XmStringCreateLocalized(
+						"Error: could not fetch version information from docker server.");
+	}
+	XtSetArg(arg[n], XmNmessageString, xms);
+	n++;
+	XtSetArg(arg[n], XmNdialogType, XmDIALOG_INFORMATION);
+	n++;
+	dialog = XmCreateMessageDialog(widget, "V-Rex: docker version info", arg,
+			n);
+	XtManageChild(dialog);
+	XtSetSensitive(XtNameToWidget(dialog, "Help"), False);
+	XtUnmanageChild(XtNameToWidget(dialog, "Cancel"));
+	XmStringFree(xms);
+}
+
+void create_menubar(Widget main_w, docker_context* ctx) {
+	Widget menu_bar, quit, docker_version, help;
 	Arg arg[1];
 	menu_bar = XmCreateMenuBar(main_w, "main_list", NULL, 0);
 	XtManageChild(menu_bar);
@@ -99,6 +143,15 @@ void create_menubar(Widget main_w) {
 	NULL);
 
 	XtAddCallback(quit, XmNactivateCallback, quit_call, NULL);
+
+	docker_version = XtVaCreateManagedWidget("Docker Version",
+			xmCascadeButtonWidgetClass, menu_bar,
+			XmNmnemonic, 'V',
+			NULL);
+
+	XtAddCallback(quit, XmNactivateCallback, quit_call, NULL);
+	XtAddCallback(docker_version, XmNactivateCallback, docker_version_show,
+			ctx);
 
 //	/* create help widget + callback */
 //
@@ -140,9 +193,6 @@ void create_toolbar(Widget main_w, docker_context* ctx) {
 	XtVaSetValues(main_w,
 	XmNcommandWindow, toolbar,
 	NULL);
-
-	Widget refresh = XtNameToWidget(main_w, "toolbar");
-	docker_log_info("Found toolbar %s.", XtName(refresh));
 }
 
 void exit_if_no_threads() {
@@ -150,13 +200,13 @@ void exit_if_no_threads() {
 		docker_log_error("X could not initialize threads, will exit now.");
 		exit(VREX_X_HAS_NO_THREADS);
 	} else {
-		docker_log_info("XInitThreads successful.");
+		docker_log_debug("XInitThreads successful.");
 	}
 	Boolean has_threads = XtToolkitThreadInitialize();
 	if (has_threads) {
-		docker_log_info("Threading is enabled.");
+		docker_log_debug("Threading is enabled.");
 	} else {
-		docker_log_debug("Threading is disabled. Exit.");
+		docker_log_error("Threading is disabled. Exit.");
 		exit(VREX_X_HAS_NO_THREADS);
 	}
 }
@@ -187,7 +237,7 @@ int extract_args_url_connection(int argc, char* url, char* argv[],
 			docker_log_fatal("Could not ping the server %s", url);
 			connected = 0;
 		} else {
-			docker_log_info("Successfully pinged %s", url);
+			docker_log_info("%s is alive.", url);
 		}
 	}
 	return connected;
@@ -200,7 +250,7 @@ int main(int argc, char *argv[]) {
 	char* url;
 	int row, column, n_rows, n_columns;
 	int connected = 0;
-	docker_log_set_level(LOG_DEBUG);
+	docker_log_set_level(LOG_INFO);
 
 	exit_if_no_threads();
 
@@ -223,7 +273,7 @@ int main(int argc, char *argv[]) {
 	XtVaSetValues(main_w, XmNworkWindow, main_form_w,
 	NULL);
 	create_toolbar(main_w, ctx);
-	create_menubar(main_w);
+	create_menubar(main_w, ctx);
 
 	XtRealizeWidget(toplevel);
 
