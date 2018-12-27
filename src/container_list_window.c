@@ -30,6 +30,8 @@
 #include "vrex_util.h"
 #include "ps_window.h"
 
+static int show_running = 1;
+
 int list_containers(Widget mw, docker_context* ctx) {
 	char* id;
 	docker_result* res;
@@ -40,7 +42,12 @@ int list_containers(Widget mw, docker_context* ctx) {
 	char* first_id = NULL;
 
 	make_docker_containers_list_filter(&filter);
-	docker_container_list(ctx, &res, &containers, 0, -1, 1, filter);
+	int limit = -1;
+	if (show_running == 0) {
+		limit = 25;
+	}
+	docker_container_list(ctx, &res, &containers, show_running == 0, limit, 1,
+			filter);
 	handle_error(res);
 	docker_log_debug("Read %d containers.\n",
 			docker_containers_list_length(containers));
@@ -136,12 +143,18 @@ void cellCB(Widget mw, XtPointer cd, XtPointer cb) {
 	cbs->select_text = True;
 }
 
-void toggled(Widget widget, XtPointer client_data, XtPointer call_data) {
+void show_running_callback(Widget widget, XtPointer client_data,
+		XtPointer call_data) {
 	XmToggleButtonCallbackStruct *state =
 			(XmToggleButtonCallbackStruct *) call_data;
-	printf("%s: %s\n", XtName(widget),
+	docker_log_debug("%s: %s\n", XtName(widget),
 			state->set == XmSET ? "on" :
 			state->set == XmOFF ? "off" : "indeterminate");
+	if (state->set == XmSET) {
+		show_running = 1;
+	} else {
+		show_running = 0;
+	}
 }
 
 void create_docker_list_toolbar(Widget container_list_toplevel,
@@ -152,20 +165,13 @@ void create_docker_list_toolbar(Widget container_list_toplevel,
 			XmNorientation, XmHORIZONTAL,
 			NULL);
 
-	XtManageChild(toolbar);
 	refreshButton = XtVaCreateManagedWidget("Show Running",
-			xmToggleButtonWidgetClass, toolbar, NULL);
-	XtManageChild(refreshButton);
-
-	XtAddCallback(refreshButton, XmNactivateCallback, toggled, ctx);
-
-	showRunningButton = XtVaCreateManagedWidget("Show Running",
-			xmPushButtonWidgetClass, toolbar,
+			xmToggleButtonWidgetClass, toolbar,
+			XmNset, XmSET,
 			NULL);
-
-	showAllButton = XtVaCreateManagedWidget("Show All", xmPushButtonWidgetClass,
-			toolbar,
-			NULL);
+	XtAddCallback(refreshButton, XmNvalueChangedCallback, show_running_callback,
+			ctx);
+	XtManageChild(toolbar);
 }
 
 /**
@@ -196,14 +202,16 @@ int make_container_list_window(Widget parent, Widget* container_ls_w,
 
 	matrix_w = XtVaCreateManagedWidget("mw", xbaeMatrixWidgetClass,
 			container_list_toplevel,
+			XmNcolumns, 4,
+			XmNrows, 0,
+			XmNvisibleColumns, 4,
+			XmNfixedColumns, 1,
 			XmNheight, 200,
-//	/* attach to top, left of form */
-//	XmNtopAttachment, XmATTACH_FORM,
-//	XmNleftAttachment, XmATTACH_FORM,
-//	XmNrightAttachment, XmATTACH_POSITION,
-//	XmNrightPosition, 50,
-//	XmNbottomAttachment, XmATTACH_POSITION,
-//	XmNbottomPosition, 50,
+			XmNshadowType, XmSHADOW_ETCHED_OUT,
+			XmNcellShadowThickness, 0,
+			XmNtextShadowThickness, 0,
+			XmNcellHighlightThickness, 1,
+			XmNcolumnLabelColor, 0x800000,
 			NULL);
 
 	XtAddCallback(matrix_w, XmNlabelActivateCallback, labelCB, NULL);

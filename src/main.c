@@ -33,17 +33,18 @@
 //#define VREX_USE_THREADS 0
 
 static String fallback[] = { "V-Rex*main_w.width:		1024",
-		"V-Rex*.background:		#111111", "V-Rex*.foreground:		#D3D3D3",
-		"V-Rex*main_w.height:		768", "V-Rex*mw.shadowType:		SHADOW_ETCHED_OUT",
+		"V-Rex*.background:		#A9A9A9", "V-Rex*.foreground:		#000000",
+		"V-Rex*main_w.height:		768",
+//		"V-Rex*mw.shadowType:		SHADOW_ETCHED_OUT",
 //		"V-Rex*mw.shadowThickness:		1", "V-Rex*mw.cellShadowThickness:	1",
 //		"V-Rex*mw.gridType:		GRID_CELL_LINE",
 //		"V-Rex*mw.cellShadowType:		shadow_in", "V-Rex*mw.visibleColumns:		4",
-		"V-Rex*mw.visibleRows:		0", "V-Rex*mw.rows:			0",
-		"V-Rex*mw.columns:			4", "V-Rex*mw.fixedRows:		0",
-		"V-Rex*mw.fixedColumns:		1", "V-Rex*mw.trailingFixedRows:	0",
-		"V-Rex*mw.trailingFixedColumns:	0", "V-Rex*mw.traverseFixedCells:	True",
-		"V-Rex*mw.multiLineCell:	True",
-		"V-Rex*mw.wrapType: 	wrap_continuous", //other option is wrap_word
+//		"V-Rex*mw.visibleRows:		0", "V-Rex*mw.rows:			0",
+//		"V-Rex*mw.columns:			4", "V-Rex*mw.fixedRows:		0",
+//		"V-Rex*mw.fixedColumns:		1", "V-Rex*mw.trailingFixedRows:	0",
+//		"V-Rex*mw.trailingFixedColumns:	0", "V-Rex*mw.traverseFixedCells:	True",
+//		"V-Rex*mw.multiLineCell:	True",
+//		"V-Rex*mw.wrapType: 	wrap_continuous", //other option is wrap_word
 //		"V-Rex*mw.fill: 	True", "V-Rex*mw.horzFill: 	True",
 //		"V-Rex*mw.vertFill: 	True", "V-Rex*mw.height: 	800",
 //		"V-Rex*mw.width: 	1024", "V-Rex*mw.gridLineColor: 	#A0A0A0",
@@ -56,13 +57,11 @@ static String fallback[] = { "V-Rex*main_w.width:		1024",
 //				"V-Rex*mw.columnLabels:		Zero, One, Two, Three, Four,"
 //						"					Five, Six, Seven, Eight, Nine",
 //				"V-Rex*mw.rowLabels:		0, 1, 2, 3, 4, 5, 6, 7, 8, 9",
-//		"V-Rex*mw.fontList: -*-terminus-medium-r-*-*-10-*-*-*-*-*-*-*,"
-//				"-*-terminus-bold-r-*-*-10-*-*-*-*-*-*-*=bold,"
-//				"-*-terminus-medium-r-*-*-10-*-*-*-*-*-*-*=italic",
-//		"V-Rex*mw.labelFont: -*-terminus-bold-r-*-*-14-*-*-*-*-*-*-*",
-		"V-Rex*mw.cellShadowThickness:		0", "V-Rex*mw.textShadowThickness:		0",
-		"V-Rex*mw.cellHighlightThickness:		2", "V-Rex*mw.cellMarginHeight:		0",
-		"V-Rex*mw.cellMarginWidth:		1",
+		"V-Rex*mw.fontList: -*-lucida-medium-r-*-*-14-*-*-*-*-*-*-*",
+		"V-Rex*mw.labelFont: -*-lucida-bold-r-*-*-14-*-*-*-*-*-*-*",
+//		"V-Rex*mw.cellShadowThickness:		0", "V-Rex*mw.textShadowThickness:		0",
+//		"V-Rex*mw.cellHighlightThickness:		2", "V-Rex*mw.cellMarginHeight:		0",
+//		"V-Rex*mw.cellMarginWidth:		1",
 		NULL };
 
 void quit_call()

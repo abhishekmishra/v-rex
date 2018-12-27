@@ -22,12 +22,11 @@ int make_ps_window(Widget parent, Widget* ps_w) {
 	XmNrows, 0,
 	XmNvisibleColumns, 8,
 	XmNheight, 200,
-//	XmNtopAttachment, XmATTACH_FORM,
-//	XmNrightAttachment, XmATTACH_FORM,
-//	XmNleftAttachment, XmATTACH_POSITION,
-//	XmNleftPosition, 51,
-//	XmNbottomAttachment, XmATTACH_POSITION,
-//	XmNbottomPosition, 51,
+	XmNshadowType, XmSHADOW_ETCHED_OUT,
+	XmNcellShadowThickness, 0,
+	XmNtextShadowThickness, 0,
+	XmNcellHighlightThickness, 1,
+	XmNcolumnLabelColor, 0x800000,
 	NULL);
 	return 0;
 }
