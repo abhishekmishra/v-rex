@@ -177,8 +177,8 @@ int make_container_list_window(Widget parent, Widget* container_ls_w, docker_con
 	XmNrightPosition, 50,
 	XmNbottomAttachment, XmATTACH_POSITION,
 	XmNbottomPosition, 50,
-	XmNlabelFont, plain_font_list,
-	XmNfontList, plain_font_list,
+//	XmNlabelFont, plain_font_list,
+//	XmNfontList, plain_font_list,
 	NULL);
 
 	XmFontListEntryFree(&font_list_entry);
