@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <pthread.h>
 #include <curl/curl.h>
 #ifdef USE_EDITRES
 #include <X11/Intrinsic.h>
@@ -19,142 +18,16 @@
 #include <Xm/RowColumn.h>
 #include <Xm/Form.h>
 
-#include <docker_containers.h>
-#include <log.h>
-
 #include "vrex_util.h"
-#include "ps_window.h"
+#include "container_list_window.h"
+
+#include <log.h>
 
 #define USE_RENDER_TABLE 0
 
 #define VREX_X_HAS_NO_THREADS -2
 
 //#define VREX_USE_THREADS 0
-
-void handle_error(docker_result* res) {
-	docker_simple_error_handler_log(res);
-}
-
-//void add_column(Widget mw, char* name, int num, int width) {
-//	XbaeMatrixSetColumnLabel(mw, num, name);
-//	XbaeMatrixSetColumnWidth(mw, num, width);
-//}
-
-void list_containers(Widget* matrix_w) {
-	Widget mw = *matrix_w;
-	char* id;
-	docker_context* ctx;
-	docker_result* res;
-	docker_containers_list_filter* filter;
-	docker_containers_list* containers;
-
-	curl_global_init(CURL_GLOBAL_ALL);
-	char* first_id = NULL;
-
-//	if (make_docker_context_socket(&ctx, "/var/run/docker.sock") == E_SUCCESS) {
-	if (make_docker_context_url(&ctx, "http://192.168.1.33:2376/")
-			== E_SUCCESS) {
-		printf("Docker containers list.\n\n");
-		docker_containers_list_filter* filter;
-		make_docker_containers_list_filter(&filter);
-//		containers_filter_add_name(filter, "/registryui");
-//		containers_filter_add_id(filter, id);
-		docker_containers_list* containers;
-		docker_container_list(ctx, &res, &containers, 0, -1, 1, filter);
-		handle_error(res);
-		docker_log_info("Read %d containers.\n",
-				docker_containers_list_length(containers));
-		int col_num = 0;
-		add_column(mw, "Name", col_num, 20);
-		col_num++;
-//		add_column(mw, "Id", col_num, 30);
-//		col_num++;
-		add_column(mw, "Image", col_num, 20);
-		col_num++;
-		add_column(mw, "Command", col_num, 20);
-		col_num++;
-		add_column(mw, "FS Size", col_num, 10);
-		col_num++;
-		add_column(mw, "State", col_num, 30);
-//		col_num++;
-//		add_column(mw, "Status", col_num, 20);
-		for (int i = 0; i < docker_containers_list_length(containers); i++) {
-			col_num = 0;
-			char** rows;
-			rows = (char**) XtCalloc(10, sizeof(String));
-
-			docker_container_list_item* item = docker_containers_list_get_idx(
-					containers, i);
-			rows[col_num++] = docker_container_list_item_names_get_idx(item, 0);
-			if(i == 0) {
-				first_id = docker_container_list_item_get_id(item);
-			}
-//			rows[1] = docker_container_list_item_get_id(item);
-			rows[col_num++] = docker_container_list_item_get_image(item);
-			rows[col_num++] = docker_container_list_item_get_command(item);
-//			char* root_fs_size = (char*) XtCalloc(10, sizeof(char));
-			if (docker_container_list_item_ports_length(item) > 0) {
-				docker_container_ports* first_port =
-						docker_container_list_item_ports_get_idx(item, 0);
-				if (first_port
-						&& docker_container_ports_get_public_port(first_port)
-								> 0
-						&& docker_container_ports_get_private_port(first_port)
-								> 0) {
-					char* ports_str = (char*) XtCalloc(128, sizeof(char));
-					sprintf(ports_str, "%ld:%ld",
-							docker_container_ports_get_public_port(first_port),
-							docker_container_ports_get_private_port(
-									first_port));
-					rows[col_num++] = ports_str;
-				}
-			}
-//			sprintf(root_fs_size, "%lld",
-//					docker_container_list_item_get_size_root_fs(item));
-//			rows[col_num++] = root_fs_size;
-			char* status = (char*) XtCalloc(1024, sizeof(char));
-			strcpy(status, docker_container_list_item_get_state(item));
-			strcat(status, ":");
-			strcat(status, docker_container_list_item_get_status(item));
-			rows[col_num++] = status;
-
-			XbaeMatrixAddRows(mw, XbaeMatrixNumRows(mw), rows, NULL, NULL, 1);
-			free(rows);
-		}
-	}
-	curl_global_cleanup();
-	Widget top = XtParent(XtParent(mw));
-	docker_log_info("Found parent %s.", XtName(top));
-	Widget toolbar = XtNameToWidget(top, "toolbar");
-	docker_log_info("Found toolbar %s.", XtName(toolbar));
-	Widget refresh = XtNameToWidget(toolbar, "Refresh");
-	docker_log_info("Found refresh %s.", XtName(refresh));
-
-	if(first_id) {
-		set_ps_window_docker_id(XtNameToWidget(XtParent(mw), "ps_w"), ctx, first_id);
-	}
-
-	XtSetSensitive(refresh, True);
-	XmUpdateDisplay(XtParent(mw));
-#ifdef VREX_USE_THREADS
-	int ret = 0;
-	pthread_exit(&ret);
-#endif
-}
-
-void load_containers_list(Widget matrix_w) {
-	int num_rows = XbaeMatrixNumRows(matrix_w);
-	if (num_rows > 0) {
-		XbaeMatrixDeleteRows(matrix_w, 0, num_rows);
-	}
-
-#ifdef VREX_USE_THREADS
-	pthread_t thread_id;
-	pthread_create(&thread_id, NULL, list_containers, &matrix_w);
-#else
-	list_containers(&matrix_w);
-#endif
-}
 
 static String fallback[] = { "V-Rex*main_w.width:		1024",
 		"V-Rex*.background:		#111111", "V-Rex*.foreground:		#D3D3D3",
@@ -189,29 +62,6 @@ static String fallback[] = { "V-Rex*main_w.width:		1024",
 		"V-Rex*mw.cellMarginWidth:		1",
 		NULL };
 
-void labelCB(Widget mw, XtPointer cd, XtPointer cb) {
-	XbaeMatrixLabelActivateCallbackStruct *cbs =
-			(XbaeMatrixLabelActivateCallbackStruct *) cb;
-
-	if (cbs->row_label)
-		if (XbaeMatrixIsRowSelected(mw, cbs->row))
-			XbaeMatrixDeselectRow(mw, cbs->row);
-		else
-			XbaeMatrixSelectRow(mw, cbs->row);
-	else if (XbaeMatrixIsColumnSelected(mw, cbs->column))
-		XbaeMatrixDeselectColumn(mw, cbs->column);
-	else
-		XbaeMatrixSelectColumn(mw, cbs->column);
-}
-
-void cellCB(Widget mw, XtPointer cd, XtPointer cb) {
-	XbaeMatrixEnterCellCallbackStruct *cbs =
-			(XbaeMatrixEnterCellCallbackStruct*) cb;
-	cbs->map = True;
-	cbs->doit = False;
-	cbs->select_text = True;
-}
-
 void quit_call()
 
 {
@@ -226,9 +76,11 @@ void help_call()
 }
 
 void refresh_call(Widget widget, XtPointer client_data, XtPointer call_data) {
+	docker_context* ctx = (docker_context*) client_data;
 	XtSetSensitive(widget, False);
 	Widget top = XtParent(XtParent(widget));
-	load_containers_list(XtNameToWidget(XtNameToWidget(top, "main_form_w"), "mw"));
+	load_containers_list(
+			XtNameToWidget(XtNameToWidget(top, "main_form_w"), "mw"), ctx);
 	docker_log_debug("Refresh button name - %s", XtName(widget));
 }
 
@@ -262,7 +114,7 @@ void create_menubar(Widget main_w) {
 	XmNmenuBar, menu_bar, NULL);
 }
 
-void create_toolbar(Widget main_w) {
+void create_toolbar(Widget main_w, docker_context* ctx) {
 	Widget toolbar, refreshButton, showRunningButton, showAllButton;
 	toolbar = XtVaCreateManagedWidget("toolbar", xmRowColumnWidgetClass, main_w,
 	XmNorientation, XmHORIZONTAL,
@@ -270,11 +122,10 @@ void create_toolbar(Widget main_w) {
 
 	XtManageChild(toolbar);
 	refreshButton = XtVaCreateManagedWidget("Refresh", xmPushButtonWidgetClass,
-			toolbar,
-			NULL);
+			toolbar, NULL);
 	XtManageChild(refreshButton);
 
-	XtAddCallback(refreshButton, XmNactivateCallback, refresh_call, NULL);
+	XtAddCallback(refreshButton, XmNactivateCallback, refresh_call, ctx);
 
 	showRunningButton = XtVaCreateManagedWidget("Show Running",
 			xmPushButtonWidgetClass, toolbar,
@@ -309,8 +160,9 @@ void exit_if_no_threads() {
 }
 
 int main(int argc, char *argv[]) {
-	Widget toplevel, main_w, matrix_w, main_form_w, ps_w;
+	Widget toplevel, main_w, matrix_w, main_form_w;
 	XtAppContext app;
+	docker_context* ctx;
 	int row, column, n_rows, n_columns;
 	docker_log_set_level(LOG_DEBUG);
 
@@ -320,17 +172,6 @@ int main(int argc, char *argv[]) {
 	NULL, 0, &argc, argv, fallback,
 	NULL);
 
-	XFontStruct *plain_font = XLoadQueryFont(XtDisplay(toplevel),
-			"-*-terminus-medium-r-*-*-14-*-*-*-*-*-*-*");
-	XmFontListEntry font_list_entry = XmFontListEntryCreate(
-	XmFONTLIST_DEFAULT_TAG, XmFONT_IS_FONT, plain_font);
-
-	XmFontList plain_font_list = XmFontListAppendEntry(
-	NULL, font_list_entry);
-
-	docker_log_info("plain font: %d plain font list %d", plain_font == NULL,
-			plain_font_list == NULL);
-
 	main_w = XtVaCreateManagedWidget("main_w", xmMainWindowWidgetClass,
 			toplevel,
 			NULL);
@@ -338,41 +179,18 @@ int main(int argc, char *argv[]) {
 	main_form_w = XtVaCreateManagedWidget("main_form_w", xmFormWidgetClass,
 			main_w, NULL);
 
-	matrix_w = XtVaCreateManagedWidget("mw", xbaeMatrixWidgetClass, main_form_w,
-	/* attach to top, left of form */
-	XmNtopAttachment, XmATTACH_FORM,
-	XmNleftAttachment, XmATTACH_FORM,
-	XmNrightAttachment, XmATTACH_POSITION,
-	XmNrightPosition, 50,
-	XmNbottomAttachment, XmATTACH_POSITION,
-	XmNbottomPosition, 50,
-	XmNlabelFont, plain_font_list,
-	XmNfontList, plain_font_list,
-	NULL);
+//	if (make_docker_context_socket(&ctx, "/var/run/docker.sock") == E_SUCCESS) {
+	if (make_docker_context_url(&ctx, "http://192.168.1.33:2376/")
+			== E_SUCCESS) {
+		XtVaSetValues(main_w, XmNworkWindow, main_form_w,
+		NULL);
+		create_toolbar(main_w, ctx);
+		create_menubar(main_w);
 
-	make_ps_window(main_form_w, &ps_w);
+		XtRealizeWidget(toplevel);
 
-	XtVaSetValues(main_w, XmNworkWindow, main_form_w,
-	NULL);
-
-	XmFontListEntryFree(&font_list_entry);
-	XmFontListFree(plain_font_list);
-
-	XtAddCallback(matrix_w, XmNlabelActivateCallback, labelCB, NULL);
-	XtAddCallback(matrix_w, XmNenterCellCallback, cellCB, NULL);
-
-	create_toolbar(main_w);
-	create_menubar(main_w);
-
-//	load_containers_list(matrix_w);
-	XtRealizeWidget(toplevel);
-
-#ifdef VREX_USE_THREADS
-	pthread_t thread_id;
-	pthread_create(&thread_id, NULL, list_containers, &matrix_w);
-#else
-	list_containers(&matrix_w);
-#endif
+		make_container_list_window(main_form_w, &matrix_w, ctx);
+	}
 
 	XtAppMainLoop(app);
 
