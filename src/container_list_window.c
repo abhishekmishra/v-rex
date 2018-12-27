@@ -39,7 +39,7 @@ int list_containers(Widget mw, docker_context* ctx) {
 	make_docker_containers_list_filter(&filter);
 //		containers_filter_add_name(filter, "/registryui");
 //		containers_filter_add_id(filter, id);
-	docker_container_list(ctx, &res, &containers, 0, -1, 1, filter);
+	docker_container_list(ctx, &res, &containers, 0, 1, 1, filter);
 	handle_error(res);
 	docker_log_info("Read %d containers.\n",
 			docker_containers_list_length(containers));
@@ -158,16 +158,16 @@ void cellCB(Widget mw, XtPointer cd, XtPointer cb) {
  */
 int make_container_list_window(Widget parent, Widget* container_ls_w, docker_context* ctx) {
 	Widget ps_w, matrix_w;
-	XFontStruct *plain_font = XLoadQueryFont(XtDisplay(parent),
-			"-*-terminus-medium-r-*-*-14-*-*-*-*-*-*-*");
-	XmFontListEntry font_list_entry = XmFontListEntryCreate(
-	XmFONTLIST_DEFAULT_TAG, XmFONT_IS_FONT, plain_font);
-
-	XmFontList plain_font_list = XmFontListAppendEntry(
-	NULL, font_list_entry);
-
-	docker_log_info("plain font: %d plain font list %d", plain_font == NULL,
-			plain_font_list == NULL);
+//	XFontStruct *plain_font = XLoadQueryFont(XtDisplay(parent),
+//			"-*-terminus-medium-r-*-*-14-*-*-*-*-*-*-*");
+//	XmFontListEntry font_list_entry = XmFontListEntryCreate(
+//	XmFONTLIST_DEFAULT_TAG, XmFONT_IS_FONT, plain_font);
+//
+//	XmFontList plain_font_list = XmFontListAppendEntry(
+//	NULL, font_list_entry);
+//
+//	docker_log_info("plain font: %d plain font list %d", plain_font == NULL,
+//			plain_font_list == NULL);
 
 	matrix_w = XtVaCreateManagedWidget("mw", xbaeMatrixWidgetClass, parent,
 	/* attach to top, left of form */
@@ -181,13 +181,14 @@ int make_container_list_window(Widget parent, Widget* container_ls_w, docker_con
 //	XmNfontList, plain_font_list,
 	NULL);
 
-	XmFontListEntryFree(&font_list_entry);
-	XmFontListFree(plain_font_list);
+//	XmFontListEntryFree(&font_list_entry);
+//	XmFontListFree(plain_font_list);
 
 	XtAddCallback(matrix_w, XmNlabelActivateCallback, labelCB, NULL);
 	XtAddCallback(matrix_w, XmNenterCellCallback, cellCB, NULL);
 
 	make_ps_window(parent, &ps_w);
+
 	container_ls_w = &matrix_w;
 	load_containers_list(matrix_w, ctx);
 	return 0;

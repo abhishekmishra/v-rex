@@ -18,6 +18,8 @@
 #include <Xm/RowColumn.h>
 #include <Xm/Form.h>
 
+#include "docker_connection_util.h"
+#include "docker_system.h"
 #include "vrex_util.h"
 #include "container_list_window.h"
 
@@ -45,7 +47,7 @@ static String fallback[] = { "V-Rex*main_w.width:		1024",
 		"V-Rex*mw.vertFill: 	False", "V-Rex*mw.height: 	800",
 		"V-Rex*mw.width: 	1024", "V-Rex*mw.gridLineColor: 	#A0A0A0",
 		"V-Rex*mw.background: 	#111111", "V-Rex*mw.foreground: 	#D3D3D3",
-		"V-Rex*.columnLabelColor: 	#a0a0ff",
+		"V-Rex*mw.columnLabelColor: 	#a0a0ff",
 		"V-Rex*mw.highlightColor: 	#6495ED", "V-Rex*mw.rowHeight: 	200",
 
 //				"V-Rex*mw.columnWidths:		10, 5, 10, 5, 10, 5,"
@@ -53,10 +55,10 @@ static String fallback[] = { "V-Rex*main_w.width:		1024",
 //				"V-Rex*mw.columnLabels:		Zero, One, Two, Three, Four,"
 //						"					Five, Six, Seven, Eight, Nine",
 //				"V-Rex*mw.rowLabels:		0, 1, 2, 3, 4, 5, 6, 7, 8, 9",
-		"V-Rex*mw.fontList: -*-terminus-medium-r-*-*-10-*-*-*-*-*-*-*,"
-				"-*-terminus-bold-r-*-*-10-*-*-*-*-*-*-*=bold,"
-				"-*-terminus-medium-r-*-*-10-*-*-*-*-*-*-*=italic",
-		"V-Rex*mw.labelFont: -*-terminus-bold-r-*-*-14-*-*-*-*-*-*-*",
+//		"V-Rex*mw.fontList: -*-terminus-medium-r-*-*-10-*-*-*-*-*-*-*,"
+//				"-*-terminus-bold-r-*-*-10-*-*-*-*-*-*-*=bold,"
+//				"-*-terminus-medium-r-*-*-10-*-*-*-*-*-*-*=italic",
+//		"V-Rex*mw.labelFont: -*-terminus-bold-r-*-*-14-*-*-*-*-*-*-*",
 		"V-Rex*mw.cellShadowThickness:		0", "V-Rex*mw.textShadowThickness:		0",
 		"V-Rex*mw.cellHighlightThickness:		2", "V-Rex*mw.cellMarginHeight:		0",
 		"V-Rex*mw.cellMarginWidth:		1",
@@ -159,11 +161,45 @@ void exit_if_no_threads() {
 	}
 }
 
+int extract_args_url_connection(int argc, char* url, char* argv[],
+		docker_context** ctx) {
+	int connected = 0;
+	if (argc > 1) {
+		url = argv[1];
+		if (is_http_url(url)) {
+			if (make_docker_context_url(ctx, url) == E_SUCCESS) {
+				connected = 1;
+			}
+		} else if (is_unix_socket(url)) {
+			if (make_docker_context_socket(ctx, url) == E_SUCCESS) {
+				connected = 1;
+			}
+		}
+	} else {
+		url = DOCKER_DEFINE_DEFAULT_UNIX_SOCKET;
+		if (make_docker_context_socket(ctx, url) == E_SUCCESS) {
+			connected = 1;
+		}
+	}
+	if (connected) {
+		docker_result* res;
+		if (docker_ping((*ctx), &res) != E_SUCCESS) {
+			docker_log_fatal("Could not ping the server %s", url);
+			connected = 0;
+		} else {
+			docker_log_info("Successfully pinged %s", url);
+		}
+	}
+	return connected;
+}
+
 int main(int argc, char *argv[]) {
 	Widget toplevel, main_w, matrix_w, main_form_w;
 	XtAppContext app;
 	docker_context* ctx;
+	char* url;
 	int row, column, n_rows, n_columns;
+	int connected = 0;
 	docker_log_set_level(LOG_DEBUG);
 
 	exit_if_no_threads();
@@ -172,6 +208,11 @@ int main(int argc, char *argv[]) {
 	NULL, 0, &argc, argv, fallback,
 	NULL);
 
+	connected = extract_args_url_connection(argc, url, argv, &ctx);
+	if (!connected) {
+		return E_PING_FAILED;
+	}
+
 	main_w = XtVaCreateManagedWidget("main_w", xmMainWindowWidgetClass,
 			toplevel,
 			NULL);
@@ -179,18 +220,14 @@ int main(int argc, char *argv[]) {
 	main_form_w = XtVaCreateManagedWidget("main_form_w", xmFormWidgetClass,
 			main_w, NULL);
 
-//	if (make_docker_context_socket(&ctx, "/var/run/docker.sock") == E_SUCCESS) {
-	if (make_docker_context_url(&ctx, "http://192.168.1.33:2376/")
-			== E_SUCCESS) {
-		XtVaSetValues(main_w, XmNworkWindow, main_form_w,
-		NULL);
-		create_toolbar(main_w, ctx);
-		create_menubar(main_w);
+	XtVaSetValues(main_w, XmNworkWindow, main_form_w,
+	NULL);
+	create_toolbar(main_w, ctx);
+	create_menubar(main_w);
 
-		XtRealizeWidget(toplevel);
+	XtRealizeWidget(toplevel);
 
-		make_container_list_window(main_form_w, &matrix_w, ctx);
-	}
+	make_container_list_window(main_form_w, &matrix_w, ctx);
 
 	XtAppMainLoop(app);
 
