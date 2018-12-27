@@ -21,6 +21,11 @@
 #include <stdlib.h>
 #include <docker_containers.h>
 #include <log.h>
+#include <X11/Intrinsic.h>
+#include <X11/Xmu/Editres.h>
+#include <Xm/PushB.h>
+#include <Xm/ToggleB.h>
+#include <Xm/RowColumn.h>
 
 #include "vrex_util.h"
 #include "ps_window.h"
@@ -84,7 +89,7 @@ int list_containers(Widget mw, docker_context* ctx) {
 		free(rows);
 	}
 
-	Widget top = XtParent(XtParent(mw));
+	Widget top = XtParent(XtParent(XtParent(mw)));
 	Widget toolbar = XtNameToWidget(top, "toolbar");
 	Widget refresh = XtNameToWidget(toolbar, "Refresh");
 
@@ -94,7 +99,7 @@ int list_containers(Widget mw, docker_context* ctx) {
 	}
 
 	XtSetSensitive(refresh, True);
-	XmUpdateDisplay(XtParent(mw));
+	XmUpdateDisplay(XtParent(XtParent(mw)));
 	curl_global_cleanup();
 	return 0;
 }
@@ -131,6 +136,38 @@ void cellCB(Widget mw, XtPointer cd, XtPointer cb) {
 	cbs->select_text = True;
 }
 
+void toggled(Widget widget, XtPointer client_data, XtPointer call_data) {
+	XmToggleButtonCallbackStruct *state =
+			(XmToggleButtonCallbackStruct *) call_data;
+	printf("%s: %s\n", XtName(widget),
+			state->set == XmSET ? "on" :
+			state->set == XmOFF ? "off" : "indeterminate");
+}
+
+void create_docker_list_toolbar(Widget container_list_toplevel,
+		docker_context* ctx) {
+	Widget toolbar, refreshButton, showRunningButton, showAllButton;
+	toolbar = XtVaCreateManagedWidget("docker_list_toolbar",
+			xmRowColumnWidgetClass, container_list_toplevel,
+			XmNorientation, XmHORIZONTAL,
+			NULL);
+
+	XtManageChild(toolbar);
+	refreshButton = XtVaCreateManagedWidget("Show Running",
+			xmToggleButtonWidgetClass, toolbar, NULL);
+	XtManageChild(refreshButton);
+
+	XtAddCallback(refreshButton, XmNactivateCallback, toggled, ctx);
+
+	showRunningButton = XtVaCreateManagedWidget("Show Running",
+			xmPushButtonWidgetClass, toolbar,
+			NULL);
+
+	showAllButton = XtVaCreateManagedWidget("Show All", xmPushButtonWidgetClass,
+			toolbar,
+			NULL);
+}
+
 /**
  * Create a new container list window
  *
@@ -140,21 +177,41 @@ void cellCB(Widget mw, XtPointer cd, XtPointer cb) {
  */
 int make_container_list_window(Widget parent, Widget* container_ls_w,
 		docker_context* ctx) {
-	Widget ps_w, matrix_w;
-	matrix_w = XtVaCreateManagedWidget("mw", xbaeMatrixWidgetClass, parent,
-	/* attach to top, left of form */
-	XmNtopAttachment, XmATTACH_FORM,
-	XmNleftAttachment, XmATTACH_FORM,
-	XmNrightAttachment, XmATTACH_POSITION,
-	XmNrightPosition, 50,
-	XmNbottomAttachment, XmATTACH_POSITION,
-	XmNbottomPosition, 50,
-	NULL);
+	Widget container_list_toplevel, ps_w, matrix_w;
+
+	container_list_toplevel = XtVaCreateManagedWidget("container_list_toplevel",
+			xmRowColumnWidgetClass, parent,
+			XmNorientation, XmVERTICAL,
+			XmNpacking, XmPACK_TIGHT,
+			XmNcolumns, 1,
+			XmNtopAttachment, XmATTACH_FORM,
+			XmNleftAttachment, XmATTACH_FORM,
+			XmNrightAttachment, XmATTACH_POSITION,
+			XmNrightPosition, 100,
+			XmNbottomAttachment, XmATTACH_POSITION,
+			XmNbottomPosition, 100,
+			NULL);
+
+	create_docker_list_toolbar(container_list_toplevel, ctx);
+
+	matrix_w = XtVaCreateManagedWidget("mw", xbaeMatrixWidgetClass,
+			container_list_toplevel,
+			XmNheight, 200,
+//	/* attach to top, left of form */
+//	XmNtopAttachment, XmATTACH_FORM,
+//	XmNleftAttachment, XmATTACH_FORM,
+//	XmNrightAttachment, XmATTACH_POSITION,
+//	XmNrightPosition, 50,
+//	XmNbottomAttachment, XmATTACH_POSITION,
+//	XmNbottomPosition, 50,
+			NULL);
 
 	XtAddCallback(matrix_w, XmNlabelActivateCallback, labelCB, NULL);
 	XtAddCallback(matrix_w, XmNenterCellCallback, cellCB, NULL);
+	XtManageChild(matrix_w);
 
-	make_ps_window(parent, &ps_w);
+	make_ps_window(container_list_toplevel, &ps_w);
+	XtManageChild(ps_w);
 
 	container_ls_w = &matrix_w;
 	load_containers_list(matrix_w, ctx);

@@ -35,21 +35,21 @@
 static String fallback[] = { "V-Rex*main_w.width:		1024",
 		"V-Rex*.background:		#111111", "V-Rex*.foreground:		#D3D3D3",
 		"V-Rex*main_w.height:		768", "V-Rex*mw.shadowType:		SHADOW_ETCHED_OUT",
-		"V-Rex*mw.shadowThickness:		1", "V-Rex*mw.cellShadowThickness:	1",
-		"V-Rex*mw.gridType:		GRID_CELL_LINE",
-		"V-Rex*mw.cellShadowType:		shadow_in", "V-Rex*mw.visibleColumns:		4",
+//		"V-Rex*mw.shadowThickness:		1", "V-Rex*mw.cellShadowThickness:	1",
+//		"V-Rex*mw.gridType:		GRID_CELL_LINE",
+//		"V-Rex*mw.cellShadowType:		shadow_in", "V-Rex*mw.visibleColumns:		4",
 		"V-Rex*mw.visibleRows:		0", "V-Rex*mw.rows:			0",
 		"V-Rex*mw.columns:			4", "V-Rex*mw.fixedRows:		0",
 		"V-Rex*mw.fixedColumns:		1", "V-Rex*mw.trailingFixedRows:	0",
 		"V-Rex*mw.trailingFixedColumns:	0", "V-Rex*mw.traverseFixedCells:	True",
 		"V-Rex*mw.multiLineCell:	True",
 		"V-Rex*mw.wrapType: 	wrap_continuous", //other option is wrap_word
-		"V-Rex*mw.fill: 	False", "V-Rex*mw.horzFill: 	False",
-		"V-Rex*mw.vertFill: 	False", "V-Rex*mw.height: 	800",
-		"V-Rex*mw.width: 	1024", "V-Rex*mw.gridLineColor: 	#A0A0A0",
-		"V-Rex*mw.background: 	#111111", "V-Rex*mw.foreground: 	#D3D3D3",
-		"V-Rex*mw.columnLabelColor: 	#a0a0ff",
-		"V-Rex*mw.highlightColor: 	#6495ED", "V-Rex*mw.rowHeight: 	200",
+//		"V-Rex*mw.fill: 	True", "V-Rex*mw.horzFill: 	True",
+//		"V-Rex*mw.vertFill: 	True", "V-Rex*mw.height: 	800",
+//		"V-Rex*mw.width: 	1024", "V-Rex*mw.gridLineColor: 	#A0A0A0",
+//		"V-Rex*mw.background: 	#111111", "V-Rex*mw.foreground: 	#D3D3D3",
+//		"V-Rex*mw.columnLabelColor: 	#a0a0ff",
+//		"V-Rex*mw.highlightColor: 	#6495ED", "V-Rex*mw.rowHeight: 	200",
 
 //				"V-Rex*mw.columnWidths:		10, 5, 10, 5, 10, 5,"
 //						"					10, 5, 10, 5, 10, 5",
@@ -83,7 +83,9 @@ void refresh_call(Widget widget, XtPointer client_data, XtPointer call_data) {
 	XtSetSensitive(widget, False);
 	Widget top = XtParent(XtParent(widget));
 	load_containers_list(
-			XtNameToWidget(XtNameToWidget(top, "main_form_w"), "mw"), ctx);
+			XtNameToWidget(
+					XtNameToWidget(XtNameToWidget(top, "main_form_w"),
+							"container_list_toplevel"), "mw"), ctx);
 	docker_log_debug("Refresh button name - %s", XtName(widget));
 }
 

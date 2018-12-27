@@ -21,14 +21,14 @@ int make_ps_window(Widget parent, Widget* ps_w) {
 	XmNcolumns, 8,
 	XmNrows, 0,
 	XmNvisibleColumns, 8,
-	XmNheight, 250,
-	XmNwidth, 500,
-	XmNtopAttachment, XmATTACH_FORM,
-	XmNrightAttachment, XmATTACH_FORM,
-	XmNleftAttachment, XmATTACH_POSITION,
-	XmNleftPosition, 51,
-	XmNbottomAttachment, XmATTACH_POSITION,
-	XmNbottomPosition, 51, NULL);
+	XmNheight, 200,
+//	XmNtopAttachment, XmATTACH_FORM,
+//	XmNrightAttachment, XmATTACH_FORM,
+//	XmNleftAttachment, XmATTACH_POSITION,
+//	XmNleftPosition, 51,
+//	XmNbottomAttachment, XmATTACH_POSITION,
+//	XmNbottomPosition, 51,
+	NULL);
 	return 0;
 }
 
