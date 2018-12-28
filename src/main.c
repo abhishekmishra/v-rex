@@ -33,7 +33,7 @@
 
 //#define VREX_USE_THREADS 0
 
-static String fallback[] = {  "V-Rex*main_w.width:		1024",
+static String fallback[] = { "V-Rex*main_w.width:		1024",
 		"V-Rex*.background:		#A9A9A9", "V-Rex*.foreground:		#000000",
 		"V-Rex*main_w.height:		768",
 //		"V-Rex*mw.shadowType:		SHADOW_ETCHED_OUT",
@@ -311,6 +311,11 @@ int main(int argc, char *argv[]) {
 	create_menubar(main_w, vrex);
 
 	make_container_list_window(main_form_w, &matrix_w, vrex);
+
+	docker_result* res;
+	docker_info* info;
+	docker_system_info(ctx, &res, &info);
+	handle_error(vrex, res);
 
 	XtRealizeWidget(toplevel);
 	XtAppMainLoop(app);
