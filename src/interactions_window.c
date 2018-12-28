@@ -24,10 +24,83 @@
 #include <Xm/Text.h>
 #include <Xm/List.h>
 #include <Xm/Label.h>
+#include <Xm/Form.h>
+#include <Xm/PushB.h>
 
 #include "vrex_util.h"
 #include "docker_connection_util.h"
 #include "log.h"
+
+vrex_err_t update_response_form(Widget interactions_pane, int http_code,
+		char* msg, char* response_json) {
+	Widget response_form = XtNameToWidget(interactions_pane, "interact_response_form");
+	char http_code_str[128];
+	sprintf(http_code_str, "%d", http_code);
+	if(http_code_str != NULL) {
+		Widget http_code_text = XtNameToWidget(response_form, "HTTP Code Text");
+		XtVaSetValues(http_code_text,
+				XmNvalue, http_code_str,
+				NULL);
+	}
+	if(msg != NULL) {
+		Widget message_text = XtNameToWidget(response_form, "Message Text");
+		XtVaSetValues(message_text,
+				XmNvalue, msg,
+				NULL);
+	}
+	return VREX_SUCCESS;
+}
+
+vrex_err_t create_resonpse_form(Widget interactions_pane) {
+	Widget http_code_label, http_code_text, message_label, message_text;
+	Widget response_form = XmCreateForm(interactions_pane,
+			"interact_response_form",
+			NULL, 0);
+
+	XtVaSetValues(response_form,
+	XmNpaneMinimum, 300,
+	NULL);
+
+	http_code_label = XtVaCreateManagedWidget("HTTP Code",
+			xmLabelWidgetClass, response_form,
+			XmNtopAttachment, XmATTACH_FORM,
+			XmNleftAttachment, XmATTACH_FORM,
+			NULL);
+
+	http_code_text = XtVaCreateManagedWidget("HTTP Code Text",
+			xmTextWidgetClass, response_form,
+			XmNeditable, False,
+			XmNvalue, "-",
+			XmNleftAttachment, XmATTACH_WIDGET,
+			XmNleftWidget, http_code_label,
+			XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
+			XmNtopWidget, http_code_label,
+			NULL);
+
+	message_label = XtVaCreateManagedWidget("Message", xmLabelWidgetClass,
+			response_form,
+			XmNtopAttachment, XmATTACH_WIDGET,
+			XmNtopWidget, http_code_text,
+			XmNleftAttachment, XmATTACH_OPPOSITE_WIDGET,
+			XmNleftWidget, http_code_label,
+			NULL);
+
+	message_text = XtVaCreateManagedWidget("Message Text", xmTextWidgetClass,
+			response_form,
+			XmNeditable, False,
+			XmNvalue, "-",
+			XmNleftAttachment, XmATTACH_WIDGET,
+			XmNleftWidget, http_code_label,
+			XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
+			XmNtopWidget, message_label,
+			NULL);
+
+	XtManageChild(http_code_label);
+	XtManageChild(http_code_text);
+	XtManageChild(response_form);
+
+	return VREX_SUCCESS;
+}
 
 vrex_err_t make_interactions_window(vrex_context* vrex) {
 	Widget list_w, child;
@@ -43,6 +116,11 @@ vrex_err_t make_interactions_window(vrex_context* vrex) {
 	XmNpaneMinimum, 25,
 	XmNpaneMaximum, 45,
 	NULL);
+
+	/**
+	 * Create the Response Form
+	 */
+	create_resonpse_form(iw);
 
 	/* Convenience routines don't create managed children */
 	XtManageChild(iw);
@@ -65,6 +143,7 @@ vrex_err_t add_interactions_entry(vrex_context* vrex, docker_result* res) {
 			XmString msg = XmStringCreateLocalized(url);
 			XmListAddItem(list_w, msg, 0);
 		}
+		update_response_form(iw, get_http_error(res), get_message(res), NULL);
 	}
 	return VREX_SUCCESS;
 }
