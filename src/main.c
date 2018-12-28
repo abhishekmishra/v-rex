@@ -224,7 +224,7 @@ void exit_if_no_threads() {
 }
 
 int extract_args_url_connection(int argc, char* url, char* argv[],
-		docker_context** ctx) {
+		docker_context** ctx, docker_result** res) {
 	int connected = 0;
 	if (argc > 1) {
 		url = argv[1];
@@ -244,8 +244,7 @@ int extract_args_url_connection(int argc, char* url, char* argv[],
 		}
 	}
 	if (connected) {
-		docker_result* res;
-		if (docker_ping((*ctx), &res) != E_SUCCESS) {
+		if (docker_ping((*ctx), res) != E_SUCCESS) {
 			docker_log_fatal("Could not ping the server %s", url);
 			connected = 0;
 		} else {
@@ -260,6 +259,8 @@ int main(int argc, char *argv[]) {
 	XtAppContext app;
 	docker_context* ctx;
 	vrex_context* vrex;
+	docker_result* res;
+	docker_info* info;
 
 	char* url;
 	int row, column, n_rows, n_columns;
@@ -272,7 +273,7 @@ int main(int argc, char *argv[]) {
 	NULL, 0, &argc, argv, fallback,
 	NULL);
 
-	connected = extract_args_url_connection(argc, url, argv, &ctx);
+	connected = extract_args_url_connection(argc, url, argv, &ctx, &res);
 	if (!connected) {
 		return E_PING_FAILED;
 	}
@@ -302,6 +303,9 @@ int main(int argc, char *argv[]) {
 	make_interactions_window(vrex);
 	vrex->interactions_w = &interactions_w;
 
+	//add the ping call to interactions history
+	handle_error(vrex, res);
+
 	docker_log_info(XtName(vrex->interactions_w(vrex)));
 	XtVaSetValues(main_w, XmNcommandWindow, vrex->interactions_w(vrex),
 	NULL);
@@ -312,8 +316,7 @@ int main(int argc, char *argv[]) {
 
 	make_container_list_window(main_form_w, &matrix_w, vrex);
 
-	docker_result* res;
-	docker_info* info;
+	//TODO: test info call
 	docker_system_info(ctx, &res, &info);
 	handle_error(vrex, res);
 
