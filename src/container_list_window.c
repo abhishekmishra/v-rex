@@ -32,7 +32,7 @@
 
 static int show_running = 1;
 
-int list_containers(Widget mw, docker_context* ctx) {
+int list_containers(Widget mw, vrex_context* vrex) {
 	char* id;
 	docker_result* res;
 	docker_containers_list_filter* filter;
@@ -46,9 +46,9 @@ int list_containers(Widget mw, docker_context* ctx) {
 	if (show_running == 0) {
 		limit = 25;
 	}
-	docker_container_list(ctx, &res, &containers, show_running == 0, limit, 1,
-			filter);
-	handle_error(res);
+	docker_container_list(vrex->d_ctx, &res, &containers, show_running == 0,
+			limit, 1, filter);
+	vrex->handle_error(vrex, res);
 	docker_log_debug("Read %d containers.\n",
 			docker_containers_list_length(containers));
 	int col_num = 0;
@@ -96,12 +96,12 @@ int list_containers(Widget mw, docker_context* ctx) {
 		free(rows);
 	}
 
-	Widget top = XtParent(XtParent(XtParent(mw)));
-	Widget toolbar = XtNameToWidget(top, "toolbar");
+	Widget top = XtParent(mw);
+	Widget toolbar = XtNameToWidget(top, "docker_list_toolbar");
 	Widget refresh = XtNameToWidget(toolbar, "Refresh");
 
 	if (first_id) {
-		set_ps_window_docker_id(XtNameToWidget(XtParent(mw), "ps_w"), ctx,
+		set_ps_window_docker_id(XtNameToWidget(XtParent(mw), "ps_w"), vrex,
 				first_id);
 	}
 
@@ -111,12 +111,12 @@ int list_containers(Widget mw, docker_context* ctx) {
 	return 0;
 }
 
-int load_containers_list(Widget matrix_w, docker_context* ctx) {
+int load_containers_list(Widget matrix_w, vrex_context* vrex) {
 	int num_rows = XbaeMatrixNumRows(matrix_w);
 	if (num_rows > 0) {
 		XbaeMatrixDeleteRows(matrix_w, 0, num_rows);
 	}
-	list_containers(matrix_w, ctx);
+	list_containers(matrix_w, vrex);
 	return 0;
 }
 
@@ -156,21 +156,36 @@ void show_running_callback(Widget widget, XtPointer client_data,
 		show_running = 0;
 	}
 }
+void refresh_call(Widget widget, XtPointer client_data, XtPointer call_data) {
+	vrex_context* vrex = (vrex_context*) client_data;
+	XtSetSensitive(widget, False);
+	Widget top = XtParent(XtParent(widget));
+	docker_log_debug("Refresh button name - %s", XtName(widget));
+	docker_log_debug("top - %s", XtName(top));
+	load_containers_list(XtNameToWidget(top, "mw"), vrex);
+}
 
 void create_docker_list_toolbar(Widget container_list_toplevel,
-		docker_context* ctx) {
-	Widget toolbar, refreshButton, showRunningButton, showAllButton;
+		vrex_context* vrex) {
+	Widget toolbar, runningToggleButton, refreshButton;
 	toolbar = XtVaCreateManagedWidget("docker_list_toolbar",
 			xmRowColumnWidgetClass, container_list_toplevel,
 			XmNorientation, XmHORIZONTAL,
 			NULL);
 
-	refreshButton = XtVaCreateManagedWidget("Show Running",
+	runningToggleButton = XtVaCreateManagedWidget("Show Running",
 			xmToggleButtonWidgetClass, toolbar,
 			XmNset, XmSET,
 			NULL);
-	XtAddCallback(refreshButton, XmNvalueChangedCallback, show_running_callback,
-			ctx);
+	XtAddCallback(runningToggleButton, XmNvalueChangedCallback,
+			show_running_callback, vrex->d_ctx);
+
+	refreshButton = XtVaCreateManagedWidget("Refresh", xmPushButtonWidgetClass,
+			toolbar, NULL);
+	XtManageChild(refreshButton);
+
+	XtAddCallback(refreshButton, XmNactivateCallback, refresh_call, vrex);
+
 	XtManageChild(toolbar);
 }
 
@@ -182,7 +197,7 @@ void create_docker_list_toolbar(Widget container_list_toplevel,
  * \return error code
  */
 int make_container_list_window(Widget parent, Widget* container_ls_w,
-		docker_context* ctx) {
+		vrex_context* vrex) {
 	Widget container_list_toplevel, ps_w, matrix_w;
 
 	container_list_toplevel = XtVaCreateManagedWidget("container_list_toplevel",
@@ -198,7 +213,7 @@ int make_container_list_window(Widget parent, Widget* container_ls_w,
 			XmNbottomPosition, 100,
 			NULL);
 
-	create_docker_list_toolbar(container_list_toplevel, ctx);
+	create_docker_list_toolbar(container_list_toplevel, vrex);
 
 	matrix_w = XtVaCreateManagedWidget("mw", xbaeMatrixWidgetClass,
 			container_list_toplevel,
@@ -222,7 +237,7 @@ int make_container_list_window(Widget parent, Widget* container_ls_w,
 	XtManageChild(ps_w);
 
 	container_ls_w = &matrix_w;
-	load_containers_list(matrix_w, ctx);
+	load_containers_list(matrix_w, vrex);
 	return 0;
 }
 

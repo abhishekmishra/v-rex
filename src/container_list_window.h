@@ -33,16 +33,17 @@
  * \param container_ls_w handle to populate with created widget.
  * \return error code
  */
-int make_container_list_window(Widget parent, Widget* container_ls_w, docker_context* ctx);
+int make_container_list_window(Widget parent, Widget* container_ls_w, vrex_context* vrex);
 
 /**
  * Set the docker container id for the table
  *
  * \param container_ls_w the window handle
- * \param ctx already initialized docker_context
+ * \param vrex already initialized vrex_context
  * \return error code
  */
-int load_containers_list(Widget container_ls_w, docker_context* ctx);
+int load_containers_list(Widget container_ls_w, vrex_context* vrex);
 
-int list_containers(Widget mw, docker_context* ctx);
+int list_containers(Widget mw, vrex_context* ctx);
+
 #endif /* SRC_CONTAINER_LIST_WINDOW_H_ */

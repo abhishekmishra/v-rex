@@ -39,12 +39,12 @@ int make_ps_window(Widget parent, Widget* ps_w) {
  * \param id container id
  * \return error code
  */
-int set_ps_window_docker_id(Widget ps_w, docker_context* ctx, char* id) {
+int set_ps_window_docker_id(Widget ps_w, vrex_context* vrex, char* id) {
 	docker_log_debug("Updating ps for id %s", id);
 	docker_result* result;
 	docker_container_ps* ps;
-	docker_process_list_container(ctx, &result, &ps, id, NULL);
-	handle_error(result);
+	docker_process_list_container(vrex->d_ctx, &result, &ps, id, NULL);
+	vrex->handle_error(vrex, result);
 	docker_log_debug("num titles %d num processes %d",
 			array_list_length(ps->titles), array_list_length(ps->processes));
 	for (int i = 0; i < array_list_length(ps->titles); i++) {

@@ -25,8 +25,21 @@
 
 #include <Xm/MainW.h>
 #include "docker_result.h"
+#include "docker_connection_util.h"
 
-void handle_error(docker_result* res);
+typedef enum {
+	VREX_SUCCESS = 0, VREX_E_UNKNOWN = 1
+} vrex_err_t;
+
+typedef struct vrex_context_t {
+	docker_context* d_ctx;
+	Widget* main_w;
+	Widget* toolbar_w;
+	Widget* statusbar_w;
+	Widget* log_console_w;
+	Widget (*interactions_w)(struct vrex_context_t* vrex);
+	void (*handle_error)(struct vrex_context_t* vrex, docker_result* res);
+} vrex_context;
 
 void add_column(Widget mw, char* name, int num, int width);
 

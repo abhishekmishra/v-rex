@@ -23,6 +23,7 @@
 #include "docker_system.h"
 #include "vrex_util.h"
 #include "container_list_window.h"
+#include "interactions_window.h"
 
 #include <log.h>
 
@@ -32,7 +33,7 @@
 
 //#define VREX_USE_THREADS 0
 
-static String fallback[] = { "V-Rex*main_w.width:		1024",
+static String fallback[] = {  "V-Rex*main_w.width:		1024",
 		"V-Rex*.background:		#A9A9A9", "V-Rex*.foreground:		#000000",
 		"V-Rex*main_w.height:		768",
 //		"V-Rex*mw.shadowType:		SHADOW_ETCHED_OUT",
@@ -64,6 +65,26 @@ static String fallback[] = { "V-Rex*main_w.width:		1024",
 //		"V-Rex*mw.cellMarginWidth:		1",
 		NULL };
 
+void docker_error_handler_log(docker_result* res) {
+	docker_log_debug("DOCKER_RESULT: For URL: %s", get_url(res));
+	docker_log_debug(
+			"DOCKER RESULT: Response error_code = %d, http_response = %ld",
+			get_error(res), get_http_error(res));
+	if (!is_ok(res)) {
+		docker_log_error("DOCKER RESULT: %s", get_message(res));
+	}
+}
+
+void handle_error(vrex_context* vrex, docker_result* res) {
+	docker_error_handler_log(res);
+	add_interactions_entry(vrex, res);
+	free_docker_result(&res);
+}
+
+Widget interactions_w(struct vrex_context_t* vrex) {
+	return XtNameToWidget(*(vrex->main_w), "interactions_pane");
+}
+
 void quit_call()
 
 {
@@ -77,20 +98,9 @@ void help_call()
 	docker_log_info("Sorry, I'm Not Much Help\n");
 }
 
-void refresh_call(Widget widget, XtPointer client_data, XtPointer call_data) {
-	docker_context* ctx = (docker_context*) client_data;
-	XtSetSensitive(widget, False);
-	Widget top = XtParent(XtParent(widget));
-	load_containers_list(
-			XtNameToWidget(
-					XtNameToWidget(XtNameToWidget(top, "main_form_w"),
-							"container_list_toplevel"), "mw"), ctx);
-	docker_log_debug("Refresh button name - %s", XtName(widget));
-}
-
 void docker_version_show(Widget widget, XtPointer client_data,
 		XtPointer call_data) {
-	docker_context* ctx = (docker_context*) client_data;
+	vrex_context* vrex = (vrex_context*) client_data;
 	docker_result* res;
 	docker_version* version;
 	Widget dialog;
@@ -98,7 +108,7 @@ void docker_version_show(Widget widget, XtPointer client_data,
 	XmString xms;
 	int n = 0;
 
-	if (docker_system_version(ctx, &res, &version) == E_SUCCESS) {
+	if (docker_system_version(vrex->d_ctx, &res, &version) == E_SUCCESS) {
 		char* version_msg = (char*) XtCalloc(1024, sizeof(char));
 		sprintf(version_msg, "Docker Version: %s\n"
 				"OS (Kernel): %s (%s)\n"
@@ -119,6 +129,7 @@ void docker_version_show(Widget widget, XtPointer client_data,
 				XmStringCreateLocalized(
 						"Error: could not fetch version information from docker server.");
 	}
+	vrex->handle_error(vrex, res);
 	XtSetArg(arg[n], XmNmessageString, xms);
 	n++;
 	XtSetArg(arg[n], XmNdialogType, XmDIALOG_INFORMATION);
@@ -131,7 +142,7 @@ void docker_version_show(Widget widget, XtPointer client_data,
 	XmStringFree(xms);
 }
 
-void create_menubar(Widget main_w, docker_context* ctx) {
+void create_menubar(Widget main_w, vrex_context* vrex) {
 	Widget menu_bar, quit, docker_version, help;
 	Arg arg[1];
 	menu_bar = XmCreateMenuBar(main_w, "main_list", NULL, 0);
@@ -152,7 +163,7 @@ void create_menubar(Widget main_w, docker_context* ctx) {
 
 	XtAddCallback(quit, XmNactivateCallback, quit_call, NULL);
 	XtAddCallback(docker_version, XmNactivateCallback, docker_version_show,
-			ctx);
+			vrex);
 
 //	/* create help widget + callback */
 //
@@ -170,31 +181,31 @@ void create_menubar(Widget main_w, docker_context* ctx) {
 	XmNmenuBar, menu_bar, NULL);
 }
 
-void create_toolbar(Widget main_w, docker_context* ctx) {
-	Widget toolbar, refreshButton, showRunningButton, showAllButton;
-	toolbar = XtVaCreateManagedWidget("toolbar", xmRowColumnWidgetClass, main_w,
-	XmNorientation, XmHORIZONTAL,
-	NULL);
-
-	XtManageChild(toolbar);
-	refreshButton = XtVaCreateManagedWidget("Refresh", xmPushButtonWidgetClass,
-			toolbar, NULL);
-	XtManageChild(refreshButton);
-
-	XtAddCallback(refreshButton, XmNactivateCallback, refresh_call, ctx);
-
-	showRunningButton = XtVaCreateManagedWidget("Show Running",
-			xmPushButtonWidgetClass, toolbar,
-			NULL);
-
-	showAllButton = XtVaCreateManagedWidget("Show All", xmPushButtonWidgetClass,
-			toolbar,
-			NULL);
-
-	XtVaSetValues(main_w,
-	XmNcommandWindow, toolbar,
-	NULL);
-}
+//void create_toolbar(Widget main_w, vrex_context* vrex) {
+//	Widget toolbar, refreshButton, showRunningButton, showAllButton;
+//	toolbar = XtVaCreateManagedWidget("toolbar", xmRowColumnWidgetClass, main_w,
+//	XmNorientation, XmHORIZONTAL,
+//	NULL);
+//
+//	XtManageChild(toolbar);
+//	refreshButton = XtVaCreateManagedWidget("Refresh", xmPushButtonWidgetClass,
+//			toolbar, NULL);
+//	XtManageChild(refreshButton);
+//
+//	XtAddCallback(refreshButton, XmNactivateCallback, refresh_call, vrex);
+//
+//	showRunningButton = XtVaCreateManagedWidget("Show Running",
+//			xmPushButtonWidgetClass, toolbar,
+//			NULL);
+//
+//	showAllButton = XtVaCreateManagedWidget("Show All", xmPushButtonWidgetClass,
+//			toolbar,
+//			NULL);
+//
+////	XtVaSetValues(main_w,
+////	XmNcommandWindow, toolbar,
+////	NULL);
+//}
 
 void exit_if_no_threads() {
 	if (XInitThreads() != True) {
@@ -248,10 +259,12 @@ int main(int argc, char *argv[]) {
 	Widget toplevel, main_w, matrix_w, main_form_w;
 	XtAppContext app;
 	docker_context* ctx;
+	vrex_context* vrex;
+
 	char* url;
 	int row, column, n_rows, n_columns;
 	int connected = 0;
-	docker_log_set_level(LOG_INFO);
+	docker_log_set_level(LOG_DEBUG);
 
 	exit_if_no_threads();
 
@@ -266,20 +279,32 @@ int main(int argc, char *argv[]) {
 
 	main_w = XtVaCreateManagedWidget("main_w", xmMainWindowWidgetClass,
 			toplevel,
+			XmNcommandWindowLocation, XmCOMMAND_BELOW_WORKSPACE,
 			NULL);
 
 	main_form_w = XtVaCreateManagedWidget("main_form_w", xmFormWidgetClass,
-			main_w, NULL);
-
+			main_w,
+			NULL);
 	XtVaSetValues(main_w, XmNworkWindow, main_form_w,
 	NULL);
-	create_toolbar(main_w, ctx);
-	create_menubar(main_w, ctx);
+
+	vrex = (vrex_context*) malloc(sizeof(vrex_context));
+	vrex->main_w = &main_w;
+	vrex->d_ctx = ctx;
+	vrex->handle_error = &handle_error;
+	make_interactions_window(vrex);
+	vrex->interactions_w = &interactions_w;
+	docker_log_info(XtName(vrex->interactions_w(vrex)));
+	XtVaSetValues(main_w, XmNcommandWindow, vrex->interactions_w(vrex),
+	NULL);
+	//TODO: fix toolbar positioning
+//	create_toolbar(main_w, vrex);
+
+	create_menubar(main_w, vrex);
+
+	make_container_list_window(main_form_w, &matrix_w, vrex);
 
 	XtRealizeWidget(toplevel);
-
-	make_container_list_window(main_form_w, &matrix_w, ctx);
-
 	XtAppMainLoop(app);
 
 	/*NOTREACHED*/
