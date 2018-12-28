@@ -26,6 +26,7 @@
 #include <Xm/MainW.h>
 #include "docker_result.h"
 #include "docker_connection_util.h"
+#include <json-c/arraylist.h>
 
 typedef enum {
 	VREX_SUCCESS = 0, VREX_E_UNKNOWN = 1
@@ -39,8 +40,14 @@ typedef struct vrex_context_t {
 	Widget* log_console_w;
 	Widget (*interactions_w)(struct vrex_context_t* vrex);
 	void (*handle_error)(struct vrex_context_t* vrex, docker_result* res);
+	struct array_list* results;
 } vrex_context;
 
 void add_column(Widget mw, char* name, int num, int width);
+
+vrex_err_t init_results_list(vrex_context* vrex);
+vrex_err_t results_list_add(vrex_context* vrex, docker_result* res);
+int results_list_length(vrex_context* vrex);
+docker_result* results_list_get_idx(vrex_context* vrex, int i);
 
 #endif /* SRC_VREX_UTIL_H_ */
