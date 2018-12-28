@@ -78,7 +78,6 @@ void docker_error_handler_log(docker_result* res) {
 void handle_error(vrex_context* vrex, docker_result* res) {
 	docker_error_handler_log(res);
 	add_interactions_entry(vrex, res);
-	free_docker_result(&res);
 }
 
 Widget interactions_w(struct vrex_context_t* vrex) {
@@ -292,8 +291,10 @@ int main(int argc, char *argv[]) {
 	vrex->main_w = &main_w;
 	vrex->d_ctx = ctx;
 	vrex->handle_error = &handle_error;
+	init_results_list(vrex);
 	make_interactions_window(vrex);
 	vrex->interactions_w = &interactions_w;
+
 	docker_log_info(XtName(vrex->interactions_w(vrex)));
 	XtVaSetValues(main_w, XmNcommandWindow, vrex->interactions_w(vrex),
 	NULL);

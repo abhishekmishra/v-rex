@@ -28,6 +28,9 @@
 #include <Xm/Form.h>
 #include <Xm/PushB.h>
 
+#include <json-c/json_object.h>
+#include <json-c/json_tokener.h>
+
 #include "vrex_util.h"
 #include "docker_connection_util.h"
 #include "log.h"
@@ -56,16 +59,30 @@ vrex_err_t update_response_form(Widget interactions_pane, time_t response_time,
 		XmNvalue, http_code_str,
 		NULL);
 	}
+	Widget message_text = XtNameToWidget(response_form, "Message Text");
 	if (msg != NULL) {
-		Widget message_text = XtNameToWidget(response_form, "Message Text");
 		XtVaSetValues(message_text,
 		XmNvalue, msg,
 		NULL);
+	} else {
+		XtVaSetValues(message_text,
+		XmNvalue, "-",
+		NULL);
+
 	}
+
+	Widget response_text = XtNameToWidget(response_form, "Response Text");
+	json_object* response_obj = NULL;
 	if (response_json != NULL) {
-		Widget response_text = XtNameToWidget(response_form, "Response Text");
+		response_obj = json_tokener_parse(response_json);
 		XtVaSetValues(response_text,
-		XmNvalue, response_json,
+		XmNvalue, json_object_to_json_string_ext(response_obj,
+		JSON_C_TO_STRING_PRETTY | JSON_C_TO_STRING_SPACED),
+		NULL);
+
+	} else {
+		XtVaSetValues(response_text,
+		XmNvalue, "-",
 		NULL);
 	}
 
@@ -96,6 +113,8 @@ vrex_err_t create_resonpse_form(Widget interactions_pane) {
 			XmNvalue, "-",
 			XmNcolumns, 80,
 			XmNhighlightThickness, 0,
+			XmNscrollHorizontal, False,
+			XmNcursorPositionVisible, False,
 			XmNleftAttachment, XmATTACH_WIDGET,
 			XmNleftWidget, response_time_label,
 			XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
@@ -116,6 +135,8 @@ vrex_err_t create_resonpse_form(Widget interactions_pane) {
 			XmNvalue, "-",
 			XmNcolumns, 80,
 			XmNhighlightThickness, 0,
+			XmNscrollHorizontal, False,
+			XmNcursorPositionVisible, False,
 			XmNleftAttachment, XmATTACH_WIDGET,
 			XmNleftWidget, response_time_label,
 			XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
@@ -139,6 +160,7 @@ vrex_err_t create_resonpse_form(Widget interactions_pane) {
 			XmNeditMode, XmMULTI_LINE_EDIT,
 			XmNscrollHorizontal, False,
 			XmNwordWrap, True,
+			XmNcursorPositionVisible, False,
 			XmNhighlightThickness, 0,
 			XmNleftAttachment, XmATTACH_WIDGET,
 			XmNleftWidget, response_time_label,
@@ -154,6 +176,7 @@ vrex_err_t create_resonpse_form(Widget interactions_pane) {
 			XmNleftWidget, message_label,
 			NULL);
 
+	//TODO need to make this a scrolled text widget
 	response_text = XtVaCreateManagedWidget("Response Text", xmTextWidgetClass,
 			response_form,
 			XmNeditable, False,
@@ -162,6 +185,8 @@ vrex_err_t create_resonpse_form(Widget interactions_pane) {
 			XmNrows, 10,
 			XmNeditMode, XmMULTI_LINE_EDIT,
 			XmNscrollHorizontal, False,
+			XmNscrollVertical, True,
+			XmNcursorPositionVisible, False,
 			XmNwordWrap, True,
 			XmNhighlightThickness, 0,
 			XmNleftAttachment, XmATTACH_WIDGET,
@@ -173,6 +198,21 @@ vrex_err_t create_resonpse_form(Widget interactions_pane) {
 	XtManageChild(response_form);
 
 	return VREX_SUCCESS;
+}
+
+void sel_callback(Widget list_w, XtPointer client_data, XtPointer call_data) {
+	XmListCallbackStruct *cbs = (XmListCallbackStruct *) call_data;
+	vrex_context* vrex = (vrex_context *) client_data;
+//	docker_log_debug("result len %d, selection pos %d, pos in list %d",
+//			results_list_length(vrex), cbs->item_position,
+//			results_list_length(vrex) - cbs->item_position);
+	docker_result* res = results_list_get_idx(vrex,
+			results_list_length(vrex) - cbs->item_position);
+
+	update_response_form(XtParent(XtParent(list_w)),
+			get_docker_result_end_time(res), get_docker_result_http_error(res),
+			get_docker_result_message(res), get_docker_result_response(res));
+
 }
 
 vrex_err_t make_interactions_window(vrex_context* vrex) {
@@ -198,12 +238,23 @@ vrex_err_t make_interactions_window(vrex_context* vrex) {
 	/* Convenience routines don't create managed children */
 	XtManageChild(iw);
 	XtManageChild(list_w);
-	docker_log_info(XtName(iw));
-	docker_log_info(XtName(XtParent(list_w)));
+	XtAddCallback(list_w, XmNdefaultActionCallback, sel_callback, vrex);
+	XtAddCallback(list_w, XmNbrowseSelectionCallback, sel_callback, vrex);
 	return VREX_SUCCESS;
 }
 
+void MakePosVisible(Widget list_w, int item_no) {
+	int top, visible;
+	XtVaGetValues(list_w, XmNtopItemPosition, &top,
+	XmNvisibleItemCount, &visible, NULL);
+	if (item_no < top)
+		XmListSetPos(list_w, item_no);
+	else if (item_no >= top + visible)
+		XmListSetBottomPos(list_w, item_no);
+}
+
 vrex_err_t add_interactions_entry(vrex_context* vrex, docker_result* res) {
+	results_list_add(vrex, res);
 	Widget iw = vrex->interactions_w(vrex);
 	docker_log_error(XtName(iw));
 	Widget list_w = XtNameToWidget(XtNameToWidget(iw, "interact_listSW"),
@@ -212,13 +263,13 @@ vrex_err_t add_interactions_entry(vrex_context* vrex, docker_result* res) {
 	if (res) {
 		char* url = get_docker_result_url(res);
 		if (url != NULL && (strlen(url) > 0)) {
-
+			int pos_to_add;
+			XtVaGetValues(list_w, XmNtopItemPosition, &pos_to_add, NULL);
 			XmString msg = XmStringCreateLocalized(url);
-			XmListAddItem(list_w, msg, 0);
+			XmListAddItemUnselected(list_w, msg, pos_to_add);
+			XmListSelectPos(list_w, pos_to_add, True);
+			MakePosVisible(list_w, pos_to_add);
 		}
-		update_response_form(iw, get_docker_result_end_time(res),
-				get_docker_result_http_error(res),
-				get_docker_result_message(res), get_docker_result_response(res));
 	}
 	return VREX_SUCCESS;
 }
