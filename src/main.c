@@ -81,6 +81,7 @@ void handle_error(vrex_context* vrex, docker_result* res) {
 }
 
 Widget interactions_w(struct vrex_context_t* vrex) {
+//	return XtNameToWidget(XtNameToWidget(*(vrex->main_w), "ClipWindow"), "interactions_pane");
 	return XtNameToWidget(*(vrex->main_w), "interactions_pane");
 }
 
@@ -279,7 +280,13 @@ int main(int argc, char *argv[]) {
 	main_w = XtVaCreateManagedWidget("main_w", xmMainWindowWidgetClass,
 			toplevel,
 			XmNcommandWindowLocation, XmCOMMAND_BELOW_WORKSPACE,
+			XmNscrollBarDisplayPolicy, XmAS_NEEDED,
+//INFO: if we uncomment this change interactions_w function accordingly
+// as this creates a new child window called ClipWindow
+//			XmNscrollingPolicy, XmAUTOMATIC,
 			NULL);
+
+	docker_log_debug(XtName(XtParent(main_w)));
 
 	main_form_w = XtVaCreateManagedWidget("main_form_w", xmFormWidgetClass,
 			main_w,
