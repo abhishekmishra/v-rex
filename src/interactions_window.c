@@ -18,6 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <time.h>
 #include <X11/Intrinsic.h>
 #include <Xm/Label.h>
 #include <Xm/PanedW.h>
@@ -31,28 +32,50 @@
 #include "docker_connection_util.h"
 #include "log.h"
 
-vrex_err_t update_response_form(Widget interactions_pane, int http_code,
-		char* msg, char* response_json) {
-	Widget response_form = XtNameToWidget(interactions_pane, "interact_response_form");
+vrex_err_t update_response_form(Widget interactions_pane, time_t response_time,
+		int http_code, char* msg, char* response_json) {
+	struct tm * timeinfo;
+	Widget response_form = XtNameToWidget(interactions_pane,
+			"interact_response_form");
+	timeinfo = localtime(&response_time);
+	char response_time_str[256];
+	sprintf(response_time_str, "%s", asctime(timeinfo));
+	if (response_time_str != NULL) {
+		Widget response_time_text = XtNameToWidget(response_form,
+				"Response Received Text");
+		XtVaSetValues(response_time_text,
+		XmNvalue, response_time_str,
+		NULL);
+	}
+
 	char http_code_str[128];
 	sprintf(http_code_str, "%d", http_code);
-	if(http_code_str != NULL) {
+	if (http_code_str != NULL) {
 		Widget http_code_text = XtNameToWidget(response_form, "HTTP Code Text");
 		XtVaSetValues(http_code_text,
-				XmNvalue, http_code_str,
-				NULL);
+		XmNvalue, http_code_str,
+		NULL);
 	}
-	if(msg != NULL) {
+	if (msg != NULL) {
 		Widget message_text = XtNameToWidget(response_form, "Message Text");
 		XtVaSetValues(message_text,
-				XmNvalue, msg,
-				NULL);
+		XmNvalue, msg,
+		NULL);
 	}
+	if (response_json != NULL) {
+		Widget response_text = XtNameToWidget(response_form, "Response Text");
+		XtVaSetValues(response_text,
+		XmNvalue, response_json,
+		NULL);
+	}
+
 	return VREX_SUCCESS;
 }
 
 vrex_err_t create_resonpse_form(Widget interactions_pane) {
-	Widget http_code_label, http_code_text, message_label, message_text;
+	Widget response_time_label, response_time_text, http_code_label,
+			http_code_text, message_label, message_text, response_label,
+			response_text;
 	Widget response_form = XmCreateForm(interactions_pane,
 			"interact_response_form",
 			NULL, 0);
@@ -61,18 +84,40 @@ vrex_err_t create_resonpse_form(Widget interactions_pane) {
 	XmNpaneMinimum, 300,
 	NULL);
 
-	http_code_label = XtVaCreateManagedWidget("HTTP Code",
+	response_time_label = XtVaCreateManagedWidget("Response Received",
 			xmLabelWidgetClass, response_form,
 			XmNtopAttachment, XmATTACH_FORM,
 			XmNleftAttachment, XmATTACH_FORM,
+			NULL);
+
+	response_time_text = XtVaCreateManagedWidget("Response Received Text",
+			xmTextWidgetClass, response_form,
+			XmNeditable, False,
+			XmNvalue, "-",
+			XmNcolumns, 80,
+			XmNhighlightThickness, 0,
+			XmNleftAttachment, XmATTACH_WIDGET,
+			XmNleftWidget, response_time_label,
+			XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
+			XmNtopWidget, response_time_label,
+			NULL);
+
+	http_code_label = XtVaCreateManagedWidget("HTTP Code", xmLabelWidgetClass,
+			response_form,
+			XmNtopAttachment, XmATTACH_WIDGET,
+			XmNtopWidget, response_time_text,
+			XmNleftAttachment, XmATTACH_OPPOSITE_WIDGET,
+			XmNleftWidget, response_time_label,
 			NULL);
 
 	http_code_text = XtVaCreateManagedWidget("HTTP Code Text",
 			xmTextWidgetClass, response_form,
 			XmNeditable, False,
 			XmNvalue, "-",
+			XmNcolumns, 80,
+			XmNhighlightThickness, 0,
 			XmNleftAttachment, XmATTACH_WIDGET,
-			XmNleftWidget, http_code_label,
+			XmNleftWidget, response_time_label,
 			XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
 			XmNtopWidget, http_code_label,
 			NULL);
@@ -89,14 +134,42 @@ vrex_err_t create_resonpse_form(Widget interactions_pane) {
 			response_form,
 			XmNeditable, False,
 			XmNvalue, "-",
+			XmNcolumns, 80,
+			XmNrows, 2,
+			XmNeditMode, XmMULTI_LINE_EDIT,
+			XmNscrollHorizontal, False,
+			XmNwordWrap, True,
+			XmNhighlightThickness, 0,
 			XmNleftAttachment, XmATTACH_WIDGET,
-			XmNleftWidget, http_code_label,
+			XmNleftWidget, response_time_label,
 			XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
 			XmNtopWidget, message_label,
 			NULL);
 
-	XtManageChild(http_code_label);
-	XtManageChild(http_code_text);
+	response_label = XtVaCreateManagedWidget("Response", xmLabelWidgetClass,
+			response_form,
+			XmNtopAttachment, XmATTACH_WIDGET,
+			XmNtopWidget, message_text,
+			XmNleftAttachment, XmATTACH_OPPOSITE_WIDGET,
+			XmNleftWidget, message_label,
+			NULL);
+
+	response_text = XtVaCreateManagedWidget("Response Text", xmTextWidgetClass,
+			response_form,
+			XmNeditable, False,
+			XmNvalue, "-",
+			XmNcolumns, 80,
+			XmNrows, 10,
+			XmNeditMode, XmMULTI_LINE_EDIT,
+			XmNscrollHorizontal, False,
+			XmNwordWrap, True,
+			XmNhighlightThickness, 0,
+			XmNleftAttachment, XmATTACH_WIDGET,
+			XmNleftWidget, response_time_label,
+			XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
+			XmNtopWidget, response_label,
+			NULL);
+
 	XtManageChild(response_form);
 
 	return VREX_SUCCESS;
@@ -137,13 +210,15 @@ vrex_err_t add_interactions_entry(vrex_context* vrex, docker_result* res) {
 			"interact_list");
 	docker_log_error(XtName(list_w));
 	if (res) {
-		char* url = get_url(res);
+		char* url = get_docker_result_url(res);
 		if (url != NULL && (strlen(url) > 0)) {
 
 			XmString msg = XmStringCreateLocalized(url);
 			XmListAddItem(list_w, msg, 0);
 		}
-		update_response_form(iw, get_http_error(res), get_message(res), NULL);
+		update_response_form(iw, get_docker_result_end_time(res),
+				get_docker_result_http_error(res),
+				get_docker_result_message(res), get_docker_result_response(res));
 	}
 	return VREX_SUCCESS;
 }

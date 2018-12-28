@@ -66,12 +66,12 @@ static String fallback[] = {  "V-Rex*main_w.width:		1024",
 		NULL };
 
 void docker_error_handler_log(docker_result* res) {
-	docker_log_debug("DOCKER_RESULT: For URL: %s", get_url(res));
+	docker_log_debug("DOCKER_RESULT: For URL: %s", get_docker_result_url(res));
 	docker_log_debug(
 			"DOCKER RESULT: Response error_code = %d, http_response = %ld",
-			get_error(res), get_http_error(res));
+			get_docker_result_error(res), get_docker_result_http_error(res));
 	if (!is_ok(res)) {
-		docker_log_error("DOCKER RESULT: %s", get_message(res));
+		docker_log_error("DOCKER RESULT: %s", get_docker_result_message(res));
 	}
 }
 
