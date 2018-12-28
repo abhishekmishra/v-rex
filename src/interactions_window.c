@@ -71,7 +71,8 @@ vrex_err_t update_response_form(Widget interactions_pane, time_t response_time,
 
 	}
 
-	Widget response_text = XtNameToWidget(response_form, "Response Text");
+	Widget response_text = XtNameToWidget(
+			XtNameToWidget(response_form, "Response TextSW"), "Response Text");
 	json_object* response_obj = NULL;
 	if (response_json != NULL) {
 		response_obj = json_tokener_parse(response_json);
@@ -98,7 +99,7 @@ vrex_err_t create_resonpse_form(Widget interactions_pane) {
 			NULL, 0);
 
 	XtVaSetValues(response_form,
-	XmNpaneMinimum, 300,
+	XmNpaneMinimum, 50,
 	NULL);
 
 	response_time_label = XtVaCreateManagedWidget("Response Received",
@@ -176,25 +177,29 @@ vrex_err_t create_resonpse_form(Widget interactions_pane) {
 			XmNleftWidget, message_label,
 			NULL);
 
-	//TODO need to make this a scrolled text widget
-	response_text = XtVaCreateManagedWidget("Response Text", xmTextWidgetClass,
-			response_form,
-			XmNeditable, False,
-			XmNvalue, "-",
-			XmNcolumns, 80,
-			XmNrows, 10,
-			XmNeditMode, XmMULTI_LINE_EDIT,
-			XmNscrollHorizontal, False,
-			XmNscrollVertical, True,
-			XmNcursorPositionVisible, False,
-			XmNwordWrap, True,
-			XmNhighlightThickness, 0,
-			XmNleftAttachment, XmATTACH_WIDGET,
-			XmNleftWidget, response_time_label,
-			XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
-			XmNtopWidget, response_label,
-			NULL);
+	response_text = XmCreateScrolledText(response_form, "Response Text", NULL,
+			0);
+	XtVaSetValues(XtParent(response_text),
+	XmNleftAttachment, XmATTACH_WIDGET,
+	XmNleftWidget, response_time_label,
+	XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
+	XmNtopWidget, response_label,
+	NULL);
 
+	XtVaSetValues(response_text,
+	XmNeditable, False,
+	XmNvalue, "-",
+	XmNcolumns, 80,
+	XmNrows, 10,
+	XmNeditMode, XmMULTI_LINE_EDIT,
+	XmNscrollHorizontal, False,
+	XmNscrollVertical, True,
+	XmNcursorPositionVisible, False,
+	XmNwordWrap, True,
+	XmNhighlightThickness, 0,
+	NULL);
+
+	XtManageChild(response_text);
 	XtManageChild(response_form);
 
 	return VREX_SUCCESS;
