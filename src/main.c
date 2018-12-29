@@ -320,6 +320,13 @@ int main(int argc, char *argv[]) {
 	docker_system_info(ctx, &res, &info);
 	handle_error(vrex, res);
 
+	//TODO: test events call
+	array_list* evts;
+	time_t now = time(NULL);
+	docker_system_events(ctx, &res, &evts, now - 360000, now);
+	handle_error(vrex, res);
+
+
 	XtRealizeWidget(toplevel);
 	XtAppMainLoop(app);
 
