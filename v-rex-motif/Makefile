@@ -1,4 +1,4 @@
-CLD_HOME=../clibdocker
+CLD_HOME=../../clibdocker
 PROGRAMS = v-rex
 SRC_DIR=./src
 OUT_DIR=./bin/release
