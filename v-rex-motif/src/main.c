@@ -18,12 +18,18 @@
 #include <Xm/RowColumn.h>
 #include <Xm/Form.h>
 #include <Xm/MessageB.h>
+#include <Xm/Text.h>
+#include <Xm/TextF.h>
+#include <Xm/LabelG.h>
+#include <Xm/RowColumn.h>
+#include <X11/Xos.h>
 
 #include "docker_connection_util.h"
 #include "docker_system.h"
 #include "vrex_util.h"
 #include "container_list_window.h"
 #include "interactions_window.h"
+#include "docker_server_window.h"
 
 #include <log.h>
 
@@ -33,7 +39,7 @@
 
 //#define VREX_USE_THREADS 0
 
-static String fallback[] = { "V-Rex*main_w.width:		1024",
+static String fallback[] = {  "V-Rex*main_w.width:		1024",
 		"V-Rex*.background:		#000000", "V-Rex*.foreground:		#008080",
 		"V-Rex*.borderColor:		#008080", "V-Rex*.highlightColor:		#008080",
 		"V-Rex*.bottomShadowColor:		#2F4F4F", "V-Rex*.topShadowColor:		#2F4F4F",
@@ -171,7 +177,6 @@ void create_menubar(Widget main_w, vrex_context* vrex) {
 	XmNmenuBar, menu_bar, NULL);
 }
 
-
 void exit_if_no_threads() {
 	if (XInitThreads() != True) {
 		docker_log_error("X could not initialize threads, will exit now.");
@@ -220,12 +225,17 @@ int extract_args_url_connection(int argc, char* url, char* argv[],
 }
 
 int main(int argc, char *argv[]) {
-	Widget toplevel, main_w, matrix_w, main_form_w;
+	Widget toplevel, main_w, matrix_w, main_form_w, docker_server_w;
 	XtAppContext app;
 	docker_context* ctx;
 	vrex_context* vrex;
 	docker_result* res;
 	docker_info* info;
+	Widget text_w, search_w, text_output;
+	Widget rowcol_v, rowcol_h, label_w;
+	int i, n;
+	void search_text(Widget, XtPointer, XtPointer);
+	Arg args[10];
 
 	char* url;
 	int row, column, n_rows, n_columns;
@@ -233,10 +243,14 @@ int main(int argc, char *argv[]) {
 	docker_log_set_level(LOG_DEBUG);
 
 	exit_if_no_threads();
+//
+//	toplevel = XtVaAppInitialize(&app, "V-Rex",
+//	NULL, 0, &argc, argv, fallback,
+//	NULL);
 
-	toplevel = XtVaAppInitialize(&app, "V-Rex",
-	NULL, 0, &argc, argv, fallback,
-	NULL);
+	XtSetLanguageProc(NULL, NULL, NULL);
+	toplevel = XtVaOpenApplication(&app, "V-Rex", NULL, 0, &argc, argv,
+			fallback, sessionShellWidgetClass, NULL);
 
 	connected = extract_args_url_connection(argc, url, argv, &ctx, &res);
 	if (!connected) {
@@ -246,7 +260,6 @@ int main(int argc, char *argv[]) {
 	main_w = XtVaCreateManagedWidget("main_w", xmMainWindowWidgetClass,
 			toplevel,
 			XmNcommandWindowLocation, XmCOMMAND_BELOW_WORKSPACE,
-			XmNscrollBarDisplayPolicy, XmAS_NEEDED,
 //INFO: if we uncomment this change interactions_w function accordingly
 // as this creates a new child window called ClipWindow
 //			XmNscrollingPolicy, XmAUTOMATIC,
@@ -280,10 +293,7 @@ int main(int argc, char *argv[]) {
 	create_menubar(main_w, vrex);
 
 //	make_container_list_window(main_form_w, &matrix_w, vrex);
-
-	//TODO: test info call
-	docker_system_info(ctx, &res, &info);
-	handle_error(vrex, res);
+	make_docker_server_window(vrex, &docker_server_w);
 
 	//TODO: test events call
 	array_list* evts;
