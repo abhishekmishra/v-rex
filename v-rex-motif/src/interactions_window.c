@@ -27,6 +27,7 @@
 #include <Xm/Label.h>
 #include <Xm/Form.h>
 #include <Xm/PushB.h>
+#include <Xm/RowColumn.h>
 
 #include <json-c/json_object.h>
 #include <json-c/json_tokener.h>
@@ -36,7 +37,8 @@
 #include "log.h"
 
 vrex_err_t update_request_form(Widget interactions_pane, time_t request_time,
-		char* method, char* request_json) {
+		char* method, char* request_json, time_t response_time, int http_code,
+		char* msg, char* response_json) {
 	struct tm * timeinfo;
 	Widget request_form = XtNameToWidget(interactions_pane,
 			"interact_request_form");
@@ -79,19 +81,11 @@ vrex_err_t update_request_form(Widget interactions_pane, time_t request_time,
 		NULL);
 	}
 
-	return VREX_SUCCESS;
-}
-
-vrex_err_t update_response_form(Widget interactions_pane, time_t response_time,
-		int http_code, char* msg, char* response_json) {
-	struct tm * timeinfo;
-	Widget response_form = XtNameToWidget(interactions_pane,
-			"interact_response_form");
 	timeinfo = localtime(&response_time);
 	char response_time_str[256];
 	sprintf(response_time_str, "%s", asctime(timeinfo));
 	if (response_time_str != NULL) {
-		Widget response_time_text = XtNameToWidget(response_form,
+		Widget response_time_text = XtNameToWidget(request_form,
 				"Response Received Text");
 		XtVaSetValues(response_time_text,
 		XmNvalue, response_time_str,
@@ -101,25 +95,25 @@ vrex_err_t update_response_form(Widget interactions_pane, time_t response_time,
 	char http_code_str[128];
 	sprintf(http_code_str, "%d", http_code);
 	if (http_code_str != NULL) {
-		Widget http_code_text = XtNameToWidget(response_form, "HTTP Code Text");
+		Widget http_code_text = XtNameToWidget(request_form, "HTTP Code Text");
 		XtVaSetValues(http_code_text,
 		XmNvalue, http_code_str,
 		NULL);
 	}
-	Widget message_text = XtNameToWidget(response_form, "Message Text");
-	if (msg != NULL) {
-		XtVaSetValues(message_text,
-		XmNvalue, msg,
-		NULL);
-	} else {
-		XtVaSetValues(message_text,
-		XmNvalue, "-",
-		NULL);
-
-	}
+//	Widget message_text = XtNameToWidget(request_form, "Message Text");
+//	if (msg != NULL) {
+//		XtVaSetValues(message_text,
+//		XmNvalue, msg,
+//		NULL);
+//	} else {
+//		XtVaSetValues(message_text,
+//		XmNvalue, "-",
+//		NULL);
+//
+//	}
 
 	Widget response_text = XtNameToWidget(
-			XtNameToWidget(response_form, "Response TextSW"), "Response Text");
+			XtNameToWidget(request_form, "Response TextSW"), "Response Text");
 	json_object* response_obj = NULL;
 	if (response_json != NULL) {
 		response_obj = json_tokener_parse(response_json);
@@ -133,29 +127,46 @@ vrex_err_t update_response_form(Widget interactions_pane, time_t response_time,
 		XmNvalue, "-",
 		NULL);
 	}
-
 	return VREX_SUCCESS;
 }
 
-vrex_err_t create_request_form(Widget interactions_pane) {
+//vrex_err_t update_response_form(Widget interactions_pane, time_t response_time,
+//		int http_code, char* msg, char* response_json) {
+//	struct tm * timeinfo;
+//	Widget request_form = XtNameToWidget(interactions_pane,
+//			"interact_response_form");
+//
+//	return VREX_SUCCESS;
+//}
+
+vrex_err_t create_request_response_form(Widget interactions_pane) {
 	Widget request_time_label, request_time_text, http_method_label,
-			http_method_text, message_label, message_text, request_label,
-			request_text;
+			http_method_text, request_label, //message_label, message_text,
+			request_text, response_time_label, response_time_text,
+			http_code_label, http_code_text, response_label, response_text;
 	Widget request_form = XmCreateForm(interactions_pane,
 			"interact_request_form",
 			NULL, 0);
+
+	XtVaSetValues(request_form,
+			XmNwidth, 50,
+			XmNshadowThickness, 0,
+			NULL);
 
 	request_time_label = XtVaCreateManagedWidget("Request Sent",
 			xmLabelWidgetClass, request_form,
 			XmNtopAttachment, XmATTACH_FORM,
 			XmNleftAttachment, XmATTACH_FORM,
+			XmNleftOffset, 10,
+			XmNtopOffset, 2,
+			XmNbottomOffset, 2,
 			NULL);
 
 	request_time_text = XtVaCreateManagedWidget("Request Sent Text",
 			xmTextWidgetClass, request_form,
 			XmNeditable, False,
 			XmNvalue, "-",
-			XmNcolumns, 40,
+			XmNcolumns, 80,
 			XmNhighlightThickness, 0,
 			XmNscrollHorizontal, False,
 			XmNcursorPositionVisible, False,
@@ -177,7 +188,7 @@ vrex_err_t create_request_form(Widget interactions_pane) {
 			xmTextWidgetClass, request_form,
 			XmNeditable, False,
 			XmNvalue, "-",
-			XmNcolumns, 40,
+			XmNcolumns, 80,
 			XmNhighlightThickness, 0,
 			XmNscrollHorizontal, False,
 			XmNcursorPositionVisible, False,
@@ -187,31 +198,6 @@ vrex_err_t create_request_form(Widget interactions_pane) {
 			XmNtopWidget, http_method_label,
 			NULL);
 
-//	message_label = XtVaCreateManagedWidget("Message", xmLabelWidgetClass,
-//			request_form,
-//			XmNtopAttachment, XmATTACH_WIDGET,
-//			XmNtopWidget, http_method_text,
-//			XmNleftAttachment, XmATTACH_OPPOSITE_WIDGET,
-//			XmNleftWidget, http_method_label,
-//			NULL);
-//
-//	message_text = XtVaCreateManagedWidget("Message Text", xmTextWidgetClass,
-//			request_form,
-//			XmNeditable, False,
-//			XmNvalue, "-",
-//			XmNcolumns, 40,
-//			XmNrows, 2,
-//			XmNeditMode, XmMULTI_LINE_EDIT,
-//			XmNscrollHorizontal, False,
-//			XmNwordWrap, True,
-//			XmNcursorPositionVisible, False,
-//			XmNhighlightThickness, 0,
-//			XmNleftAttachment, XmATTACH_WIDGET,
-//			XmNleftWidget, request_time_label,
-//			XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
-//			XmNtopWidget, message_label,
-//			NULL);
-//
 	request_label = XtVaCreateManagedWidget("Request", xmLabelWidgetClass,
 			request_form,
 			XmNtopAttachment, XmATTACH_WIDGET,
@@ -231,7 +217,7 @@ vrex_err_t create_request_form(Widget interactions_pane) {
 	XtVaSetValues(request_text,
 	XmNeditable, False,
 	XmNvalue, "-",
-	XmNcolumns, 40,
+	XmNcolumns, 80,
 	XmNrows, 10,
 	XmNeditMode, XmMULTI_LINE_EDIT,
 	XmNscrollHorizontal, False,
@@ -241,37 +227,22 @@ vrex_err_t create_request_form(Widget interactions_pane) {
 	XmNhighlightThickness, 0,
 	NULL);
 
-	XtManageChild(request_text);
-	XtManageChild(request_form);
-
-//	XtWidgetGeometry size;
-//	size.request_mode = CWHeight;
-//	XtQueryGeometry(request_form, NULL, &size);
-//	XtVaSetValues(request_form, XmNpaneMaximum, size.height,
-//	XmNpaneMinimum, size.height, NULL);
-//
-	return VREX_SUCCESS;
-}
-
-vrex_err_t create_response_form(Widget interactions_pane) {
-	Widget response_time_label, response_time_text, http_code_label,
-			http_code_text, message_label, message_text, response_label,
-			response_text;
-	Widget response_form = XmCreateForm(interactions_pane,
-			"interact_response_form",
-			NULL, 0);
-
 	response_time_label = XtVaCreateManagedWidget("Response Received",
-			xmLabelWidgetClass, response_form,
-			XmNtopAttachment, XmATTACH_FORM,
-			XmNleftAttachment, XmATTACH_FORM,
+			xmLabelWidgetClass, request_form,
+			XmNleftAttachment, XmATTACH_WIDGET,
+			XmNleftWidget, request_text,
+			XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
+			XmNtopWidget, request_time_label,
+			XmNleftOffset, 10,
+			XmNtopOffset, 2,
+			XmNbottomOffset, 2,
 			NULL);
 
 	response_time_text = XtVaCreateManagedWidget("Response Received Text",
-			xmTextWidgetClass, response_form,
+			xmTextWidgetClass, request_form,
 			XmNeditable, False,
 			XmNvalue, "-",
-			XmNcolumns, 40,
+			XmNcolumns, 80,
 			XmNhighlightThickness, 0,
 			XmNscrollHorizontal, False,
 			XmNcursorPositionVisible, False,
@@ -282,7 +253,7 @@ vrex_err_t create_response_form(Widget interactions_pane) {
 			NULL);
 
 	http_code_label = XtVaCreateManagedWidget("HTTP Code", xmLabelWidgetClass,
-			response_form,
+			request_form,
 			XmNtopAttachment, XmATTACH_WIDGET,
 			XmNtopWidget, response_time_text,
 			XmNleftAttachment, XmATTACH_OPPOSITE_WIDGET,
@@ -290,10 +261,10 @@ vrex_err_t create_response_form(Widget interactions_pane) {
 			NULL);
 
 	http_code_text = XtVaCreateManagedWidget("HTTP Code Text",
-			xmTextWidgetClass, response_form,
+			xmTextWidgetClass, request_form,
 			XmNeditable, False,
 			XmNvalue, "-",
-			XmNcolumns, 40,
+			XmNcolumns, 80,
 			XmNhighlightThickness, 0,
 			XmNscrollHorizontal, False,
 			XmNcursorPositionVisible, False,
@@ -303,40 +274,40 @@ vrex_err_t create_response_form(Widget interactions_pane) {
 			XmNtopWidget, http_code_label,
 			NULL);
 
-	message_label = XtVaCreateManagedWidget("Message", xmLabelWidgetClass,
-			response_form,
+//	message_label = XtVaCreateManagedWidget("Message", xmLabelWidgetClass,
+//			request_form,
+//			XmNtopAttachment, XmATTACH_WIDGET,
+//			XmNtopWidget, http_code_text,
+//			XmNleftAttachment, XmATTACH_OPPOSITE_WIDGET,
+//			XmNleftWidget, http_code_label,
+//			NULL);
+//
+//	message_text = XtVaCreateManagedWidget("Message Text", xmTextWidgetClass,
+//			request_form,
+//			XmNeditable, False,
+//			XmNvalue, "-",
+//			XmNcolumns, 80,
+//			XmNrows, 2,
+//			XmNeditMode, XmMULTI_LINE_EDIT,
+//			XmNscrollHorizontal, False,
+//			XmNwordWrap, True,
+//			XmNcursorPositionVisible, False,
+//			XmNhighlightThickness, 0,
+//			XmNleftAttachment, XmATTACH_WIDGET,
+//			XmNleftWidget, response_time_label,
+//			XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
+//			XmNtopWidget, message_label,
+//			NULL);
+
+	response_label = XtVaCreateManagedWidget("Response", xmLabelWidgetClass,
+			request_form,
 			XmNtopAttachment, XmATTACH_WIDGET,
 			XmNtopWidget, http_code_text,
 			XmNleftAttachment, XmATTACH_OPPOSITE_WIDGET,
 			XmNleftWidget, http_code_label,
 			NULL);
 
-	message_text = XtVaCreateManagedWidget("Message Text", xmTextWidgetClass,
-			response_form,
-			XmNeditable, False,
-			XmNvalue, "-",
-			XmNcolumns, 40,
-			XmNrows, 2,
-			XmNeditMode, XmMULTI_LINE_EDIT,
-			XmNscrollHorizontal, False,
-			XmNwordWrap, True,
-			XmNcursorPositionVisible, False,
-			XmNhighlightThickness, 0,
-			XmNleftAttachment, XmATTACH_WIDGET,
-			XmNleftWidget, response_time_label,
-			XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
-			XmNtopWidget, message_label,
-			NULL);
-
-	response_label = XtVaCreateManagedWidget("Response", xmLabelWidgetClass,
-			response_form,
-			XmNtopAttachment, XmATTACH_WIDGET,
-			XmNtopWidget, message_text,
-			XmNleftAttachment, XmATTACH_OPPOSITE_WIDGET,
-			XmNleftWidget, message_label,
-			NULL);
-
-	response_text = XmCreateScrolledText(response_form, "Response Text", NULL,
+	response_text = XmCreateScrolledText(request_form, "Response Text", NULL,
 			0);
 	XtVaSetValues(XtParent(response_text),
 	XmNleftAttachment, XmATTACH_WIDGET,
@@ -348,7 +319,7 @@ vrex_err_t create_response_form(Widget interactions_pane) {
 	XtVaSetValues(response_text,
 	XmNeditable, False,
 	XmNvalue, "-",
-	XmNcolumns, 40,
+	XmNcolumns, 80,
 	XmNrows, 10,
 	XmNeditMode, XmMULTI_LINE_EDIT,
 	XmNscrollHorizontal, False,
@@ -359,14 +330,10 @@ vrex_err_t create_response_form(Widget interactions_pane) {
 	NULL);
 
 	XtManageChild(response_text);
-	XtManageChild(response_form);
+	XtManageChild(request_text);
 
-//	XtWidgetGeometry size;
-//	size.request_mode = CWHeight;
-//	XtQueryGeometry(response_form, NULL, &size);
-//	XtVaSetValues(response_form, XmNpaneMaximum, size.height,
-//	XmNpaneMinimum, size.height, NULL);
-//
+	XtManageChild(request_form);
+
 	return VREX_SUCCESS;
 }
 
@@ -379,46 +346,45 @@ void sel_callback(Widget list_w, XtPointer client_data, XtPointer call_data) {
 	docker_result* res = results_list_get_idx(vrex,
 			results_list_length(vrex) - cbs->item_position);
 
-	update_response_form(XtParent(XtParent(list_w)),
-			get_docker_result_end_time(res), get_docker_result_http_error(res),
-			get_docker_result_message(res), get_docker_result_response(res));
 	update_request_form(XtParent(XtParent(list_w)),
 			get_docker_result_start_time(res),
-			get_docker_result_http_method(res), get_docker_result_request(res));
+			get_docker_result_http_method(res), get_docker_result_request(res),
+			get_docker_result_end_time(res), get_docker_result_http_error(res),
+			get_docker_result_message(res), get_docker_result_response(res));
 }
 
 vrex_err_t make_interactions_window(vrex_context* vrex) {
 	Widget list_w, child;
 	XtWidgetGeometry size;
 
-	Widget iw = XmVaCreatePanedWindow(*(vrex->main_w), "interactions_pane",
-	XmNorientation, XmHORIZONTAL,
+//	Widget iw = XmVaCreatePanedWindow(*(vrex->main_w), "interactions_pane",
+//	XmNorientation, XmHORIZONTAL,
+//	NULL);
+
+	Widget iw = XmCreateRowColumn(*(vrex->main_w), "interactions_pane", NULL,
+			0);
+	XtVaSetValues(iw, XmNpacking, XmPACK_TIGHT,
+	XmNnumColumns, 1,
+	XmNnumRows, 2,
+	XmNorientation, XmVERTICAL,
 	NULL);
 
-	docker_log_debug("parent of interactions window is %s", XtName(XtParent(iw)));
+	docker_log_debug("parent of interactions window is %s",
+			XtName(XtParent(iw)));
 
 	/* Create the ScrolledList */
 	list_w = XmCreateScrolledList(iw, "interact_list", NULL, 0);
 	/* set the items, the item count, and the visible items */
 	XtVaSetValues(list_w,
-	XmNvisibleItemCount, 10,
+	XmNvisibleItemCount, 5,
+	XmNwidth, 50,
 	NULL);
 	XtManageChild(list_w);
-
-	size.request_mode = CWHeight;
-	XtQueryGeometry(list_w, NULL, &size);
-	XtVaSetValues(list_w, XmNpaneMaximum, size.height,
-	XmNpaneMinimum, size.height, NULL);
 
 	/**
 	 * Create the Request Form
 	 */
-	create_request_form(iw);
-
-	/**
-	 * Create the Response Form
-	 */
-	create_response_form(iw);
+	create_request_response_form(iw);
 
 	/* Convenience routines don't create managed children */
 	XtManageChild(iw);

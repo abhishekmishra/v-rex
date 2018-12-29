@@ -34,8 +34,10 @@
 //#define VREX_USE_THREADS 0
 
 static String fallback[] = { "V-Rex*main_w.width:		1024",
-		"V-Rex*.background:		#A9A9A9", "V-Rex*.foreground:		#000000",
-		"V-Rex*main_w.height:		768",
+		"V-Rex*.background:		#000000", "V-Rex*.foreground:		#008080",
+		"V-Rex*.borderColor:		#008080", "V-Rex*.highlightColor:		#008080",
+		"V-Rex*.bottomShadowColor:		#2F4F4F", "V-Rex*.topShadowColor:		#2F4F4F",
+		"V-Rex*.shadowThickness: 1", "V-Rex*main_w.height:		768",
 //		"V-Rex*mw.shadowType:		SHADOW_ETCHED_OUT",
 //		"V-Rex*mw.shadowThickness:		1", "V-Rex*mw.cellShadowThickness:	1",
 //		"V-Rex*mw.gridType:		GRID_CELL_LINE",
@@ -58,8 +60,8 @@ static String fallback[] = { "V-Rex*main_w.width:		1024",
 //				"V-Rex*mw.columnLabels:		Zero, One, Two, Three, Four,"
 //						"					Five, Six, Seven, Eight, Nine",
 //				"V-Rex*mw.rowLabels:		0, 1, 2, 3, 4, 5, 6, 7, 8, 9",
-		"V-Rex*mw.fontList: -*-lucida-medium-r-*-*-14-*-*-*-*-*-*-*",
-		"V-Rex*mw.labelFont: -*-lucida-bold-r-*-*-14-*-*-*-*-*-*-*",
+		"V-Rex*fontList: -*-terminus-medium-r-*-*-12-*-*-*-*-*-*-*",
+		"V-Rex*labelFont: -*-lucida-bold-r-*-*-12-*-*-*-*-*-*-*",
 //		"V-Rex*mw.cellShadowThickness:		0", "V-Rex*mw.textShadowThickness:		0",
 //		"V-Rex*mw.cellHighlightThickness:		2", "V-Rex*mw.cellMarginHeight:		0",
 //		"V-Rex*mw.cellMarginWidth:		1",
@@ -165,47 +167,10 @@ void create_menubar(Widget main_w, vrex_context* vrex) {
 	XtAddCallback(docker_version, XmNactivateCallback, docker_version_show,
 			vrex);
 
-//	/* create help widget + callback */
-//
-//	help = XtVaCreateManagedWidget("Help", xmCascadeButtonWidgetClass, menu_bar,
-//	XmNmnemonic, 'H',
-//	NULL);
-//
-//	XtAddCallback(help, XmNactivateCallback, help_call, NULL);
-//
-//	/* Tell the menubar which button is the help menu  */
-//
-//	XtSetArg(arg[0], XmNmenuHelpWidget, help);
-//	XtSetValues(menu_bar, arg, 1);
 	XtVaSetValues(main_w,
 	XmNmenuBar, menu_bar, NULL);
 }
 
-//void create_toolbar(Widget main_w, vrex_context* vrex) {
-//	Widget toolbar, refreshButton, showRunningButton, showAllButton;
-//	toolbar = XtVaCreateManagedWidget("toolbar", xmRowColumnWidgetClass, main_w,
-//	XmNorientation, XmHORIZONTAL,
-//	NULL);
-//
-//	XtManageChild(toolbar);
-//	refreshButton = XtVaCreateManagedWidget("Refresh", xmPushButtonWidgetClass,
-//			toolbar, NULL);
-//	XtManageChild(refreshButton);
-//
-//	XtAddCallback(refreshButton, XmNactivateCallback, refresh_call, vrex);
-//
-//	showRunningButton = XtVaCreateManagedWidget("Show Running",
-//			xmPushButtonWidgetClass, toolbar,
-//			NULL);
-//
-//	showAllButton = XtVaCreateManagedWidget("Show All", xmPushButtonWidgetClass,
-//			toolbar,
-//			NULL);
-//
-////	XtVaSetValues(main_w,
-////	XmNcommandWindow, toolbar,
-////	NULL);
-//}
 
 void exit_if_no_threads() {
 	if (XInitThreads() != True) {
@@ -314,7 +279,7 @@ int main(int argc, char *argv[]) {
 
 	create_menubar(main_w, vrex);
 
-	make_container_list_window(main_form_w, &matrix_w, vrex);
+//	make_container_list_window(main_form_w, &matrix_w, vrex);
 
 	//TODO: test info call
 	docker_system_info(ctx, &res, &info);
@@ -325,7 +290,6 @@ int main(int argc, char *argv[]) {
 	time_t now = time(NULL);
 	docker_system_events(ctx, &res, &evts, now - 360000, now);
 	handle_error(vrex, res);
-
 
 	XtRealizeWidget(toplevel);
 	XtAppMainLoop(app);
