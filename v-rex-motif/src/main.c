@@ -42,7 +42,7 @@
 //#define VREX_USE_THREADS 0
 
 static String fallback[] =
-		{  "V-Rex*main_w.width:		1024", "V-Rex*main_w.height:		768",
+		{ "V-Rex*main_w.width:		1024", "V-Rex*main_w.height:		768",
 				"V-Rex*main_w.borderWidth:		0",
 				"V-Rex*main_w.shadowThickness:		0",
 				"V-Rex*.background:		#DCDCDC", "V-Rex*.foreground:		#000000",
@@ -50,6 +50,8 @@ static String fallback[] =
 				"V-Rex*.highlightColor:		#008080",
 				"V-Rex*.bottomShadowColor:		#696969",
 				"V-Rex*.topShadowColor:		#696969", "V-Rex*.shadowThickness: 1",
+				"V-Rex*.selectColor: #B0E0E6", "V-Rex*.unselectColor: #FFFFFF",
+
 //		"V-Rex*mw.shadowType:		SHADOW_ETCHED_OUT",
 //		"V-Rex*mw.shadowThickness:		1", "V-Rex*mw.cellShadowThickness:	1",
 //		"V-Rex*mw.gridType:		GRID_CELL_LINE",
@@ -79,7 +81,7 @@ static String fallback[] =
 //UTF-8 font	"V-Rex*fontList: terminus-12",
 				"V-Rex*fontList: -*-terminus-medium-r-*-*-12-*-*-*-*-*-*-*",
 				"V-Rex*labelFont: -*-lucida-bold-r-*-*-12-*-*-*-*-*-*-*",
-				"V-Rex*docker_server_summary_text.fontList: -*-terminus-bold-r-*-*-16-*-*-*-*-*-*-*",
+				"V-Rex*docker_server_summary_text.fontList: -*-terminus-bold-r-*-*-12-*-*-*-*-*-*-*",
 //		"V-Rex*mw.cellShadowThickness:		0", "V-Rex*mw.textShadowThickness:		0",
 //		"V-Rex*mw.cellHighlightThickness:		2", "V-Rex*mw.cellMarginHeight:		0",
 //		"V-Rex*mw.cellMarginWidth:		1",
@@ -165,7 +167,7 @@ void docker_version_show(Widget widget, XtPointer client_data,
 
 void create_docker_server_toolbar(Widget docker_server_w, vrex_context* vrex) {
 	Widget docker_server_toolbar, runningToggleButton, refreshButton;
-	docker_server_toolbar = XtVaCreateManagedWidget("docker_server_toolbar",
+	docker_server_toolbar = XtVaCreateManagedWidget("toolbar_w",
 			xmRowColumnWidgetClass, docker_server_w,
 			XmNorientation, XmHORIZONTAL,
 			XmNtopAttachment, XmATTACH_POSITION,
@@ -178,31 +180,30 @@ void create_docker_server_toolbar(Widget docker_server_w, vrex_context* vrex) {
 			XmNrightPosition, 2,
 			NULL);
 
-	refreshButton = XtVaCreateManagedWidget("Server Prune", xmPushButtonWidgetClass,
-			docker_server_toolbar, NULL);
+	refreshButton = XtVaCreateManagedWidget("Server Prune",
+			xmPushButtonWidgetClass, docker_server_toolbar, NULL);
 //	XtVaSetValues(refreshButton, XmNlabelString, XmStringCreate("Sample Text \u0410\u0411\u0412\u0413\u0414\u0415\u0401 █ это - кошка: Prune", "UTF-8"), NULL);
 	XtManageChild(refreshButton);
 
-	refreshButton = XtVaCreateManagedWidget("Pull Image", xmPushButtonWidgetClass,
-			docker_server_toolbar, NULL);
+	refreshButton = XtVaCreateManagedWidget("Pull Image",
+			xmPushButtonWidgetClass, docker_server_toolbar, NULL);
 	XtManageChild(refreshButton);
 
-	refreshButton = XtVaCreateManagedWidget("Run Container", xmPushButtonWidgetClass,
-			docker_server_toolbar, NULL);
+	refreshButton = XtVaCreateManagedWidget("Run Container",
+			xmPushButtonWidgetClass, docker_server_toolbar, NULL);
 	XtManageChild(refreshButton);
 
-	runningToggleButton = XtVaCreateManagedWidget("Show Running",
-			xmToggleButtonWidgetClass, docker_server_toolbar,
-			XmNset, XmSET,
-			XmNselectColor, 0x00FF00,
-			XmNunselectColor, 0xFFFFFF,
-			NULL);
+//	runningToggleButton = XtVaCreateManagedWidget("Show Running",
+//			xmToggleButtonWidgetClass, docker_server_toolbar,
+//			XmNset, XmSET,
+//			NULL);
 //	XtAddCallback(runningToggleButton, XmNvalueChangedCallback,
 //			show_running_callback, vrex->d_ctx);
 
-	refreshButton = XtVaCreateManagedWidget("Refresh", xmPushButtonWidgetClass,
-			docker_server_toolbar, NULL);
-	XtManageChild(refreshButton);
+//	refreshButton = XtVaCreateManagedWidget("Refresh", xmPushButtonWidgetClass,
+//			docker_server_toolbar, NULL);
+//
+//	XtManageChild(refreshButton);
 
 //	XtAddCallback(refreshButton, XmNactivateCallback, refresh_call, vrex);
 
@@ -328,6 +329,8 @@ int main(int argc, char *argv[]) {
 	XtSetLanguageProc(NULL, NULL, NULL);
 	toplevel = XtVaOpenApplication(&app, "V-Rex", NULL, 0, &argc, argv,
 			fallback, sessionShellWidgetClass, NULL);
+//	toplevel = XtVaOpenApplication(&app, "V-Rex", NULL, 0, &argc, argv,
+//			NULL, sessionShellWidgetClass, NULL);
 
 	connected = extract_args_url_connection(argc, url, argv, &ctx, &res);
 	if (!connected) {
@@ -364,8 +367,8 @@ int main(int argc, char *argv[]) {
 
 	create_menubar(main_w, vrex);
 
-//	make_container_list_window(main_form_w, &matrix_w, vrex);
 	make_docker_server_window(vrex, &docker_server_w);
+	make_container_list_window(docker_server_w, &matrix_w, vrex);
 
 	XtRealizeWidget(toplevel);
 	XtAppMainLoop(app);

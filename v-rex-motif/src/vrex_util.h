@@ -50,4 +50,8 @@ vrex_err_t results_list_add(vrex_context* vrex, docker_result* res);
 int results_list_length(vrex_context* vrex);
 docker_result* results_list_get_idx(vrex_context* vrex, int i);
 
+Widget get_toolbar_w(vrex_context* vrex);
+
+Widget get_container_list_w(vrex_context* vrex);
+
 #endif /* SRC_VREX_UTIL_H_ */

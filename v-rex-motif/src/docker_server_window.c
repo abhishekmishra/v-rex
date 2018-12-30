@@ -54,19 +54,19 @@ void create_summary_scrolled_text(Widget* dst, Widget docker_server_w) {
 	n++;
 	XtSetArg(args[n], XmNtopAttachment, XmATTACH_POSITION);
 	n++;
-	XtSetArg(args[n], XmNtopPosition, 2);
+	XtSetArg(args[n], XmNtopPosition, 0);
 	n++;
 	XtSetArg(args[n], XmNleftAttachment, XmATTACH_POSITION);
 	n++;
-	XtSetArg(args[n], XmNleftPosition, 2);
+	XtSetArg(args[n], XmNleftPosition, 0);
 	n++;
 	XtSetArg(args[n], XmNrightAttachment, XmATTACH_POSITION);
 	n++;
-	XtSetArg(args[n], XmNrightPosition, 70);
+	XtSetArg(args[n], XmNrightPosition, 100);
 	n++;
 	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_POSITION);
 	n++;
-	XtSetArg(args[n], XmNbottomPosition, 100);
+	XtSetArg(args[n], XmNbottomPosition, 10);
 	n++;
 	Widget docker_summary_text = XmCreateScrolledText(docker_server_w,
 			"docker_server_summary_text", args, n);
@@ -130,7 +130,7 @@ void create_events_table(Widget* events_table, Widget docker_server_w) {
 //			XmNtopAttachment, XmATTACH_FORM,
 //			XmNrightAttachment, XmATTACH_FORM,
 			XmNtopAttachment, XmATTACH_POSITION,
-			XmNtopPosition, 0,
+			XmNtopPosition, 10,
 			XmNleftAttachment, XmATTACH_POSITION,
 			XmNleftPosition, 70,
 			XmNbottomAttachment, XmATTACH_POSITION,
@@ -149,7 +149,7 @@ vrex_err_t make_docker_server_window(vrex_context* vrex, Widget* server_w) {
 	n = 0;
 	XtSetArg(args[n], XmNshadowType, XmSHADOW_OUT);
 	n++;
-	docker_server_frame = XmCreateFrame(*(vrex->main_w), "docker_server_frame",
+	docker_server_frame = XmCreateFrame(*(vrex->main_w), "docker_server_frame_w",
 			args, n);
 	XtVaSetValues(*(vrex->main_w), XmNworkWindow, docker_server_frame,
 	NULL);
@@ -162,7 +162,7 @@ vrex_err_t make_docker_server_window(vrex_context* vrex, Widget* server_w) {
 	label = XmCreateLabelGadget(docker_server_frame, "Docker Server Summary",
 			args, n);
 
-	Widget docker_server_w = XtVaCreateManagedWidget("docker_server",
+	Widget docker_server_w = XtVaCreateManagedWidget("docker_server_w",
 			xmFormWidgetClass, docker_server_frame,
 			XmNborderWidth, 0,
 			XmNshadowThickness, 0,
@@ -176,7 +176,7 @@ vrex_err_t make_docker_server_window(vrex_context* vrex, Widget* server_w) {
 
 	char* summary = (char*) calloc(1024, sizeof(char));
 	sprintf(summary,
-			"Server: %s\nCPU: %d, Memtotal: %lu\nContainers: %lu (Running: %lu, Paused: %lu, Stopped: %lu)\nImages: %lu",
+			"| Server: %s | CPU: %d | Memtotal: %lu | Containers: %lu (Running: %lu, Paused: %lu, Stopped: %lu) | Images: %lu |",
 			info->name, docker_info_get_ncpu(info),
 			docker_info_get_memtotal(info), info->containers,
 			info->containers_running, info->containers_paused,
@@ -196,5 +196,6 @@ vrex_err_t make_docker_server_window(vrex_context* vrex, Widget* server_w) {
 
 	XtManageChild(label);
 	XtManageChild(docker_server_frame);
+	(*server_w) = docker_server_w;
 	return VREX_SUCCESS;
 }
