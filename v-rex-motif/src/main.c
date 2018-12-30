@@ -295,12 +295,6 @@ int main(int argc, char *argv[]) {
 //	make_container_list_window(main_form_w, &matrix_w, vrex);
 	make_docker_server_window(vrex, &docker_server_w);
 
-	//TODO: test events call
-	array_list* evts;
-	time_t now = time(NULL);
-	docker_system_events(ctx, &res, &evts, now - 360000, now);
-	handle_error(vrex, res);
-
 	XtRealizeWidget(toplevel);
 	XtAppMainLoop(app);
 
