@@ -26,6 +26,8 @@
 #include <Xm/Form.h>
 #include <Xm/LabelG.h>
 #include <Xm/Frame.h>
+#include <Xm/PushB.h>
+#include <Xm/ToggleB.h>
 #include <X11/Xos.h>
 #include <XmHTML/XmHTML.h>
 #include "docker_server_window.h"
@@ -34,7 +36,7 @@
 
 void create_summary_scrolled_text(Widget* dst, Widget docker_server_w) {
 	int n;
-	Arg args[10];
+	Arg args[20];
 	n = 0;
 	XtSetArg(args[n], XmNrows, 25);
 	n++;
@@ -50,6 +52,22 @@ void create_summary_scrolled_text(Widget* dst, Widget docker_server_w) {
 	n++;
 	XtSetArg(args[n], XmNeditable, False);
 	n++;
+	XtSetArg(args[n], XmNtopAttachment, XmATTACH_POSITION);
+	n++;
+	XtSetArg(args[n], XmNtopPosition, 2);
+	n++;
+	XtSetArg(args[n], XmNleftAttachment, XmATTACH_POSITION);
+	n++;
+	XtSetArg(args[n], XmNleftPosition, 2);
+	n++;
+	XtSetArg(args[n], XmNrightAttachment, XmATTACH_POSITION);
+	n++;
+	XtSetArg(args[n], XmNrightPosition, 70);
+	n++;
+	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_POSITION);
+	n++;
+	XtSetArg(args[n], XmNbottomPosition, 100);
+	n++;
 	Widget docker_summary_text = XmCreateScrolledText(docker_server_w,
 			"docker_server_summary_text", args, n);
 	XtManageChild(docker_summary_text);
@@ -58,13 +76,9 @@ void create_summary_scrolled_text(Widget* dst, Widget docker_server_w) {
 	XmNcursorPositionVisible, False,
 	XmNhighlightThickness, 0,
 	XmNshadowThickness, 0,
-	XmNtopAttachment, XmATTACH_FORM,
-	XmNleftAttachment, XmATTACH_FORM,
-	XmNleftOffset, 2,
-	XmNtopOffset, 2,
-	XmNbottomOffset, 2,
-	NULL);
+			NULL);
 	XtManageChild(docker_server_w);
+
 	(*dst) = docker_summary_text;
 }
 
@@ -107,14 +121,22 @@ void create_events_table(Widget* events_table, Widget docker_server_w) {
 	Widget docker_summary = XtNameToWidget(docker_server_w,
 			"docker_server_summary_textSW");
 	(*events_table) = XtVaCreateManagedWidget("events_table", xmHTMLWidgetClass,
-			docker_server_w, XmNmarginWidth, 2, XmNmarginHeight, 2, XmNwidth,
+			docker_server_w, XmNmarginWidth, 0, XmNmarginHeight, 0, XmNwidth,
 			300, XmNheight, 500,
 //			XmNleftAttachment, XmATTACH_WIDGET,
 //			XmNleftWidget, docker_summary,
 //			XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
 //			XmNtopWidget, docker_summary,
-			XmNtopAttachment, XmATTACH_FORM,
-			XmNrightAttachment, XmATTACH_FORM,
+//			XmNtopAttachment, XmATTACH_FORM,
+//			XmNrightAttachment, XmATTACH_FORM,
+			XmNtopAttachment, XmATTACH_POSITION,
+			XmNtopPosition, 0,
+			XmNleftAttachment, XmATTACH_POSITION,
+			XmNleftPosition, 70,
+			XmNbottomAttachment, XmATTACH_POSITION,
+			XmNbottomPosition, 100,
+			XmNrightAttachment, XmATTACH_POSITION,
+			XmNrightPosition, 100,
 			NULL);
 }
 
@@ -144,6 +166,7 @@ vrex_err_t make_docker_server_window(vrex_context* vrex, Widget* server_w) {
 			xmFormWidgetClass, docker_server_frame,
 			XmNborderWidth, 0,
 			XmNshadowThickness, 0,
+			XmNfractionBase, 100,
 			NULL);
 
 	docker_result* res;
@@ -168,6 +191,9 @@ vrex_err_t make_docker_server_window(vrex_context* vrex, Widget* server_w) {
 	create_events_table(&events_table, docker_server_w);
 
 	updated_events_table(events_table, vrex, res);
+
+//	create_docker_server_toolbar(docker_server_w, vrex);
+
 	XtManageChild(label);
 	XtManageChild(docker_server_frame);
 	return VREX_SUCCESS;

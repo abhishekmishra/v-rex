@@ -365,9 +365,6 @@ vrex_err_t create_request_response_form(Widget interactions_pane) {
 void sel_callback(Widget list_w, XtPointer client_data, XtPointer call_data) {
 	XmListCallbackStruct *cbs = (XmListCallbackStruct *) call_data;
 	vrex_context* vrex = (vrex_context *) client_data;
-//	docker_log_debug("result len %d, selection pos %d, pos in list %d",
-//			results_list_length(vrex), cbs->item_position,
-//			results_list_length(vrex) - cbs->item_position);
 	docker_result* res = results_list_get_idx(vrex,
 			results_list_length(vrex) - cbs->item_position);
 
@@ -440,10 +437,8 @@ void MakePosVisible(Widget list_w, int item_no) {
 vrex_err_t add_interactions_entry(vrex_context* vrex, docker_result* res) {
 	results_list_add(vrex, res);
 	Widget iw = vrex->interactions_w(vrex);
-	docker_log_error(XtName(iw));
 	Widget list_w = XtNameToWidget(XtNameToWidget(iw, "interact_listSW"),
 			"interact_list");
-	docker_log_error(XtName(list_w));
 	if (res) {
 		char* url = get_docker_result_url(res);
 		if (url != NULL && (strlen(url) > 0)) {

@@ -15,6 +15,7 @@
 #include <Xbae/Matrix.h>
 #include <Xm/CascadeB.h>
 #include <Xm/PushB.h>
+#include <Xm/ToggleB.h>
 #include <Xm/RowColumn.h>
 #include <Xm/Form.h>
 #include <Xm/MessageB.h>
@@ -22,6 +23,7 @@
 #include <Xm/TextF.h>
 #include <Xm/LabelG.h>
 #include <Xm/RowColumn.h>
+#include <Xm/Frame.h>
 #include <X11/Xos.h>
 
 #include "docker_connection_util.h"
@@ -39,12 +41,15 @@
 
 //#define VREX_USE_THREADS 0
 
-static String fallback[] = { "V-Rex*main_w.width:		1024",
-		"V-Rex*main_w.height:		768", "V-Rex*main_w.borderWidth:		0",
-		"V-Rex*main_w.shadowThickness:		0", "V-Rex*.background:		#DCDCDC",
-		"V-Rex*.foreground:		#000000", "V-Rex*.borderColor:		#A9A9A9",
-		"V-Rex*.highlightColor:		#008080", "V-Rex*.bottomShadowColor:		#696969",
-		"V-Rex*.topShadowColor:		#696969", "V-Rex*.shadowThickness: 1",
+static String fallback[] =
+		{  "V-Rex*main_w.width:		1024", "V-Rex*main_w.height:		768",
+				"V-Rex*main_w.borderWidth:		0",
+				"V-Rex*main_w.shadowThickness:		0",
+				"V-Rex*.background:		#DCDCDC", "V-Rex*.foreground:		#000000",
+				"V-Rex*.borderColor:		#A9A9A9",
+				"V-Rex*.highlightColor:		#008080",
+				"V-Rex*.bottomShadowColor:		#696969",
+				"V-Rex*.topShadowColor:		#696969", "V-Rex*.shadowThickness: 1",
 //		"V-Rex*mw.shadowType:		SHADOW_ETCHED_OUT",
 //		"V-Rex*mw.shadowThickness:		1", "V-Rex*mw.cellShadowThickness:	1",
 //		"V-Rex*mw.gridType:		GRID_CELL_LINE",
@@ -67,13 +72,18 @@ static String fallback[] = { "V-Rex*main_w.width:		1024",
 //				"V-Rex*mw.columnLabels:		Zero, One, Two, Three, Four,"
 //						"					Five, Six, Seven, Eight, Nine",
 //				"V-Rex*mw.rowLabels:		0, 1, 2, 3, 4, 5, 6, 7, 8, 9",
-		"V-Rex*fontList: -*-terminus-medium-r-*-*-12-*-*-*-*-*-*-*",
-		"V-Rex*labelFont: -*-lucida-bold-r-*-*-12-*-*-*-*-*-*-*",
-		"V-Rex*docker_server_summary_text.fontList: -*-terminus-bold-r-*-*-16-*-*-*-*-*-*-*",
+
+//TODO: see https://gist.github.com/unix-junkie/68bdf8420d6c7b7925f4
+// and https://stackoverflow.com/questions/34360066/xmstringgenerate-in-xmmultibyte-text-or-xmwidechar-text-mode
+// for UTF-8
+//UTF-8 font	"V-Rex*fontList: terminus-12",
+				"V-Rex*fontList: -*-terminus-medium-r-*-*-12-*-*-*-*-*-*-*",
+				"V-Rex*labelFont: -*-lucida-bold-r-*-*-12-*-*-*-*-*-*-*",
+				"V-Rex*docker_server_summary_text.fontList: -*-terminus-bold-r-*-*-16-*-*-*-*-*-*-*",
 //		"V-Rex*mw.cellShadowThickness:		0", "V-Rex*mw.textShadowThickness:		0",
 //		"V-Rex*mw.cellHighlightThickness:		2", "V-Rex*mw.cellMarginHeight:		0",
 //		"V-Rex*mw.cellMarginWidth:		1",
-		NULL };
+				NULL };
 
 void docker_error_handler_log(docker_result* res) {
 	docker_log_debug("DOCKER_RESULT: For URL: %s", get_docker_result_url(res));
@@ -153,11 +163,73 @@ void docker_version_show(Widget widget, XtPointer client_data,
 	XmStringFree(xms);
 }
 
+void create_docker_server_toolbar(Widget docker_server_w, vrex_context* vrex) {
+	Widget docker_server_toolbar, runningToggleButton, refreshButton;
+	docker_server_toolbar = XtVaCreateManagedWidget("docker_server_toolbar",
+			xmRowColumnWidgetClass, docker_server_w,
+			XmNorientation, XmHORIZONTAL,
+			XmNtopAttachment, XmATTACH_POSITION,
+			XmNtopPosition, 1,
+			XmNleftAttachment, XmATTACH_POSITION,
+			XmNleftPosition, 0,
+			XmNbottomAttachment, XmATTACH_POSITION,
+			XmNbottomPosition, 2,
+			XmNrightAttachment, XmATTACH_POSITION,
+			XmNrightPosition, 2,
+			NULL);
+
+	refreshButton = XtVaCreateManagedWidget("Server Prune", xmPushButtonWidgetClass,
+			docker_server_toolbar, NULL);
+//	XtVaSetValues(refreshButton, XmNlabelString, XmStringCreate("Sample Text \u0410\u0411\u0412\u0413\u0414\u0415\u0401 █ это - кошка: Prune", "UTF-8"), NULL);
+	XtManageChild(refreshButton);
+
+	refreshButton = XtVaCreateManagedWidget("Pull Image", xmPushButtonWidgetClass,
+			docker_server_toolbar, NULL);
+	XtManageChild(refreshButton);
+
+	refreshButton = XtVaCreateManagedWidget("Run Container", xmPushButtonWidgetClass,
+			docker_server_toolbar, NULL);
+	XtManageChild(refreshButton);
+
+	runningToggleButton = XtVaCreateManagedWidget("Show Running",
+			xmToggleButtonWidgetClass, docker_server_toolbar,
+			XmNset, XmSET,
+			XmNselectColor, 0x00FF00,
+			XmNunselectColor, 0xFFFFFF,
+			NULL);
+//	XtAddCallback(runningToggleButton, XmNvalueChangedCallback,
+//			show_running_callback, vrex->d_ctx);
+
+	refreshButton = XtVaCreateManagedWidget("Refresh", xmPushButtonWidgetClass,
+			docker_server_toolbar, NULL);
+	XtManageChild(refreshButton);
+
+//	XtAddCallback(refreshButton, XmNactivateCallback, refresh_call, vrex);
+
+	XtManageChild(docker_server_toolbar);
+}
+
 void create_menubar(Widget main_w, vrex_context* vrex) {
-	Widget menu_bar, quit, docker_version, help;
+	Widget menu_bar, quit, docker_version, help, header_container;
 	Arg arg[1];
-	menu_bar = XmCreateMenuBar(main_w, "main_list", NULL, 0);
+
+	header_container = XmVaCreateManagedForm(main_w, "main_header_w",
+	XmNfractionBase, 2,
+	NULL);
+
+	menu_bar = XmCreateMenuBar(header_container, "main_list",
+	NULL, 0);
 	XtManageChild(menu_bar);
+	XtVaSetValues(menu_bar,
+	XmNtopAttachment, XmATTACH_POSITION,
+	XmNtopPosition, 0,
+	XmNleftAttachment, XmATTACH_POSITION,
+	XmNleftPosition, 0,
+	XmNbottomAttachment, XmATTACH_POSITION,
+	XmNbottomPosition, 1,
+	XmNrightAttachment, XmATTACH_POSITION,
+	XmNrightPosition, 2,
+	NULL);
 
 	/* create quit widget + callback */
 
@@ -177,7 +249,9 @@ void create_menubar(Widget main_w, vrex_context* vrex) {
 			vrex);
 
 	XtVaSetValues(main_w,
-	XmNmenuBar, menu_bar, NULL);
+	XmNmenuBar, header_container, NULL);
+
+	create_docker_server_toolbar(header_container, vrex);
 }
 
 void exit_if_no_threads() {
@@ -243,7 +317,7 @@ int main(int argc, char *argv[]) {
 	char* url;
 	int row, column, n_rows, n_columns;
 	int connected = 0;
-	docker_log_set_level(LOG_DEBUG);
+	docker_log_set_level(LOG_INFO);
 
 	exit_if_no_threads();
 //
