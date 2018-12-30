@@ -39,11 +39,12 @@
 
 //#define VREX_USE_THREADS 0
 
-static String fallback[] = {  "V-Rex*main_w.width:		1024",
-		"V-Rex*.background:		#000000", "V-Rex*.foreground:		#008080",
-		"V-Rex*.borderColor:		#008080", "V-Rex*.highlightColor:		#008080",
-		"V-Rex*.bottomShadowColor:		#2F4F4F", "V-Rex*.topShadowColor:		#2F4F4F",
-		"V-Rex*.shadowThickness: 1", "V-Rex*main_w.height:		768",
+static String fallback[] = { "V-Rex*main_w.width:		1024",
+		"V-Rex*main_w.height:		768", "V-Rex*main_w.borderWidth:		0",
+		"V-Rex*main_w.shadowThickness:		0", "V-Rex*.background:		#DCDCDC",
+		"V-Rex*.foreground:		#000000", "V-Rex*.borderColor:		#A9A9A9",
+		"V-Rex*.highlightColor:		#008080", "V-Rex*.bottomShadowColor:		#696969",
+		"V-Rex*.topShadowColor:		#696969", "V-Rex*.shadowThickness: 1",
 //		"V-Rex*mw.shadowType:		SHADOW_ETCHED_OUT",
 //		"V-Rex*mw.shadowThickness:		1", "V-Rex*mw.cellShadowThickness:	1",
 //		"V-Rex*mw.gridType:		GRID_CELL_LINE",
@@ -90,7 +91,8 @@ void handle_error(vrex_context* vrex, docker_result* res) {
 
 Widget interactions_w(struct vrex_context_t* vrex) {
 //	return XtNameToWidget(XtNameToWidget(*(vrex->main_w), "ClipWindow"), "interactions_pane");
-	return XtNameToWidget(*(vrex->main_w), "interactions_pane");
+	return XtNameToWidget(XtNameToWidget(*(vrex->main_w), "interactions_frame"),
+			"interactions_pane");
 }
 
 void quit_call()
@@ -263,15 +265,16 @@ int main(int argc, char *argv[]) {
 //INFO: if we uncomment this change interactions_w function accordingly
 // as this creates a new child window called ClipWindow
 //			XmNscrollingPolicy, XmAUTOMATIC,
+			XmNborderWidth, 0,
 			NULL);
 
 	docker_log_debug(XtName(XtParent(main_w)));
 
-	main_form_w = XtVaCreateManagedWidget("main_form_w", xmFormWidgetClass,
-			main_w,
-			NULL);
-	XtVaSetValues(main_w, XmNworkWindow, main_form_w,
-	NULL);
+//	main_form_w = XtVaCreateManagedWidget("main_form_w", xmFormWidgetClass,
+//			main_w,
+//			NULL);
+//	XtVaSetValues(main_w, XmNworkWindow, main_form_w,
+//	NULL);
 
 	vrex = (vrex_context*) malloc(sizeof(vrex_context));
 	vrex->main_w = &main_w;
@@ -283,12 +286,6 @@ int main(int argc, char *argv[]) {
 
 	//add the ping call to interactions history
 	handle_error(vrex, res);
-
-	docker_log_info(XtName(vrex->interactions_w(vrex)));
-	XtVaSetValues(main_w, XmNcommandWindow, vrex->interactions_w(vrex),
-	NULL);
-	//TODO: fix toolbar positioning
-//	create_toolbar(main_w, vrex);
 
 	create_menubar(main_w, vrex);
 

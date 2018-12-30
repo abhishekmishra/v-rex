@@ -25,6 +25,8 @@
 #include <Xm/Text.h>
 #include <Xm/List.h>
 #include <Xm/Label.h>
+#include <Xm/LabelG.h>
+#include <Xm/Frame.h>
 #include <Xm/Form.h>
 #include <Xm/PushB.h>
 #include <Xm/RowColumn.h>
@@ -141,17 +143,21 @@ vrex_err_t update_request_form(Widget interactions_pane, time_t request_time,
 
 vrex_err_t create_request_response_form(Widget interactions_pane) {
 	Widget request_time_label, request_time_text, http_method_label,
-			http_method_text, request_label, //message_label, message_text,
+			http_method_text,
+			request_label, //message_label, message_text,
 			request_text, response_time_label, response_time_text,
 			http_code_label, http_code_text, response_label, response_text;
+	int n = 0;
+	Arg args[10];
+
 	Widget request_form = XmCreateForm(interactions_pane,
 			"interact_request_form",
 			NULL, 0);
 
 	XtVaSetValues(request_form,
-			XmNwidth, 50,
-			XmNshadowThickness, 0,
-			NULL);
+	XmNwidth, 50,
+	XmNshadowThickness, 0,
+	NULL);
 
 	request_time_label = XtVaCreateManagedWidget("Request Sent",
 			xmLabelWidgetClass, request_form,
@@ -166,7 +172,7 @@ vrex_err_t create_request_response_form(Widget interactions_pane) {
 			xmTextWidgetClass, request_form,
 			XmNeditable, False,
 			XmNvalue, "-",
-			XmNcolumns, 80,
+			XmNcolumns, 50,
 			XmNhighlightThickness, 0,
 			XmNscrollHorizontal, False,
 			XmNcursorPositionVisible, False,
@@ -188,7 +194,7 @@ vrex_err_t create_request_response_form(Widget interactions_pane) {
 			xmTextWidgetClass, request_form,
 			XmNeditable, False,
 			XmNvalue, "-",
-			XmNcolumns, 80,
+			XmNcolumns, 50,
 			XmNhighlightThickness, 0,
 			XmNscrollHorizontal, False,
 			XmNcursorPositionVisible, False,
@@ -206,7 +212,16 @@ vrex_err_t create_request_response_form(Widget interactions_pane) {
 			XmNleftWidget, http_method_label,
 			NULL);
 
-	request_text = XmCreateScrolledText(request_form, "Request Text", NULL, 0);
+	XtSetArg(args[n], XmNscrollHorizontal, False);
+	n++;
+	XtSetArg(args[n], XmNscrollVertical, False);
+	n++;
+	XtSetArg(args[n], XmNwordWrap, True);
+	n++;
+	XtSetArg(args[n], XmNeditable, False);
+	n++;
+
+	request_text = XmCreateScrolledText(request_form, "Request Text", args, n);
 	XtVaSetValues(XtParent(request_text),
 	XmNleftAttachment, XmATTACH_WIDGET,
 	XmNleftWidget, request_time_label,
@@ -217,7 +232,7 @@ vrex_err_t create_request_response_form(Widget interactions_pane) {
 	XtVaSetValues(request_text,
 	XmNeditable, False,
 	XmNvalue, "-",
-	XmNcolumns, 80,
+	XmNcolumns, 50,
 	XmNrows, 10,
 	XmNeditMode, XmMULTI_LINE_EDIT,
 	XmNscrollHorizontal, False,
@@ -242,7 +257,7 @@ vrex_err_t create_request_response_form(Widget interactions_pane) {
 			xmTextWidgetClass, request_form,
 			XmNeditable, False,
 			XmNvalue, "-",
-			XmNcolumns, 80,
+			XmNcolumns, 50,
 			XmNhighlightThickness, 0,
 			XmNscrollHorizontal, False,
 			XmNcursorPositionVisible, False,
@@ -264,7 +279,7 @@ vrex_err_t create_request_response_form(Widget interactions_pane) {
 			xmTextWidgetClass, request_form,
 			XmNeditable, False,
 			XmNvalue, "-",
-			XmNcolumns, 80,
+			XmNcolumns, 50,
 			XmNhighlightThickness, 0,
 			XmNscrollHorizontal, False,
 			XmNcursorPositionVisible, False,
@@ -286,7 +301,7 @@ vrex_err_t create_request_response_form(Widget interactions_pane) {
 //			request_form,
 //			XmNeditable, False,
 //			XmNvalue, "-",
-//			XmNcolumns, 80,
+//			XmNcolumns, 50,
 //			XmNrows, 2,
 //			XmNeditMode, XmMULTI_LINE_EDIT,
 //			XmNscrollHorizontal, False,
@@ -307,8 +322,18 @@ vrex_err_t create_request_response_form(Widget interactions_pane) {
 			XmNleftWidget, http_code_label,
 			NULL);
 
-	response_text = XmCreateScrolledText(request_form, "Response Text", NULL,
-			0);
+	n = 0;
+	XtSetArg(args[n], XmNscrollHorizontal, False);
+	n++;
+	XtSetArg(args[n], XmNscrollVertical, False);
+	n++;
+	XtSetArg(args[n], XmNwordWrap, True);
+	n++;
+	XtSetArg(args[n], XmNeditable, False);
+	n++;
+
+	response_text = XmCreateScrolledText(request_form, "Response Text", args,
+			n);
 	XtVaSetValues(XtParent(response_text),
 	XmNleftAttachment, XmATTACH_WIDGET,
 	XmNleftWidget, response_time_label,
@@ -319,7 +344,7 @@ vrex_err_t create_request_response_form(Widget interactions_pane) {
 	XtVaSetValues(response_text,
 	XmNeditable, False,
 	XmNvalue, "-",
-	XmNcolumns, 80,
+	XmNcolumns, 50,
 	XmNrows, 10,
 	XmNeditMode, XmMULTI_LINE_EDIT,
 	XmNscrollHorizontal, False,
@@ -354,23 +379,30 @@ void sel_callback(Widget list_w, XtPointer client_data, XtPointer call_data) {
 }
 
 vrex_err_t make_interactions_window(vrex_context* vrex) {
-	Widget list_w, child;
-	XtWidgetGeometry size;
+	Widget list_w, child, interactions_frame, label;
+	int n = 0;
+	Arg args[10];
 
-//	Widget iw = XmVaCreatePanedWindow(*(vrex->main_w), "interactions_pane",
-//	XmNorientation, XmHORIZONTAL,
-//	NULL);
+	n = 0;
+	XtSetArg(args[n], XmNshadowType, XmSHADOW_OUT);
+	n++;
+	interactions_frame = XmCreateFrame(*(vrex->main_w), "interactions_frame", args, n);
+	XtVaSetValues(*(vrex->main_w), XmNcommandWindow, interactions_frame,
+	NULL);
 
-	Widget iw = XmCreateRowColumn(*(vrex->main_w), "interactions_pane", NULL,
-			0);
+	n = 0;
+	XtSetArg(args[n], XmNframeChildType, XmFRAME_TITLE_CHILD);
+	n++;
+	XtSetArg(args[n], XmNchildVerticalAlignment, XmALIGNMENT_CENTER);
+	n++;
+	label = XmCreateLabelGadget(interactions_frame, "Docker API Interactions", args, n);
+
+	Widget iw = XmCreateRowColumn(interactions_frame, "interactions_pane", NULL, 0);
 	XtVaSetValues(iw, XmNpacking, XmPACK_TIGHT,
 	XmNnumColumns, 1,
 	XmNnumRows, 2,
 	XmNorientation, XmVERTICAL,
 	NULL);
-
-	docker_log_debug("parent of interactions window is %s",
-			XtName(XtParent(iw)));
 
 	/* Create the ScrolledList */
 	list_w = XmCreateScrolledList(iw, "interact_list", NULL, 0);
@@ -388,6 +420,8 @@ vrex_err_t make_interactions_window(vrex_context* vrex) {
 
 	/* Convenience routines don't create managed children */
 	XtManageChild(iw);
+	XtManageChild(label);
+	XtManageChild(interactions_frame);
 	XtAddCallback(list_w, XmNdefaultActionCallback, sel_callback, vrex);
 	XtAddCallback(list_w, XmNbrowseSelectionCallback, sel_callback, vrex);
 	return VREX_SUCCESS;

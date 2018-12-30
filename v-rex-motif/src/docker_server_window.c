@@ -23,6 +23,9 @@
 #include <Xm/TextF.h>
 #include <Xm/RowColumn.h>
 #include <Xm/ScrolledW.h>
+#include <Xm/Form.h>
+#include <Xm/LabelG.h>
+#include <Xm/Frame.h>
 #include <X11/Xos.h>
 #include <XmHTML/XmHTML.h>
 #include "docker_server_window.h"
@@ -51,13 +54,18 @@ void create_summary_scrolled_text(Widget* dst, Widget docker_server_w) {
 			"Docker Server Summary", args, n);
 	XtManageChild(docker_summary_text);
 	XtVaSetValues(docker_summary_text, XmNvalue, "-", XmNcursorPositionVisible,
-	False, XmNhighlightThickness, 0, XmNshadowThickness, 0, NULL);
+	False, XmNhighlightThickness, 0, XmNshadowThickness, 0,
+	XmNtopAttachment, XmATTACH_FORM,
+	XmNleftAttachment, XmATTACH_FORM,
+	XmNleftOffset, 2,
+	XmNtopOffset, 2,
+	XmNbottomOffset, 2,
+	NULL);
 	XtManageChild(docker_server_w);
 	(*dst) = docker_summary_text;
 }
 
 void updated_events_table(Widget html, vrex_context* vrex, docker_result* res) {
-	//TODO: test events call
 	array_list* evts;
 	time_t now = time(NULL);
 	docker_system_events(vrex->d_ctx, &res, &evts, now - (3600 * 24), now);
@@ -93,29 +101,46 @@ void updated_events_table(Widget html, vrex_context* vrex, docker_result* res) {
 }
 
 void create_events_table(Widget* events_table, Widget docker_server_w) {
+	Widget docker_summary = XtNameToWidget(docker_server_w,
+			"Docker Server SummarySW");
 	(*events_table) = XtVaCreateManagedWidget("events_table", xmHTMLWidgetClass,
-			docker_server_w, XmNmarginWidth, 20, XmNmarginHeight, 20, XmNwidth,
-			600, XmNheight, 500, NULL);
+			docker_server_w, XmNmarginWidth, 2, XmNmarginHeight, 2, XmNwidth,
+			600, XmNheight, 500,
+			XmNleftAttachment, XmATTACH_WIDGET,
+			XmNleftWidget, docker_summary,
+			XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
+			XmNtopWidget, docker_summary,
+			NULL);
 }
 
 vrex_err_t make_docker_server_window(vrex_context* vrex, Widget* server_w) {
 	Widget list_w, child, docker_summary_text, docker_summary_scrolled_w;
+	Widget docker_server_frame, label;
+	int n = 0;
+	Arg args[10];
 
-	Widget docker_server_w = XmCreateRowColumn(
-			XtNameToWidget(*(vrex->main_w), "main_form_w"), "docker_server",
-			NULL, 0);
-	XtVaSetValues(docker_server_w, XmNpacking, XmPACK_TIGHT,
-	XmNnumColumns, 2,
-	XmNnumRows, 1,
-	XmNorientation, XmHORIZONTAL,
-	XmNtopAttachment, XmATTACH_FORM,
-	XmNleftAttachment, XmATTACH_FORM,
-	XmNleftOffset, 2,
-	XmNtopOffset, 2,
-	XmNbottomOffset, 2,
+	n = 0;
+	XtSetArg(args[n], XmNshadowType, XmSHADOW_OUT);
+	n++;
+	docker_server_frame = XmCreateFrame(*(vrex->main_w), "docker_server_frame",
+			args, n);
+	XtVaSetValues(*(vrex->main_w), XmNworkWindow, docker_server_frame,
 	NULL);
 
-	//TODO: test info call
+	n = 0;
+	XtSetArg(args[n], XmNframeChildType, XmFRAME_TITLE_CHILD);
+	n++;
+	XtSetArg(args[n], XmNchildVerticalAlignment, XmALIGNMENT_CENTER);
+	n++;
+	label = XmCreateLabelGadget(docker_server_frame, "Docker Server Summary",
+			args, n);
+
+	Widget docker_server_w = XtVaCreateManagedWidget("docker_server",
+			xmFormWidgetClass, docker_server_frame,
+			XmNborderWidth, 0,
+			XmNshadowThickness, 0,
+			NULL);
+
 	docker_result* res;
 	docker_info* info;
 	docker_system_info(vrex->d_ctx, &res, &info);
@@ -136,5 +161,7 @@ vrex_err_t make_docker_server_window(vrex_context* vrex, Widget* server_w) {
 	create_events_table(&events_table, docker_server_w);
 
 	updated_events_table(events_table, vrex, res);
+	XtManageChild(label);
+	XtManageChild(docker_server_frame);
 	return VREX_SUCCESS;
 }
