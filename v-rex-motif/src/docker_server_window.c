@@ -38,7 +38,7 @@ void create_summary_scrolled_text(Widget* dst, Widget docker_server_w) {
 	n = 0;
 	XtSetArg(args[n], XmNrows, 25);
 	n++;
-	XtSetArg(args[n], XmNcolumns, 80);
+	XtSetArg(args[n], XmNcolumns, 40);
 	n++;
 	XtSetArg(args[n], XmNeditMode, XmMULTI_LINE_EDIT);
 	n++;
@@ -51,10 +51,13 @@ void create_summary_scrolled_text(Widget* dst, Widget docker_server_w) {
 	XtSetArg(args[n], XmNeditable, False);
 	n++;
 	Widget docker_summary_text = XmCreateScrolledText(docker_server_w,
-			"Docker Server Summary", args, n);
+			"docker_server_summary_text", args, n);
 	XtManageChild(docker_summary_text);
-	XtVaSetValues(docker_summary_text, XmNvalue, "-", XmNcursorPositionVisible,
-	False, XmNhighlightThickness, 0, XmNshadowThickness, 0,
+	XtVaSetValues(docker_summary_text,
+	XmNvalue, "-",
+	XmNcursorPositionVisible, False,
+	XmNhighlightThickness, 0,
+	XmNshadowThickness, 0,
 	XmNtopAttachment, XmATTACH_FORM,
 	XmNleftAttachment, XmATTACH_FORM,
 	XmNleftOffset, 2,
@@ -72,7 +75,7 @@ void updated_events_table(Widget html, vrex_context* vrex, docker_result* res) {
 	vrex->handle_error(vrex, res);
 	String content = (char*) calloc(2048, sizeof(char));
 	strcpy(content,
-			"<html><body><h5>Server events in the last 24 hours</h5><font size=\"3\"><table border=1>");
+			"<html><body><h5>Server events in the last 24 hours</h5><font size=\"3\"><table border=0>");
 	strcat(content,
 			"<tr><td><b>Time</b></td><td><b>Type</b></td><td><b>Action</b></td></tr>");
 	int evts_len = array_list_length(evts);
@@ -102,14 +105,16 @@ void updated_events_table(Widget html, vrex_context* vrex, docker_result* res) {
 
 void create_events_table(Widget* events_table, Widget docker_server_w) {
 	Widget docker_summary = XtNameToWidget(docker_server_w,
-			"Docker Server SummarySW");
+			"docker_server_summary_textSW");
 	(*events_table) = XtVaCreateManagedWidget("events_table", xmHTMLWidgetClass,
 			docker_server_w, XmNmarginWidth, 2, XmNmarginHeight, 2, XmNwidth,
-			600, XmNheight, 500,
-			XmNleftAttachment, XmATTACH_WIDGET,
-			XmNleftWidget, docker_summary,
-			XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
-			XmNtopWidget, docker_summary,
+			300, XmNheight, 500,
+//			XmNleftAttachment, XmATTACH_WIDGET,
+//			XmNleftWidget, docker_summary,
+//			XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
+//			XmNtopWidget, docker_summary,
+			XmNtopAttachment, XmATTACH_FORM,
+			XmNrightAttachment, XmATTACH_FORM,
 			NULL);
 }
 
@@ -148,9 +153,11 @@ vrex_err_t make_docker_server_window(vrex_context* vrex, Widget* server_w) {
 
 	char* summary = (char*) calloc(1024, sizeof(char));
 	sprintf(summary,
-			"Containers: %lu (Running: %lu, Paused: %lu, Stopped: %lu)\n",
-			info->containers, info->containers_running, info->containers_paused,
-			info->containers_stopped);
+			"Server: %s\nCPU: %d, Memtotal: %lu\nContainers: %lu (Running: %lu, Paused: %lu, Stopped: %lu)\nImages: %lu",
+			info->name, docker_info_get_ncpu(info),
+			docker_info_get_memtotal(info), info->containers,
+			info->containers_running, info->containers_paused,
+			info->containers_stopped, docker_info_get_images(info));
 
 	create_summary_scrolled_text(&docker_summary_text, docker_server_w);
 
