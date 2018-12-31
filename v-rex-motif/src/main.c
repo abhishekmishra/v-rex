@@ -44,7 +44,7 @@
 static pthread_mutex_t interactions_w_lock;
 
 static String fallback[] =
-		{ "V-Rex*main_w.width:		1024", "V-Rex*main_w.height:		768",
+		{  "V-Rex*main_w.width:		1024", "V-Rex*main_w.height:		768",
 				"V-Rex*main_w.borderWidth:		0",
 				"V-Rex*main_w.shadowThickness:		0",
 				"V-Rex*.background:		#DCDCDC", "V-Rex*.foreground:		#000000",
@@ -171,16 +171,12 @@ void docker_version_show(Widget widget, XtPointer client_data,
 	XmStringFree(xms);
 }
 
-struct ping_args {
-	vrex_context* vrex;
-	docker_result** result;
-};
-
 void* docker_ping_util(void* args) {
-	struct ping_args* pargs = (struct ping_args*) args;
-	docker_ping(pargs->vrex->d_ctx, pargs->result);
-	pargs->vrex->handle_error(pargs->vrex, *(pargs->result));
-//	free_docker_result(pargs->result);
+	vrex_context* vrex = (vrex_context*) args;
+	docker_result* result;
+	docker_ping(vrex->d_ctx, &result);
+	vrex->handle_error(vrex, result);
+//	free_docker_result(result);
 	pthread_exit(0);
 	return NULL;
 }
@@ -188,13 +184,9 @@ void* docker_ping_util(void* args) {
 void docker_ping_cb(Widget widget, XtPointer client_data, XtPointer call_data) {
 	vrex_context* vrex = (vrex_context*) client_data;
 	for (int i = 0; i < 10; i++) {
-		docker_result* res;
 		pthread_t docker_ping_thread;
-		struct ping_args pargs;
-		pargs.vrex = vrex;
-		pargs.result = &res;
 		int thread_id = pthread_create(&docker_ping_thread, NULL,
-				&docker_ping_util, &pargs);
+				&docker_ping_util, vrex);
 
 		printf("Thread creation is %d\n", thread_id);
 		fflush(0);
@@ -361,6 +353,8 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
+	curl_global_init(CURL_GLOBAL_ALL);
+
 	XtSetLanguageProc(NULL, NULL, NULL);
 	toplevel = XtVaOpenApplication(&app, "V-Rex", NULL, 0, &argc, argv,
 			fallback, sessionShellWidgetClass, NULL);
@@ -401,6 +395,9 @@ int main(int argc, char *argv[]) {
 
 	XtRealizeWidget(toplevel);
 	XtAppMainLoop(app);
+
+	// TODO: need to add to quit handler
+	curl_global_cleanup();
 
 	/*NOTREACHED*/
 
