@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <pthread.h>
 #include <curl/curl.h>
 //#ifdef USE_EDITRES
 #include <X11/Intrinsic.h>
@@ -40,6 +41,8 @@
 #define VREX_X_HAS_NO_THREADS -2
 
 //#define VREX_USE_THREADS 0
+
+static pthread_mutex_t interactions_w_lock;
 
 static String fallback[] =
 		{ "V-Rex*main_w.width:		1024", "V-Rex*main_w.height:		768",
@@ -98,8 +101,12 @@ void docker_error_handler_log(docker_result* res) {
 }
 
 void handle_error(vrex_context* vrex, docker_result* res) {
+	int ret = pthread_mutex_lock(&interactions_w_lock);
+	printf("thread lock returned %d", ret);
+
 	docker_error_handler_log(res);
 	add_interactions_entry(vrex, res);
+	pthread_mutex_unlock(&interactions_w_lock);
 }
 
 Widget interactions_w(struct vrex_context_t* vrex) {
@@ -165,8 +172,40 @@ void docker_version_show(Widget widget, XtPointer client_data,
 	XmStringFree(xms);
 }
 
+struct ping_args {
+	vrex_context* vrex;
+	docker_result** result;
+};
+
+void* docker_ping_util(void* args) {
+	struct ping_args* pargs = (struct ping_args*) args;
+	docker_ping(pargs->vrex->d_ctx, pargs->result);
+	pargs->vrex->handle_error(pargs->vrex, *(pargs->result));
+	pthread_exit(0);
+	return NULL;
+}
+
+void docker_ping_cb(Widget widget, XtPointer client_data, XtPointer call_data) {
+	vrex_context* vrex = (vrex_context*) client_data;
+	for (int i = 0; i < 5; i++) {
+		docker_result* res;
+		pthread_t docker_ping_thread;
+		struct ping_args pargs;
+		pargs.vrex = vrex;
+		pargs.result = &res;
+		int thread_id = pthread_create(&docker_ping_thread, NULL,
+				&docker_ping_util, &pargs);
+
+//		printf("Thread id is %d", thread_id);
+	}
+//	pthread_join(docker_ping_thread, NULL);
+	//docker_ping(vrex->d_ctx, &res);
+
+//	vrex->handle_error(vrex, res);
+}
+
 void create_docker_server_toolbar(Widget docker_server_w, vrex_context* vrex) {
-	Widget docker_server_toolbar, runningToggleButton, refreshButton;
+	Widget docker_server_toolbar, runningToggleButton, toolbarButton;
 	docker_server_toolbar = XtVaCreateManagedWidget("toolbar_w",
 			xmRowColumnWidgetClass, docker_server_w,
 			XmNorientation, XmHORIZONTAL,
@@ -180,32 +219,23 @@ void create_docker_server_toolbar(Widget docker_server_w, vrex_context* vrex) {
 			XmNrightPosition, 2,
 			NULL);
 
-	refreshButton = XtVaCreateManagedWidget("Server Prune",
+	toolbarButton = XtVaCreateManagedWidget("Ping", xmPushButtonWidgetClass,
+			docker_server_toolbar, NULL);
+	XtManageChild(toolbarButton);
+	XtAddCallback(toolbarButton, XmNactivateCallback, docker_ping_cb, vrex);
+
+	toolbarButton = XtVaCreateManagedWidget("Server Prune",
 			xmPushButtonWidgetClass, docker_server_toolbar, NULL);
 //	XtVaSetValues(refreshButton, XmNlabelString, XmStringCreate("Sample Text \u0410\u0411\u0412\u0413\u0414\u0415\u0401 █ это - кошка: Prune", "UTF-8"), NULL);
-	XtManageChild(refreshButton);
+	XtManageChild(toolbarButton);
 
-	refreshButton = XtVaCreateManagedWidget("Pull Image",
+	toolbarButton = XtVaCreateManagedWidget("Pull Image",
 			xmPushButtonWidgetClass, docker_server_toolbar, NULL);
-	XtManageChild(refreshButton);
+	XtManageChild(toolbarButton);
 
-	refreshButton = XtVaCreateManagedWidget("Run Container",
+	toolbarButton = XtVaCreateManagedWidget("Run Container",
 			xmPushButtonWidgetClass, docker_server_toolbar, NULL);
-	XtManageChild(refreshButton);
-
-//	runningToggleButton = XtVaCreateManagedWidget("Show Running",
-//			xmToggleButtonWidgetClass, docker_server_toolbar,
-//			XmNset, XmSET,
-//			NULL);
-//	XtAddCallback(runningToggleButton, XmNvalueChangedCallback,
-//			show_running_callback, vrex->d_ctx);
-
-//	refreshButton = XtVaCreateManagedWidget("Refresh", xmPushButtonWidgetClass,
-//			docker_server_toolbar, NULL);
-//
-//	XtManageChild(refreshButton);
-
-//	XtAddCallback(refreshButton, XmNactivateCallback, refresh_call, vrex);
+	XtManageChild(toolbarButton);
 
 	XtManageChild(docker_server_toolbar);
 }
@@ -321,10 +351,11 @@ int main(int argc, char *argv[]) {
 	docker_log_set_level(LOG_INFO);
 
 	exit_if_no_threads();
-//
-//	toplevel = XtVaAppInitialize(&app, "V-Rex",
-//	NULL, 0, &argc, argv, fallback,
-//	NULL);
+
+	if (pthread_mutex_init(&interactions_w_lock, NULL) != 0) {
+		printf("\n mutex init has failed\n");
+		return 1;
+	}
 
 	XtSetLanguageProc(NULL, NULL, NULL);
 	toplevel = XtVaOpenApplication(&app, "V-Rex", NULL, 0, &argc, argv,
@@ -347,12 +378,6 @@ int main(int argc, char *argv[]) {
 			NULL);
 
 	docker_log_debug(XtName(XtParent(main_w)));
-
-//	main_form_w = XtVaCreateManagedWidget("main_form_w", xmFormWidgetClass,
-//			main_w,
-//			NULL);
-//	XtVaSetValues(main_w, XmNworkWindow, main_form_w,
-//	NULL);
 
 	vrex = (vrex_context*) malloc(sizeof(vrex_context));
 	vrex->main_w = &main_w;
