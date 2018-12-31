@@ -39,7 +39,6 @@
 #define USE_RENDER_TABLE 0
 
 #define VREX_X_HAS_NO_THREADS -2
-
 //#define VREX_USE_THREADS 0
 
 static pthread_mutex_t interactions_w_lock;
@@ -102,9 +101,9 @@ void docker_error_handler_log(docker_result* res) {
 
 void handle_error(vrex_context* vrex, docker_result* res) {
 	int ret = pthread_mutex_lock(&interactions_w_lock);
-	printf("thread lock returned %d", ret);
-
-	docker_error_handler_log(res);
+	printf("thread lock returned %d\n", ret);
+	fflush(0);
+//	docker_error_handler_log(res);
 	add_interactions_entry(vrex, res);
 	pthread_mutex_unlock(&interactions_w_lock);
 }
@@ -181,13 +180,14 @@ void* docker_ping_util(void* args) {
 	struct ping_args* pargs = (struct ping_args*) args;
 	docker_ping(pargs->vrex->d_ctx, pargs->result);
 	pargs->vrex->handle_error(pargs->vrex, *(pargs->result));
+//	free_docker_result(pargs->result);
 	pthread_exit(0);
 	return NULL;
 }
 
 void docker_ping_cb(Widget widget, XtPointer client_data, XtPointer call_data) {
 	vrex_context* vrex = (vrex_context*) client_data;
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < 10; i++) {
 		docker_result* res;
 		pthread_t docker_ping_thread;
 		struct ping_args pargs;
@@ -196,7 +196,8 @@ void docker_ping_cb(Widget widget, XtPointer client_data, XtPointer call_data) {
 		int thread_id = pthread_create(&docker_ping_thread, NULL,
 				&docker_ping_util, &pargs);
 
-//		printf("Thread id is %d", thread_id);
+		printf("Thread creation is %d\n", thread_id);
+		fflush(0);
 	}
 //	pthread_join(docker_ping_thread, NULL);
 	//docker_ping(vrex->d_ctx, &res);
@@ -352,7 +353,10 @@ int main(int argc, char *argv[]) {
 
 	exit_if_no_threads();
 
-	if (pthread_mutex_init(&interactions_w_lock, NULL) != 0) {
+	pthread_mutexattr_t Attr;
+	pthread_mutexattr_init(&Attr);
+	pthread_mutexattr_settype(&Attr, PTHREAD_MUTEX_RECURSIVE);
+	if (pthread_mutex_init(&interactions_w_lock, &Attr) != 0) {
 		printf("\n mutex init has failed\n");
 		return 1;
 	}
