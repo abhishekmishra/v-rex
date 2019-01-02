@@ -34,6 +34,7 @@
 #include "interactions_window.h"
 #include "docker_server_window.h"
 #include "events_window.h"
+#include "theme.h"
 
 #include <log.h>
 
@@ -43,52 +44,6 @@
 //#define VREX_USE_THREADS 0
 
 static pthread_mutex_t interactions_w_lock;
-
-static String fallback[] =
-		{  "V-Rex*main_w.width:		1024", "V-Rex*main_w.height:		768",
-				"V-Rex*main_w.borderWidth:		0",
-				"V-Rex*main_w.shadowThickness:		0",
-				"V-Rex*.background:		#DCDCDC", "V-Rex*.foreground:		#000000",
-				"V-Rex*.borderColor:		#A9A9A9",
-				"V-Rex*.highlightColor:		#008080",
-				"V-Rex*.bottomShadowColor:		#696969",
-				"V-Rex*.topShadowColor:		#696969", "V-Rex*.shadowThickness: 1",
-				"V-Rex*.selectColor: #B0E0E6", "V-Rex*.unselectColor: #FFFFFF",
-
-//		"V-Rex*mw.shadowType:		SHADOW_ETCHED_OUT",
-//		"V-Rex*mw.shadowThickness:		1", "V-Rex*mw.cellShadowThickness:	1",
-//		"V-Rex*mw.gridType:		GRID_CELL_LINE",
-//		"V-Rex*mw.cellShadowType:		shadow_in", "V-Rex*mw.visibleColumns:		4",
-//		"V-Rex*mw.visibleRows:		0", "V-Rex*mw.rows:			0",
-//		"V-Rex*mw.columns:			4", "V-Rex*mw.fixedRows:		0",
-//		"V-Rex*mw.fixedColumns:		1", "V-Rex*mw.trailingFixedRows:	0",
-//		"V-Rex*mw.trailingFixedColumns:	0", "V-Rex*mw.traverseFixedCells:	True",
-//		"V-Rex*mw.multiLineCell:	True",
-//		"V-Rex*mw.wrapType: 	wrap_continuous", //other option is wrap_word
-//		"V-Rex*mw.fill: 	True", "V-Rex*mw.horzFill: 	True",
-//		"V-Rex*mw.vertFill: 	True", "V-Rex*mw.height: 	800",
-//		"V-Rex*mw.width: 	1024", "V-Rex*mw.gridLineColor: 	#A0A0A0",
-//		"V-Rex*mw.background: 	#111111", "V-Rex*mw.foreground: 	#D3D3D3",
-//		"V-Rex*mw.columnLabelColor: 	#a0a0ff",
-//		"V-Rex*mw.highlightColor: 	#6495ED", "V-Rex*mw.rowHeight: 	200",
-
-//				"V-Rex*mw.columnWidths:		10, 5, 10, 5, 10, 5,"
-//						"					10, 5, 10, 5, 10, 5",
-//				"V-Rex*mw.columnLabels:		Zero, One, Two, Three, Four,"
-//						"					Five, Six, Seven, Eight, Nine",
-//				"V-Rex*mw.rowLabels:		0, 1, 2, 3, 4, 5, 6, 7, 8, 9",
-
-//TODO: see https://gist.github.com/unix-junkie/68bdf8420d6c7b7925f4
-// and https://stackoverflow.com/questions/34360066/xmstringgenerate-in-xmmultibyte-text-or-xmwidechar-text-mode
-// for UTF-8
-//UTF-8 font	"V-Rex*fontList: terminus-12",
-				"V-Rex*fontList: -*-terminus-medium-r-*-*-12-*-*-*-*-*-*-*",
-				"V-Rex*labelFont: -*-lucida-bold-r-*-*-12-*-*-*-*-*-*-*",
-				"V-Rex*docker_server_summary_text.fontList: -*-terminus-bold-r-*-*-12-*-*-*-*-*-*-*",
-//		"V-Rex*mw.cellShadowThickness:		0", "V-Rex*mw.textShadowThickness:		0",
-//		"V-Rex*mw.cellHighlightThickness:		2", "V-Rex*mw.cellMarginHeight:		0",
-//		"V-Rex*mw.cellMarginWidth:		1",
-				NULL };
 
 void docker_error_handler_log(docker_result* res) {
 	docker_log_debug("DOCKER_RESULT: For URL: %s", get_docker_result_url(res));
@@ -115,14 +70,12 @@ Widget interactions_w(struct vrex_context_t* vrex) {
 			"interactions_pane");
 }
 
-void quit_call()
-{
+void quit_call() {
 	docker_log_info("Quitting program\n");
 	exit(0);
 }
 
-void help_call()
-{
+void help_call() {
 	docker_log_info("Sorry, I'm Not Much Help\n");
 }
 
@@ -354,11 +307,11 @@ int main(int argc, char *argv[]) {
 
 	curl_global_init(CURL_GLOBAL_ALL);
 
+	String* fallback = get_dark_theme();
+
 	XtSetLanguageProc(NULL, NULL, NULL);
 	toplevel = XtVaOpenApplication(&app, "V-Rex", NULL, 0, &argc, argv,
 			fallback, sessionShellWidgetClass, NULL);
-//	toplevel = XtVaOpenApplication(&app, "V-Rex", NULL, 0, &argc, argv,
-//			NULL, sessionShellWidgetClass, NULL);
 
 	connected = extract_args_url_connection(argc, url, argv, &ctx, &res);
 	if (!connected) {
