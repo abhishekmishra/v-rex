@@ -45,6 +45,20 @@
 
 static pthread_mutex_t interactions_w_lock;
 
+void create_statusbar(Widget main_w, vrex_context* vrex) {
+	Widget statusbar;
+	Arg args[10];
+	int n = 0;
+	XmString str = XmStringCreateLocalized("V-Rex: starting...");
+	XtSetArg(args[n], XmNlabelString, str);
+	n++;
+	statusbar = XmCreateLabel(main_w, "statusbar", args, n);
+	XmStringFree(str);
+	XtManageChild(statusbar);
+	XtVaSetValues(main_w,
+	XmNmessageWindow, statusbar, NULL);
+}
+
 void docker_error_handler_log(docker_result* res) {
 	docker_log_debug("DOCKER_RESULT: For URL: %s", get_docker_result_url(res));
 	docker_log_debug(
@@ -341,6 +355,7 @@ int main(int argc, char *argv[]) {
 	handle_error(vrex, res);
 
 	create_menubar(main_w, vrex);
+	create_statusbar(main_w, vrex);
 
 	make_docker_server_window(vrex, &docker_server_w);
 	make_docker_events_window(vrex, docker_server_w, &events_w);
