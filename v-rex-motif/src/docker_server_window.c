@@ -87,7 +87,7 @@ void updated_events_table(Widget html, vrex_context* vrex, docker_result* res) {
 	time_t now = time(NULL);
 	docker_system_events(vrex->d_ctx, &res, &evts, now - (3600 * 24), now);
 	vrex->handle_error(vrex, res);
-	String content = (char*) calloc(2048, sizeof(char));
+	String content = (char*) calloc(20480, sizeof(char));
 	strcpy(content,
 			"<html><body><h5>Server events in the last 24 hours</h5><font size=\"3\"><table border=0>");
 	strcat(content,
