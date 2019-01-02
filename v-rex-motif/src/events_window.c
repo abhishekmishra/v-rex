@@ -119,9 +119,9 @@ vrex_err_t make_docker_events_window(vrex_context* vrex, Widget server_w,
 	n = 0;
 	XtSetArg(args[n], XmNshadowType, XmSHADOW_OUT);
 	n++;
-	XtSetArg(args[n], XmNmarginWidth, 2);
+	XtSetArg(args[n], XmNmarginWidth, 1);
 	n++;
-	XtSetArg(args[n], XmNmarginHeight, 2);
+	XtSetArg(args[n], XmNmarginHeight, 1);
 	n++;
 	events_frame_w = XmCreateFrame(server_w, "events_frame_w", args, n);
 
@@ -137,6 +137,7 @@ vrex_err_t make_docker_events_window(vrex_context* vrex, Widget server_w,
 	XtVaSetValues((*events_w),
 	XmNvisibleItemCount, 5,
 	XmNwidth, 50,
+	XmNshadowThickness, 0,
 	NULL);
 
 	XtVaSetValues(events_frame_w,
