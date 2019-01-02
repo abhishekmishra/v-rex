@@ -24,6 +24,7 @@
 
 #include "vrex_util.h"
 
-vrex_err_t make_docker_server_window(vrex_context* vrex, Widget* server_w);
+vrex_err_t make_docker_events_window(vrex_context* vrex, Widget server_w,
+		Widget* events_w);
 
 #endif /* SRC_EVENTS_WINDOW_H_ */

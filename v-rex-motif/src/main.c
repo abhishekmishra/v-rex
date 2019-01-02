@@ -33,6 +33,7 @@
 #include "container_list_window.h"
 #include "interactions_window.h"
 #include "docker_server_window.h"
+#include "events_window.h"
 
 #include <log.h>
 
@@ -115,14 +116,12 @@ Widget interactions_w(struct vrex_context_t* vrex) {
 }
 
 void quit_call()
-
 {
 	docker_log_info("Quitting program\n");
 	exit(0);
 }
 
 void help_call()
-
 {
 	docker_log_info("Sorry, I'm Not Much Help\n");
 }
@@ -326,7 +325,7 @@ int extract_args_url_connection(int argc, char* url, char* argv[],
 }
 
 int main(int argc, char *argv[]) {
-	Widget toplevel, main_w, matrix_w, main_form_w, docker_server_w;
+	Widget toplevel, main_w, matrix_w, main_form_w, docker_server_w, events_w;
 	XtAppContext app;
 	docker_context* ctx;
 	vrex_context* vrex;
@@ -391,6 +390,7 @@ int main(int argc, char *argv[]) {
 	create_menubar(main_w, vrex);
 
 	make_docker_server_window(vrex, &docker_server_w);
+	make_docker_events_window(vrex, docker_server_w, &events_w);
 	make_container_list_window(docker_server_w, &matrix_w, vrex);
 
 	XtRealizeWidget(toplevel);

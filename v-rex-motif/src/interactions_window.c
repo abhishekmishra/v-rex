@@ -424,16 +424,6 @@ vrex_err_t make_interactions_window(vrex_context* vrex) {
 	return VREX_SUCCESS;
 }
 
-void MakePosVisible(Widget list_w, int item_no) {
-	int top, visible;
-	XtVaGetValues(list_w, XmNtopItemPosition, &top,
-	XmNvisibleItemCount, &visible, NULL);
-	if (item_no < top)
-		XmListSetPos(list_w, item_no);
-	else if (item_no >= top + visible)
-		XmListSetBottomPos(list_w, item_no);
-}
-
 vrex_err_t add_interactions_entry(vrex_context* vrex, docker_result* res) {
 	results_list_add(vrex, res);
 	Widget iw = vrex->interactions_w(vrex);

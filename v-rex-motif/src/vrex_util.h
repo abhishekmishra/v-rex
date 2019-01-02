@@ -24,6 +24,7 @@
 #define SRC_VREX_UTIL_H_
 
 #include <Xm/MainW.h>
+#include <Xm/List.h>
 #include "docker_result.h"
 #include "docker_connection_util.h"
 #include <json-c/arraylist.h>
@@ -38,6 +39,7 @@ typedef struct vrex_context_t {
 	Widget* toolbar_w;
 	Widget* statusbar_w;
 	Widget* log_console_w;
+	Widget* events_w;
 	Widget (*interactions_w)(struct vrex_context_t* vrex);
 	void (*handle_error)(struct vrex_context_t* vrex, docker_result* res);
 	struct array_list* results;
@@ -53,5 +55,9 @@ docker_result* results_list_get_idx(vrex_context* vrex, int i);
 Widget get_toolbar_w(vrex_context* vrex);
 
 Widget get_container_list_w(vrex_context* vrex);
+
+void MakePosVisible(Widget list_w, int item_no);
+
+
 
 #endif /* SRC_VREX_UTIL_H_ */

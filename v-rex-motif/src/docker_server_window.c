@@ -82,64 +82,6 @@ void create_summary_scrolled_text(Widget* dst, Widget docker_server_w) {
 	(*dst) = docker_summary_text;
 }
 
-void updated_events_table(Widget html, vrex_context* vrex, docker_result* res) {
-	array_list* evts;
-	time_t now = time(NULL);
-	docker_system_events(vrex->d_ctx, &res, &evts, now - (3600 * 24), now);
-	vrex->handle_error(vrex, res);
-	String content = (char*) calloc(20480, sizeof(char));
-	strcpy(content,
-			"<html><body><h5>Server events in the last 24 hours</h5><font size=\"3\"><table border=0>");
-	strcat(content,
-			"<tr><td><b>Time</b></td><td><b>Type</b></td><td><b>Action</b></td></tr>");
-	int evts_len = array_list_length(evts);
-	docker_log_debug("Num events %d", evts_len);
-	for (int i = 0; i < evts_len; i++) {
-		docker_event* event = array_list_get_idx(evts, i);
-		strcat(content, "<tr><td>");
-		struct tm* timeinfo = localtime(&event->time);
-		char evt_time_str[256];
-		sprintf(evt_time_str, "%s", asctime(timeinfo));
-		strcat(content, evt_time_str);
-		strcat(content, "</td><td>");
-		strcat(content, event->type);
-		strcat(content, "</td><td>");
-		strcat(content, event->action);
-		//		strcat(content, "</td><td>");
-		//
-		//		strcat(content, event->actor_id);
-		//		strcat(content, "</td><td>");
-		//
-		//		strcat(content, json_object_get_string(event->actor_attributes));
-		strcat(content, "</td></tr>");
-	}
-	strcat(content, "</table></font></body></html>");
-	XmHTMLTextSetString(html, content);
-}
-
-void create_events_table(Widget* events_table, Widget docker_server_w) {
-	Widget docker_summary = XtNameToWidget(docker_server_w,
-			"docker_server_summary_textSW");
-	(*events_table) = XtVaCreateManagedWidget("events_table", xmHTMLWidgetClass,
-			docker_server_w, XmNmarginWidth, 0, XmNmarginHeight, 0, XmNwidth,
-			300, XmNheight, 500,
-//			XmNleftAttachment, XmATTACH_WIDGET,
-//			XmNleftWidget, docker_summary,
-//			XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
-//			XmNtopWidget, docker_summary,
-//			XmNtopAttachment, XmATTACH_FORM,
-//			XmNrightAttachment, XmATTACH_FORM,
-			XmNtopAttachment, XmATTACH_POSITION,
-			XmNtopPosition, 10,
-			XmNleftAttachment, XmATTACH_POSITION,
-			XmNleftPosition, 70,
-			XmNbottomAttachment, XmATTACH_POSITION,
-			XmNbottomPosition, 100,
-			XmNrightAttachment, XmATTACH_POSITION,
-			XmNrightPosition, 100,
-			NULL);
-}
-
 vrex_err_t make_docker_server_window(vrex_context* vrex, Widget* server_w) {
 	Widget list_w, child, docker_summary_text, docker_summary_scrolled_w;
 	Widget docker_server_frame, label;
@@ -187,10 +129,10 @@ vrex_err_t make_docker_server_window(vrex_context* vrex, Widget* server_w) {
 	XtVaSetValues(docker_summary_text,
 	XmNvalue, summary, NULL);
 
-	Widget events_table;
-	create_events_table(&events_table, docker_server_w);
-
-	updated_events_table(events_table, vrex, res);
+//	Widget events_table;
+//	create_events_table(&events_table, docker_server_w);
+//
+//	update_events_table(events_table, vrex, res);
 
 //	create_docker_server_toolbar(docker_server_w, vrex);
 

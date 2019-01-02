@@ -50,6 +50,19 @@ Widget get_container_list_w(vrex_context* vrex) {
 			XtNameToWidget(
 					XtNameToWidget(
 							XtNameToWidget(*(vrex->main_w),
-									"docker_server_frame_w"), "docker_server_w"),
-					"container_list_toplevel"), "mw");
+									"docker_server_frame_w"),
+							"docker_server_w"), "container_list_toplevel"),
+			"mw");
+}
+
+void MakePosVisible(Widget list_w, int item_no) {
+	int top, visible;
+	XtVaGetValues(list_w, XmNtopItemPosition, &top,
+	XmNvisibleItemCount, &visible, NULL);
+//	docker_log_debug("Position item # %d, top %d, visible %d", item_no, top,
+//			visible);
+	if (item_no < top)
+		XmListSetPos(list_w, item_no);
+	else if (item_no >= top + visible)
+		XmListSetBottomPos(list_w, item_no);
 }
