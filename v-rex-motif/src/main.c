@@ -35,6 +35,7 @@
 #include "docker_server_window.h"
 #include "events_window.h"
 #include "theme.h"
+#include "statusbar_window.h"
 
 #include <log.h>
 
@@ -44,20 +45,6 @@
 //#define VREX_USE_THREADS 0
 
 static pthread_mutex_t interactions_w_lock;
-
-void create_statusbar(Widget main_w, vrex_context* vrex) {
-	Widget statusbar;
-	Arg args[10];
-	int n = 0;
-	XmString str = XmStringCreateLocalized("V-Rex: starting...");
-	XtSetArg(args[n], XmNlabelString, str);
-	n++;
-	statusbar = XmCreateLabel(main_w, "statusbar", args, n);
-	XmStringFree(str);
-	XtManageChild(statusbar);
-	XtVaSetValues(main_w,
-	XmNmessageWindow, statusbar, NULL);
-}
 
 void docker_error_handler_log(docker_result* res) {
 	docker_log_debug("DOCKER_RESULT: For URL: %s", get_docker_result_url(res));
@@ -149,18 +136,9 @@ void* docker_ping_util(void* args) {
 
 void docker_ping_cb(Widget widget, XtPointer client_data, XtPointer call_data) {
 	vrex_context* vrex = (vrex_context*) client_data;
-	for (int i = 0; i < 10; i++) {
-		pthread_t docker_ping_thread;
-		int thread_id = pthread_create(&docker_ping_thread, NULL,
-				&docker_ping_util, vrex);
-
-		printf("Thread creation is %d\n", thread_id);
-		fflush(0);
-	}
-//	pthread_join(docker_ping_thread, NULL);
-	//docker_ping(vrex->d_ctx, &res);
-
-//	vrex->handle_error(vrex, res);
+	pthread_t docker_ping_thread;
+	int thread_id = pthread_create(&docker_ping_thread, NULL, &docker_ping_util,
+			vrex);
 }
 
 void create_docker_server_toolbar(Widget docker_server_w, vrex_context* vrex) {
@@ -260,8 +238,9 @@ void exit_if_no_threads() {
 	}
 }
 
-int extract_args_url_connection(int argc, char* url, char* argv[],
+int extract_args_url_connection(int argc, char** ret_url, char* argv[],
 		docker_context** ctx, docker_result** res) {
+	char* url;
 	int connected = 0;
 	if (argc > 1) {
 		url = argv[1];
@@ -288,6 +267,7 @@ int extract_args_url_connection(int argc, char* url, char* argv[],
 			docker_log_info("%s is alive.", url);
 		}
 	}
+	(*ret_url) = url;
 	return connected;
 }
 
@@ -327,7 +307,7 @@ int main(int argc, char *argv[]) {
 	toplevel = XtVaOpenApplication(&app, "V-Rex", NULL, 0, &argc, argv,
 			fallback, sessionShellWidgetClass, NULL);
 
-	connected = extract_args_url_connection(argc, url, argv, &ctx, &res);
+	connected = extract_args_url_connection(argc, &url, argv, &ctx, &res);
 	if (!connected) {
 		return E_PING_FAILED;
 	}
@@ -355,11 +335,14 @@ int main(int argc, char *argv[]) {
 	handle_error(vrex, res);
 
 	create_menubar(main_w, vrex);
-	create_statusbar(main_w, vrex);
+	create_statusbar(vrex, main_w);
 
 	make_docker_server_window(vrex, &docker_server_w);
 	make_docker_events_window(vrex, docker_server_w, &events_w);
 	make_container_list_window(docker_server_w, &matrix_w, vrex);
+
+	set_statusbar_message(vrex, "woah! loaded.");
+	set_statusbar_url(vrex, url);
 
 	XtRealizeWidget(toplevel);
 	XtAppMainLoop(app);
