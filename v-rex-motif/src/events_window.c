@@ -146,7 +146,7 @@ vrex_err_t make_docker_events_window(vrex_context* vrex, Widget server_w,
 	XmNleftAttachment, XmATTACH_POSITION,
 	XmNleftPosition, 70,
 	XmNbottomAttachment, XmATTACH_POSITION,
-	XmNbottomPosition, 100,
+	XmNbottomPosition, 50,
 	XmNrightAttachment, XmATTACH_POSITION,
 	XmNrightPosition, 100,
 	NULL);

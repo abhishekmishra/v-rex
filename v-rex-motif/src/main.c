@@ -29,6 +29,7 @@
 
 #include "docker_connection_util.h"
 #include "docker_system.h"
+#include "docker_images.h"
 #include "vrex_util.h"
 #include "container_list_window.h"
 #include "interactions_window.h"
@@ -36,6 +37,7 @@
 #include "events_window.h"
 #include "theme.h"
 #include "statusbar_window.h"
+#include "messages_window.h"
 
 #include <log.h>
 
@@ -141,8 +143,45 @@ void docker_ping_cb(Widget widget, XtPointer client_data, XtPointer call_data) {
 			vrex);
 }
 
+void docker_pull_status_cb(docker_image_create_status* status, void* cbargs) {
+	vrex_context* vrex = (vrex_context*) cbargs;
+	add_messages_entry(vrex, status->status);
+}
+
+struct pull_args {
+	vrex_context* vrex;
+	char* image_name;
+};
+
+void* docker_pull_util(void* args) {
+//	vrex_context* vrex = (vrex_context*) args;
+	struct pull_args* pa = (struct pull_args*) args;
+	docker_result* result;
+	docker_image_create_from_image_cb(pa->vrex->d_ctx, &result,
+			&docker_pull_status_cb, pa->vrex, pa->image_name, NULL, NULL);
+	pa->vrex->handle_error(pa->vrex, result);
+	free(pa->image_name);
+	free(pa);
+	pthread_exit(0);
+	return NULL;
+}
+
+void docker_pull_cb(Widget widget, XtPointer client_data, XtPointer call_data) {
+	vrex_context* vrex = (vrex_context*) client_data;
+	pthread_t docker_pull_thread;
+	struct pull_args* pa = (struct pull_args*)calloc(1, sizeof(struct pull_args));
+	pa->vrex = vrex;
+	String val;
+	Widget imageWidget = XtNameToWidget(XtParent(widget), "Image Name");
+	XtVaGetValues(imageWidget, XmNvalue, &val, NULL);
+	pa->image_name = (char*) val;
+	int thread_id = pthread_create(&docker_pull_thread, NULL, &docker_pull_util,
+			pa);
+}
+
 void create_docker_server_toolbar(Widget docker_server_w, vrex_context* vrex) {
-	Widget docker_server_toolbar, runningToggleButton, toolbarButton;
+	Widget docker_server_toolbar, runningToggleButton, toolbarButton,
+			request_time_text;
 	docker_server_toolbar = XtVaCreateManagedWidget("toolbar_w",
 			xmRowColumnWidgetClass, docker_server_w,
 			XmNorientation, XmHORIZONTAL,
@@ -166,12 +205,20 @@ void create_docker_server_toolbar(Widget docker_server_w, vrex_context* vrex) {
 //	XtVaSetValues(refreshButton, XmNlabelString, XmStringCreate("Sample Text \u0410\u0411\u0412\u0413\u0414\u0415\u0401 █ это - кошка: Prune", "UTF-8"), NULL);
 	XtManageChild(toolbarButton);
 
-	toolbarButton = XtVaCreateManagedWidget("Pull Image",
+	toolbarButton = XtVaCreateManagedWidget("Run Container",
 			xmPushButtonWidgetClass, docker_server_toolbar, NULL);
 	XtManageChild(toolbarButton);
 
-	toolbarButton = XtVaCreateManagedWidget("Run Container",
+	request_time_text = XtVaCreateManagedWidget("Image Name", xmTextWidgetClass,
+			docker_server_toolbar,
+			XmNeditable, True,
+			XmNvalue, "alpine:latest",
+			XmNcolumns, 40,
+			NULL);
+
+	toolbarButton = XtVaCreateManagedWidget("Pull Image",
 			xmPushButtonWidgetClass, docker_server_toolbar, NULL);
+	XtAddCallback(toolbarButton, XmNactivateCallback, docker_pull_cb, vrex);
 	XtManageChild(toolbarButton);
 
 	XtManageChild(docker_server_toolbar);
@@ -339,6 +386,7 @@ int main(int argc, char *argv[]) {
 
 	make_docker_server_window(vrex, &docker_server_w);
 	make_docker_events_window(vrex, docker_server_w, &events_w);
+	make_docker_messages_window(vrex, docker_server_w);
 	make_container_list_window(docker_server_w, &matrix_w, vrex);
 
 	set_statusbar_message(vrex, "woah! loaded.");
