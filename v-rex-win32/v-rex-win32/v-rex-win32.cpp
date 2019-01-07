@@ -3,6 +3,8 @@
 
 #include "stdafx.h"
 #include "v-rex-win32.h"
+#include "vrex-util.h"
+#include "docker_connection_util.h"
 
 #define MAX_LOADSTRING 100
 
@@ -23,27 +25,34 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_ int       nCmdShow)
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
-	UNREFERENCED_PARAMETER(lpCmdLine);
+	//UNREFERENCED_PARAMETER(lpCmdLine);
 
 	// TODO: Place code here.
 	int argc;
 	LPWSTR * argv = CommandLineToArgvW(lpCmdLine, &argc);
-	if (NULL == argv)
-	{
-		wprintf(L"CommandLineToArgvW failed\n");
-		return 0;
-	}
-	else
-	{
-		for (int i = 0; i < argc; i++) 
-		{
-			MessageBox(NULL, argv[i],
-				szTitle, MB_ICONINFORMATION);
-		}
-	}
+	//if (NULL == argv)
+	//{
+	//	wprintf(L"CommandLineToArgvW failed\n");
+	//	return 0;
+	//}
+	//else
+	//{
+	//	for (int i = 0; i < argc; i++) 
+	//	{
+	//		MessageBox(NULL, argv[i],
+	//			szTitle, MB_ICONINFORMATION);
+	//	}
+	//}
+	LPWSTR url = (LPWSTR)calloc(1024, sizeof(WCHAR));
+	docker_context* ctx;
+	docker_result* res;
+	extract_args_url_connection(argc, &url, argv, &ctx, &res);
+	//MessageBox(NULL, url,
+	//				L"woah", MB_ICONINFORMATION);
 
 	// Free memory allocated for CommandLineToArgvW arguments.
-	LocalFree(argv);
+	//LocalFree(argv);
+	//LocalFree(url);
 
 	// Initialize global strings
 	LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
