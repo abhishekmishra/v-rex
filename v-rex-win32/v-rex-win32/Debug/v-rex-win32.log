@@ -1,0 +1,3 @@
+﻿  stdafx.cpp
+  v-rex-win32.cpp
+c:\users\abhis\code\v-rex\v-rex-win32\v-rex-win32\v-rex-win32.cpp(9): fatal error C1083: Cannot open include file: 'log.h': No such file or directory
