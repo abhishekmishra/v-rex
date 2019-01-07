@@ -60,3 +60,5 @@ obj/
 .vs/
 
 v-rex-win32/x64
+v-rex-win32/v-rex-win32/Debug
+v-rex-win32/v-rex-win32/Release
