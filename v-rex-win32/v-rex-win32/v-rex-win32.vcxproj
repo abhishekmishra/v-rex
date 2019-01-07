@@ -75,8 +75,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>E:\json-c-0_13_1\json-c\build\include;$(MSBuildProjectDirectory)\..\..\..\clibdocker\src;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\json-c-0_13_1\json-c\build\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\abhis\code\clibdocker\src;E:\json-c-0_13_1\json-c\build\include;$(MSBuildProjectDirectory)\..\..\..\clibdocker\src;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\abhis\code\v-rex\v-rex-win32\x64\Debug;E:\json-c-0_13_1\json-c\build\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -111,9 +111,13 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ShowProgress>NotSet</ShowProgress>
-      <AdditionalDependencies>json-c.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ShowProgress>LinkVerbose</ShowProgress>
+      <AdditionalDependencies>json-c.lib;clibdocker.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -178,8 +182,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\clibdocker\clibdocker.vcxproj">
       <Project>{5a5b3f9f-46ca-4673-ac8a-e01293ddfbc5}</Project>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
+      <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
   </ItemGroup>
