@@ -6,7 +6,29 @@
 #include "v-rex-win32.h"
 #include "vrex-util.h"
 #include <docker_connection_util.h>
+#include <docker_system.h>
 #include <wchar.h>
+
+/**
+ * A simple error handler suitable for programs
+ * which just want to log the error (if any).
+ */
+wchar_t* docker_simple_error_handler_wsprintf(docker_result* res) {
+	wchar_t* report = (wchar_t*)calloc(2048, sizeof(wchar_t));
+	wsprintf(report, 
+		L"DOCKER_RESULT: For URL: %S\n DOCKER RESULT: Response error_code = %d, http_response = %ld\n", 
+		get_docker_result_url(res),
+		get_docker_result_error(res), 
+		get_docker_result_http_error(res));
+	if (!is_ok(res)) {
+		wsprintf(report, L"DOCKER RESULT: %S\n", get_docker_result_message(res));
+	}
+	return report;
+}
+
+wchar_t* handle_error(docker_result* res) {
+	return docker_simple_error_handler_wsprintf(res);
+}
 
 #define MAX_LOADSTRING 100
 
@@ -154,19 +176,30 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		HDC hdc = BeginPaint(hWnd, &ps);
 		// TODO: Add any drawing code that uses hdc here...
 		curl_global_init(CURL_GLOBAL_ALL);
-		const char* url = "http://192.168.1.33:2376";
+		const char* url = "http://192.168.1.33:2376/";
 		docker_context* ctx;
 		docker_result* res;
 		extract_args_url_connection(url, &ctx, &res);
-		free_docker_context(&ctx);
-		curl_global_cleanup();
-		
+
 		wchar_t* output_str = (wchar_t*)calloc(1024, sizeof(wchar_t));
 		if (output_str != NULL) {
 			wsprintf(output_str, L"Connected to %S", url);
 			MessageBox(NULL, output_str,
 				L"woah", MB_ICONINFORMATION);
 		}
+
+		docker_version* version;
+		docker_system_version(ctx, &res, &version);
+		wchar_t* report = handle_error(res);
+		if (report != NULL && res->http_error_code == 200) {
+			wchar_t* version_info = (wchar_t*)calloc(10240, sizeof(wchar_t));
+			wsprintf(version_info, L"%S", res->response_json_str);
+			MessageBox(NULL, version_info,
+				L"woah", MB_ICONINFORMATION);
+		}
+		free_docker_context(&ctx);
+		curl_global_cleanup();
+
 		EndPaint(hWnd, &ps);
 	}
 	break;
