@@ -215,7 +215,7 @@ int make_container_list_window(Widget parent, Widget* container_ls_w,
 			XmNleftAttachment, XmATTACH_POSITION,
 			XmNleftPosition, 0,
 			XmNbottomAttachment, XmATTACH_POSITION,
-			XmNbottomPosition, 100,
+			XmNbottomPosition, 70,
 			XmNrightAttachment, XmATTACH_POSITION,
 			XmNrightPosition, 70,
 			NULL);

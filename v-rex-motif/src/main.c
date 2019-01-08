@@ -38,6 +38,9 @@
 #include "theme.h"
 #include "statusbar_window.h"
 #include "messages_window.h"
+#include "images_list_window.h"
+#include "network_list_window.h"
+#include "volumes_list_window.h"
 
 #include <log.h>
 
@@ -388,6 +391,9 @@ int main(int argc, char *argv[]) {
 	make_docker_events_window(vrex, docker_server_w, &events_w);
 	make_docker_messages_window(vrex, docker_server_w);
 	make_container_list_window(docker_server_w, &matrix_w, vrex);
+	make_docker_networks_list_window(vrex, docker_server_w);
+	make_docker_images_list_window(vrex, docker_server_w);
+	make_docker_volumes_list_window(vrex, docker_server_w);
 
 	set_statusbar_message(vrex, "woah! loaded.");
 	set_statusbar_url(vrex, url);
