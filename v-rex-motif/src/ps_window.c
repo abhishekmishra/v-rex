@@ -6,6 +6,8 @@
  */
 #include <stdlib.h>
 #include <log.h>
+#include <Xm/Frame.h>
+#include <Xm/LabelG.h>
 #include "ps_window.h"
 #include "vrex_util.h"
 
@@ -17,38 +19,76 @@
  * \return error code
  */
 int make_ps_window(Widget parent, Widget* ps_w) {
-	(*ps_w) = XtVaCreateManagedWidget("ps_w", xbaeMatrixWidgetClass, parent,
-	XmNcolumns, 8,
-	XmNrows, 0,
-	XmNvisibleColumns, 8,
-	XmNheight, 200,
-	XmNshadowType, XmSHADOW_ETCHED_OUT,
-	XmNcellShadowThickness, 0,
-	XmNtextShadowThickness, 0,
-	XmNcellHighlightThickness, 1,
-	XmNcolumnLabelColor, 0x800000,
+	Widget docker_process_list_frame_w, label;
+	int n = 0;
+	Arg args[10];
+
+	n = 0;
+	XtSetArg(args[n], XmNshadowType, XmSHADOW_OUT);
+	n++;
+	XtSetArg(args[n], XmNmarginWidth, 1);
+	n++;
+	XtSetArg(args[n], XmNmarginHeight, 1);
+	n++;
+	docker_process_list_frame_w = XmCreateFrame(parent,
+			"docker_process_list_frame_w", args, n);
+
+	n = 0;
+	XtSetArg(args[n], XmNframeChildType, XmFRAME_TITLE_CHILD);
+	n++;
+	XtSetArg(args[n], XmNchildVerticalAlignment, XmALIGNMENT_CENTER);
+	n++;
+	label = XmCreateLabelGadget(docker_process_list_frame_w, "Container PS",
+			args, n);
+
+	(*ps_w) = XtVaCreateManagedWidget("ps_w", xbaeMatrixWidgetClass,
+			docker_process_list_frame_w,
+			XmNcolumns, 8,
+			XmNrows, 0,
+			XmNvisibleColumns, 8,
+			XmNheight, 200,
+			XmNshadowType, XmSHADOW_ETCHED_OUT,
+			XmNcellShadowThickness, 0,
+			XmNtextShadowThickness, 0,
+			XmNcellHighlightThickness, 1,
+			NULL);
+
+	XtVaSetValues(docker_process_list_frame_w,
 	XmNtopAttachment, XmATTACH_POSITION,
-	XmNtopPosition, 51,
+	XmNtopPosition, 0,
 	XmNleftAttachment, XmATTACH_POSITION,
-	XmNleftPosition, 1,
+	XmNleftPosition, 50,
 	XmNbottomAttachment, XmATTACH_POSITION,
 	XmNbottomPosition, 100,
 	XmNrightAttachment, XmATTACH_POSITION,
 	XmNrightPosition, 100,
 	NULL);
+
+	XtManageChild(label);
+	XtManageChild(docker_process_list_frame_w);
 	return 0;
+}
+
+Widget get_ps_list_window(vrex_context* vrex) {
+	Widget container_list_toplevel = XtNameToWidget(
+			XtNameToWidget(
+					XtNameToWidget(*(vrex->main_w), "docker_server_frame_w"),
+					"docker_server_w"), "container_list_toplevel");
+	return XtNameToWidget(
+			XtNameToWidget(container_list_toplevel,
+					"docker_process_list_frame_w"), "ps_w");
 }
 
 /**
  * Set the docker container id for the table
  *
- * \param ps_w the window handle
  * \param ctx already initialized docker_context
  * \param id container id
  * \return error code
  */
-int set_ps_window_docker_id(Widget ps_w, vrex_context* vrex, char* id) {
+int set_ps_window_docker_id(vrex_context* vrex, char* id) {
 	docker_log_debug("Updating ps for id %s", id);
+	Widget ps_w = get_ps_list_window(vrex);
 	docker_result* result;
 	docker_container_ps* ps;
 	docker_process_list_container(vrex->d_ctx, &result, &ps, id, NULL);
@@ -60,7 +100,8 @@ int set_ps_window_docker_id(Widget ps_w, vrex_context* vrex, char* id) {
 		for (int i = 0; i < array_list_length(ps->titles); i++) {
 //		docker_log_info("Title is %s at %d", array_list_get_idx(ps->titles, i),
 //				i);
-			add_column(ps_w, array_list_get_idx(ps->titles, i), i, 10);
+			xbae_matrix_add_column(ps_w, array_list_get_idx(ps->titles, i), i,
+					10);
 		}
 
 		int num_rows = XbaeMatrixNumRows(ps_w);

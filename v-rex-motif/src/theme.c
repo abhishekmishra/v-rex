@@ -28,19 +28,32 @@ static String dark_fallback[] =
 				"V-Rex*main_w.borderWidth:		10",
 				"V-Rex*main_w.shadowThickness:		0",
 				"V-Rex*.background:		#000000", "V-Rex*.foreground:		#C0C0C0",
-				"V-Rex*.borderColor:		#A9A9A9",
+				"V-Rex*.borderColor:		#000000",
 				"V-Rex*.highlightColor:		#008080",
-				"V-Rex*.bottomShadowColor:		#696969",
-				"V-Rex*.topShadowColor:		#696969", "V-Rex*.shadowThickness: 1",
+				"V-Rex*.bottomShadowColor:		#333333",
+				"V-Rex*.topShadowColor:		#333333", "V-Rex*.shadowThickness: 1",
 				"V-Rex*.selectColor: #2F4F4F", "V-Rex*.unselectColor: #000000",
+
+// Frame label colors
+				"V-Rex*Volumes.foreground:							#696969",
+				"V-Rex*Networks.foreground:							#696969",
+				"V-Rex*Images.foreground:							#696969",
+				"V-Rex*Docker Events.foreground:					#696969",
+				"V-Rex*Messages.foreground:							#696969",
+				"V-Rex*Containers.foreground:						#696969",
+				"V-Rex*Container PS.foreground:						#696969",
+				"V-Rex*Docker API Interactions.foreground:			#696969",
+				"V-Rex*Docker Server Summary.foreground:			#696969",
 
 //TODO: see https://gist.github.com/unix-junkie/68bdf8420d6c7b7925f4
 // and https://stackoverflow.com/questions/34360066/xmstringgenerate-in-xmmultibyte-text-or-xmwidechar-text-mode
 // for UTF-8
 //UTF-8 font	"V-Rex*fontList: terminus-12",
 				"V-Rex*fontList: -*-terminus-medium-r-*-*-12-*-*-*-*-*-*-*",
-				"V-Rex*labelFont: -*-lucida-bold-r-*-*-12-*-*-*-*-*-*-*",
-				"V-Rex*docker_server_summary_text.fontList: -*-terminus-bold-r-*-*-12-*-*-*-*-*-*-*",
+				"V-Rex*labelFont: -*-terminus-medium-r-*-*-12-*-*-*-*-*-*-*",
+				"V-Rex*docker_server_summary_text.fontList: -*-terminus-bold-r-*-*-14-*-*-*-*-*-*-*",
+//For tables
+				"V-Rex*columnLabelColor: #B0E0E6",
 				NULL };
 
 static String light_fallback[] =
@@ -59,8 +72,10 @@ static String light_fallback[] =
 // for UTF-8
 //UTF-8 font	"V-Rex*fontList: terminus-12",
 				"V-Rex*fontList: -*-terminus-medium-r-*-*-12-*-*-*-*-*-*-*",
-				"V-Rex*labelFont: -*-lucida-bold-r-*-*-12-*-*-*-*-*-*-*",
+				"V-Rex*labelFont: -*-lucida-medium-r-*-*-12-*-*-*-*-*-*-*",
 				"V-Rex*docker_server_summary_text.fontList: -*-terminus-bold-r-*-*-12-*-*-*-*-*-*-*",
+//For tables
+				"V-Rex*columnLabelColor: #F5DEB3",
 				NULL };
 
 

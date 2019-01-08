@@ -38,7 +38,7 @@ void create_summary_scrolled_text(Widget* dst, Widget docker_server_w) {
 	int n;
 	Arg args[20];
 	n = 0;
-	XtSetArg(args[n], XmNrows, 25);
+	XtSetArg(args[n], XmNrows, 1);
 	n++;
 	XtSetArg(args[n], XmNcolumns, 40);
 	n++;
@@ -64,10 +64,11 @@ void create_summary_scrolled_text(Widget* dst, Widget docker_server_w) {
 	n++;
 	XtSetArg(args[n], XmNrightPosition, 100);
 	n++;
-	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_POSITION);
-	n++;
-	XtSetArg(args[n], XmNbottomPosition, 10);
-	n++;
+//  Don't want a fixed height, just enough to fill one line of text for now.
+//	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_POSITION);
+//	n++;
+//	XtSetArg(args[n], XmNbottomPosition, 10);
+//	n++;
 	Widget docker_summary_text = XmCreateScrolledText(docker_server_w,
 			"docker_server_summary_text", args, n);
 	XtManageChild(docker_summary_text);

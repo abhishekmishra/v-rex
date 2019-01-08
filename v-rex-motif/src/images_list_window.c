@@ -52,7 +52,7 @@ vrex_err_t make_docker_images_list_window(vrex_context* vrex, Widget parent_w) {
 	n++;
 	XtSetArg(args[n], XmNchildVerticalAlignment, XmALIGNMENT_CENTER);
 	n++;
-	label = XmCreateLabelGadget(docker_images_list_frame_w, "Docker Images", args, n);
+	label = XmCreateLabelGadget(docker_images_list_frame_w, "Images", args, n);
 
 	docker_images_list_w = XtVaCreateManagedWidget("docker_images_list_w", xbaeMatrixWidgetClass,
 			docker_images_list_frame_w,
@@ -65,14 +65,13 @@ vrex_err_t make_docker_images_list_window(vrex_context* vrex, Widget parent_w) {
 			XmNcellShadowThickness, 0,
 			XmNtextShadowThickness, 0,
 			XmNcellHighlightThickness, 1,
-			XmNcolumnLabelColor, 0x800000,
 			NULL);
 
 //	XtAddCallback(docker_images_list_w, XmNlabelActivateCallback, labelCB, NULL);
 //	XtAddCallback(docker_images_list_w, XmNenterCellCallback, cellCB, NULL);
 	XtVaSetValues(docker_images_list_frame_w,
 	XmNtopAttachment, XmATTACH_POSITION,
-	XmNtopPosition, 70,
+	XmNtopPosition, 60,
 	XmNleftAttachment, XmATTACH_POSITION,
 	XmNleftPosition, 0,
 	XmNbottomAttachment, XmATTACH_POSITION,

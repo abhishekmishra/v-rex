@@ -58,6 +58,7 @@ Widget get_container_list_w(vrex_context* vrex);
 
 void MakePosVisible(Widget list_w, int item_no);
 
-
+void xbae_matrix_add_column(Widget mw, char* name, int num, int width);
+void xbae_matrix_readonly_cell_cb(Widget mw, XtPointer cd, XtPointer cb);
 
 #endif /* SRC_VREX_UTIL_H_ */

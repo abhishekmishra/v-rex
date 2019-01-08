@@ -33,7 +33,7 @@ int make_ps_window(Widget parent, Widget* ps_w);
  * \param id container id
  * \return error code
  */
-int set_ps_window_docker_id(Widget ps_w, vrex_context* vrex, char* id);
+int set_ps_window_docker_id(vrex_context* vrex, char* id);
 
 // Model methods
 

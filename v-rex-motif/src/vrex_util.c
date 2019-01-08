@@ -8,11 +8,6 @@
 #include "vrex_util.h"
 #include "log.h"
 
-void add_column(Widget mw, char* name, int num, int width) {
-	XbaeMatrixSetColumnLabel(mw, num, name);
-	XbaeMatrixSetColumnWidth(mw, num, width);
-}
-
 vrex_err_t init_results_list(vrex_context* vrex) {
 	if (vrex != NULL) {
 		vrex->results = array_list_new((void (*)(void *)) &free_docker_result);
@@ -49,10 +44,12 @@ Widget get_container_list_w(vrex_context* vrex) {
 	return XtNameToWidget(
 			XtNameToWidget(
 					XtNameToWidget(
-							XtNameToWidget(*(vrex->main_w),
-									"docker_server_frame_w"),
-							"docker_server_w"), "container_list_toplevel"),
-			"mw");
+							XtNameToWidget(
+									XtNameToWidget(*(vrex->main_w),
+											"docker_server_frame_w"),
+									"docker_server_w"),
+							"container_list_toplevel"),
+					"docker_containers_list_frame_w"), "mw");
 }
 
 void MakePosVisible(Widget list_w, int item_no) {
@@ -65,4 +62,17 @@ void MakePosVisible(Widget list_w, int item_no) {
 		XmListSetPos(list_w, item_no);
 	else if (item_no >= top + visible)
 		XmListSetBottomPos(list_w, item_no);
+}
+
+void xbae_matrix_add_column(Widget mw, char* name, int num, int width) {
+	XbaeMatrixSetColumnLabel(mw, num, name);
+	XbaeMatrixSetColumnWidth(mw, num, width);
+}
+
+void xbae_matrix_readonly_cell_cb(Widget mw, XtPointer cd, XtPointer cb) {
+	XbaeMatrixEnterCellCallbackStruct *cbs =
+			(XbaeMatrixEnterCellCallbackStruct*) cb;
+	cbs->map = True;
+	cbs->doit = False;
+	cbs->select_text = True;
 }

@@ -54,7 +54,7 @@ vrex_err_t make_docker_messages_window(vrex_context* vrex, Widget parent_w) {
 	n++;
 	XtSetArg(args[n], XmNchildVerticalAlignment, XmALIGNMENT_CENTER);
 	n++;
-	label = XmCreateLabelGadget(messages_frame_w, "Docker Messages", args, n);
+	label = XmCreateLabelGadget(messages_frame_w, "Messages", args, n);
 
 	messages_w = XmCreateScrolledList(messages_frame_w, "messages_w",
 	NULL, 0);

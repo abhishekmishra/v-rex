@@ -112,6 +112,8 @@ void* update_events_table(void* args) {
 
 vrex_err_t make_docker_events_window(vrex_context* vrex, Widget server_w,
 		Widget* events_w) {
+	Widget docker_server_summary_textSW = XtNameToWidget(server_w,
+			"docker_server_summary_textSW");
 	Widget events_frame_w, label;
 	int n = 0;
 	Arg args[10];
@@ -141,15 +143,16 @@ vrex_err_t make_docker_events_window(vrex_context* vrex, Widget server_w,
 	NULL);
 
 	XtVaSetValues(events_frame_w,
-	XmNtopAttachment, XmATTACH_POSITION,
-	XmNtopPosition, 10,
-	XmNleftAttachment, XmATTACH_POSITION,
-	XmNleftPosition, 70,
-	XmNbottomAttachment, XmATTACH_POSITION,
-	XmNbottomPosition, 50,
-	XmNrightAttachment, XmATTACH_POSITION,
-	XmNrightPosition, 100,
-	NULL);
+	//Need to attach to the bottom right of the summary text window.
+			XmNtopAttachment, XmATTACH_WIDGET,
+			XmNtopWidget, docker_server_summary_textSW,
+			XmNleftAttachment, XmATTACH_POSITION,
+			XmNleftPosition, 70,
+			XmNbottomAttachment, XmATTACH_POSITION,
+			XmNbottomPosition, 50,
+			XmNrightAttachment, XmATTACH_POSITION,
+			XmNrightPosition, 100,
+			NULL);
 
 	XtManageChild((*events_w));
 	XtManageChild(label);
