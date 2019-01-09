@@ -1,0 +1,10 @@
+bin/
+obj/
+Make*
+*.sh
+*.nocompine
+dependencies.md
+.settings
+.vs
+.cproject
+.project
