@@ -9,8 +9,8 @@ docker run --rm -it --privileged \
     -v /var/run/docker.sock:/var/run/docker.sock \
     --volume="$HOME/.Xauthority:/root/.Xauthority:rw" \
     --env="DISPLAY" \
-    --name v-rex-motif \
-    abhishekmishra3/v-rex-motif:latest /root/v-rex/v-rex-motif/bin/release/v-rex
+    --name v-rex \
+    abhishekmishra3/v-rex:latest /root/v-rex/v-rex-motif/bin/release/v-rex
 ```
 
 ##### To connect to a remote docker via http, do the following...
@@ -24,6 +24,6 @@ docker run --rm -it --privileged \
     -v /var/run/docker.sock:/var/run/docker.sock \
     --volume="$HOME/.Xauthority:/root/.Xauthority:rw" \
     --env="DISPLAY" \
-    --name v-rex-motif \
-    abhishekmishra3/v-rex-motif:latest /root/v-rex/v-rex-motif/bin/release/v-rex http://<host>:<port>/
+    --name v-rex \
+    abhishekmishra3/v-rex:latest /root/v-rex/v-rex-motif/bin/release/v-rex http://<host>:<port>/
 ```
