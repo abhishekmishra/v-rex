@@ -131,7 +131,7 @@ vrex_err_t refresh_networks_list(vrex_context* vrex) {
 	vrex->handle_error(vrex, res);
 	int len_nets = array_list_length(networks);
 	for (int i = 0; i < len_nets; i++) {
-		docker_network_item* ni = (docker_network_item*) array_list_get_idx(
+		docker_network* ni = (docker_network*) array_list_get_idx(
 				networks, i);
 		docker_log_info("Found network %s %s", ni->name, ni->id);
 
@@ -139,11 +139,11 @@ vrex_err_t refresh_networks_list(vrex_context* vrex) {
 		char** rows;
 		rows = (char**) XtCalloc(10, sizeof(String));
 
-		rows[col_num++] = docker_network_item_get_name(ni);
-		rows[col_num++] = docker_network_item_get_driver(ni);
-		rows[col_num++] = docker_network_item_get_scope(ni);
+		rows[col_num++] = docker_network_get_name(ni);
+		rows[col_num++] = docker_network_get_driver(ni);
+		rows[col_num++] = docker_network_get_scope(ni);
 		char* attachable_str = calloc(6, sizeof(char));
-		if(docker_network_item_get_attachable(ni) == 0) {
+		if(docker_network_get_attachable(ni) == 0) {
 			strcpy(attachable_str, "false");
 		}else {
 			strcpy(attachable_str, "true");

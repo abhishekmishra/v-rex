@@ -132,7 +132,7 @@ vrex_err_t refresh_volumes_list(vrex_context* vrex) {
 	vrex->handle_error(vrex, res);
 	int len_nets = array_list_length(volumes);
 	for (int i = 0; i < len_nets; i++) {
-		docker_volume_item* vol = (docker_volume_item*) array_list_get_idx(
+		docker_volume* vol = (docker_volume*) array_list_get_idx(
 				volumes, i);
 		docker_log_info("Found volume %s %s", vol->name, vol->mountpoint);
 
@@ -140,10 +140,10 @@ vrex_err_t refresh_volumes_list(vrex_context* vrex) {
 		char** rows;
 		rows = (char**) XtCalloc(10, sizeof(String));
 
-		rows[col_num++] = docker_volume_item_get_name(vol);
-		rows[col_num++] = docker_volume_item_get_driver(vol);
-		rows[col_num++] = docker_volume_item_get_scope(vol);
-		rows[col_num++] = docker_volume_item_get_mountpoint(vol);
+		rows[col_num++] = docker_volume_get_name(vol);
+		rows[col_num++] = docker_volume_get_driver(vol);
+		rows[col_num++] = docker_volume_get_scope(vol);
+		rows[col_num++] = docker_volume_get_mountpoint(vol);
 
 		XbaeMatrixAddRows(docker_volumes_list_w,
 				XbaeMatrixNumRows(docker_volumes_list_w), rows, NULL, NULL, 1);
