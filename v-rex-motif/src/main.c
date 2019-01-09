@@ -121,8 +121,8 @@ void docker_version_show(Widget widget, XtPointer client_data,
 	n++;
 	XtSetArg(arg[n], XmNdialogType, XmDIALOG_INFORMATION);
 	n++;
-	dialog = XmCreateMessageDialog(widget, "V-Rex: docker version info", arg,
-			n);
+	dialog = XmCreateInformationDialog(*vrex->main_w,
+			"V-Rex: docker version info", arg, n);
 	XtManageChild(dialog);
 	XtUnmanageChild(XtNameToWidget(dialog, "Cancel"));
 	XtUnmanageChild(XtNameToWidget(dialog, "Help"));
@@ -146,47 +146,61 @@ void docker_ping_cb(Widget widget, XtPointer client_data, XtPointer call_data) {
 			vrex);
 }
 
-void docker_pull_status_cb(docker_image_create_status* status, void* cbargs) {
-	vrex_context* vrex = (vrex_context*) cbargs;
-	add_messages_entry(vrex, status->status);
-}
-
-struct pull_args {
-	vrex_context* vrex;
-	char* image_name;
-};
-
-void* docker_pull_util(void* args) {
-//	vrex_context* vrex = (vrex_context*) args;
-	struct pull_args* pa = (struct pull_args*) args;
-	docker_result* result;
-	docker_image_create_from_image_cb(pa->vrex->d_ctx, &result,
-			&docker_pull_status_cb, pa->vrex, pa->image_name, NULL, NULL);
-	pa->vrex->handle_error(pa->vrex, result);
-	free(pa->image_name);
-	free(pa);
-	pthread_exit(0);
-	return NULL;
-}
-
-void docker_pull_cb(Widget widget, XtPointer client_data, XtPointer call_data) {
+void refresh_all_cb(Widget widget, XtPointer client_data, XtPointer call_data) {
 	vrex_context* vrex = (vrex_context*) client_data;
-	pthread_t docker_pull_thread;
-	struct pull_args* pa = (struct pull_args*)calloc(1, sizeof(struct pull_args));
-	pa->vrex = vrex;
-	String val;
-	Widget imageWidget = XtNameToWidget(XtParent(widget), "Image Name");
-	XtVaGetValues(imageWidget, XmNvalue, &val, NULL);
-	pa->image_name = (char*) val;
-	int thread_id = pthread_create(&docker_pull_thread, NULL, &docker_pull_util,
-			pa);
+	refresh_images_list(vrex);
+	refresh_containers_list(vrex);
+	refresh_networks_list(vrex);
+	refresh_volumes_list(vrex);
 }
 
-void create_docker_server_toolbar(Widget docker_server_w, vrex_context* vrex) {
-	Widget docker_server_toolbar, runningToggleButton, toolbarButton,
-			request_time_text;
-	docker_server_toolbar = XtVaCreateManagedWidget("toolbar_w",
-			xmRowColumnWidgetClass, docker_server_w,
+void create_server_toolbar(vrex_context* vrex, Widget toolbar_w) {
+	Widget toolbarButton;
+	Widget server_toolbar_frame_w, label;
+	int n = 0;
+	Arg args[10];
+	n = 0;
+	XtSetArg(args[n], XmNshadowType, XmSHADOW_OUT);
+	n++;
+	XtSetArg(args[n], XmNmarginWidth, 1);
+	n++;
+	XtSetArg(args[n], XmNmarginHeight, 1);
+	n++;
+	server_toolbar_frame_w = XmCreateFrame(toolbar_w, "server_toolbar_frame_w",
+			args, n);
+	XtVaSetValues(server_toolbar_frame_w, XmNmarginWidth, 0, XmNmarginHeight, 0,
+			XmNtopAttachment, XmATTACH_POSITION, XmNtopPosition, 0,
+			XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 0,
+			XmNbottomAttachment, XmATTACH_POSITION, XmNbottomPosition, 2,
+			XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 2, NULL);
+	Widget server_toolbar_w = XtVaCreateManagedWidget("server_toolbar_w",
+			xmRowColumnWidgetClass, server_toolbar_frame_w, XmNorientation,
+			XmHORIZONTAL, XmNmarginWidth, 0, XmNmarginHeight, 0,
+			XmNtopAttachment, XmATTACH_POSITION, XmNtopPosition, 0,
+			XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 0,
+			XmNbottomAttachment, XmATTACH_POSITION, XmNbottomPosition, 2,
+			XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 2, NULL);
+	n = 0;
+	label = XmCreateLabelGadget(server_toolbar_w, "Server", args, n);
+
+	toolbarButton = XtVaCreateManagedWidget("Ping", xmPushButtonWidgetClass,
+			server_toolbar_w, NULL);
+	XtManageChild(toolbarButton);
+	XtAddCallback(toolbarButton, XmNactivateCallback, docker_ping_cb, vrex);
+
+	toolbarButton = XtVaCreateManagedWidget("Prune", xmPushButtonWidgetClass,
+			server_toolbar_w, XmNsensitive, False, NULL);
+	XtManageChild(toolbarButton);
+
+	XtManageChild(label);
+	XtManageChild(server_toolbar_frame_w);
+}
+
+
+void create_vrex_toolbar(Widget docker_server_w, vrex_context* vrex) {
+	Widget toolbar_w, runningToggleButton, toolbarButton;
+	toolbar_w = XtVaCreateManagedWidget("toolbar_w", xmRowColumnWidgetClass,
+			docker_server_w,
 			XmNorientation, XmHORIZONTAL,
 			XmNtopAttachment, XmATTACH_POSITION,
 			XmNtopPosition, 1,
@@ -198,47 +212,81 @@ void create_docker_server_toolbar(Widget docker_server_w, vrex_context* vrex) {
 			XmNrightPosition, 2,
 			NULL);
 
-	toolbarButton = XtVaCreateManagedWidget("Ping", xmPushButtonWidgetClass,
-			docker_server_toolbar, NULL);
-	XtManageChild(toolbarButton);
-	XtAddCallback(toolbarButton, XmNactivateCallback, docker_ping_cb, vrex);
+	create_server_toolbar(vrex, toolbar_w);
+	create_container_toolbar(vrex, toolbar_w);
+	create_images_toolbar(vrex, toolbar_w);
 
-	toolbarButton = XtVaCreateManagedWidget("Server Prune",
-			xmPushButtonWidgetClass, docker_server_toolbar, NULL);
-//	XtVaSetValues(refreshButton, XmNlabelString, XmStringCreate("Sample Text \u0410\u0411\u0412\u0413\u0414\u0415\u0401 █ это - кошка: Prune", "UTF-8"), NULL);
-	XtManageChild(toolbarButton);
-
-	toolbarButton = XtVaCreateManagedWidget("Run Container",
-			xmPushButtonWidgetClass, docker_server_toolbar, NULL);
+	toolbarButton = XtVaCreateManagedWidget("Refresh All", xmPushButtonWidgetClass,
+			toolbar_w, NULL);
+	XtAddCallback(toolbarButton, XmNactivateCallback, refresh_all_cb, vrex);
 	XtManageChild(toolbarButton);
 
-	request_time_text = XtVaCreateManagedWidget("Image Name", xmTextWidgetClass,
-			docker_server_toolbar,
-			XmNeditable, True,
-			XmNvalue, "alpine:latest",
-			XmNcolumns, 40,
-			NULL);
+	XtManageChild(toolbar_w);
+}
 
-	toolbarButton = XtVaCreateManagedWidget("Pull Image",
-			xmPushButtonWidgetClass, docker_server_toolbar, NULL);
-	XtAddCallback(toolbarButton, XmNactivateCallback, docker_pull_cb, vrex);
-	XtManageChild(toolbarButton);
+/* Any item the user selects from the File menu calls this function.
+ ** It will either be "Open" (item_no == 0) or "Quit" (item_no == 1).
+ */
+void vrex_cb(Widget widget, XtPointer client_data, XtPointer call_data) {
+	static Widget dialog;
+	/* make it static for reuse */
+	void
+	load_pixmap(Widget, XtPointer, XtPointer);
+	long item_no = (long) client_data;
+	if (item_no == 1) /* the "quit" item */
+		exit(0);
+	XtManageChild(dialog);
+}
 
-	XtManageChild(docker_server_toolbar);
+#define ABOUT_MESSAGE \
+	"V-Rex verson 0.1a\n\n"\
+	"V-Rex is a fast and simple monitoring UI for docker. \n\n"\
+	"License: GNU GPLv3\n"\
+	"Author: Abhishek Mishra <abhishekmishra3@gmail.com>\n"\
+	"Project Home: https://github.com/abhishekmishra/v-rex\n"
+
+/* The help button in the help menu from the menubar was selected.
+ ** Display help information defined above for how to use the program.
+ ** This is done by creating a Motif information dialog box. Again,
+ ** make the dialog static so we can reuse it.
+ */
+void help_cb(Widget widget, XtPointer client_data, XtPointer call_data) {
+	vrex_context* vrex = (vrex_context*) client_data;
+	static Widget dialog;
+	if (!dialog) {
+		Arg args[5];
+		int n = 0;
+		XmString msg = XmStringCreateLocalized(ABOUT_MESSAGE);
+		XtSetArg(args[n], XmNmessageString, msg);
+		n++;
+		XtSetArg(args[n], XmNdialogType, XmDIALOG_INFORMATION);
+		n++;
+		dialog = XmCreateInformationDialog(XtParent(*vrex->main_w), "About",
+				args, n);
+		XtUnmanageChild(XtNameToWidget(dialog, "Cancel"));
+		XtUnmanageChild(XtNameToWidget(dialog, "Help"));
+	}
+	XtManageChild(dialog);
 }
 
 void create_menubar(Widget main_w, vrex_context* vrex) {
-	Widget menu_bar, quit, docker_version, help, header_container;
+	Widget widget, menu_bar, docker_version, header_container, vrex_menu,
+			help_menu;
+	XmString vrex_str, help_str, pref_str, quit_str, version_str, about_str;
 	Arg arg[1];
 
 	header_container = XmVaCreateManagedForm(main_w, "main_header_w",
 	XmNfractionBase, 2,
 	NULL);
 
-	menu_bar = XmCreateMenuBar(header_container, "main_list",
-	NULL, 0);
-	XtManageChild(menu_bar);
-	XtVaSetValues(menu_bar,
+	vrex_str = XmStringCreateLocalized("V-Rex");
+	help_str = XmStringCreateLocalized("Help");
+	version_str = XmStringCreateLocalized("Docker Version");
+	about_str = XmStringCreateLocalized("About V-Rex");
+	pref_str = XmStringCreateLocalized("Preferences...");
+	menu_bar = XmVaCreateSimpleMenuBar(header_container, "menu_bar",
+	XmVaCASCADEBUTTON, vrex_str, 'V',
+	XmVaCASCADEBUTTON, help_str, 'H',
 	XmNtopAttachment, XmATTACH_POSITION,
 	XmNtopPosition, 0,
 	XmNleftAttachment, XmATTACH_POSITION,
@@ -249,27 +297,48 @@ void create_menubar(Widget main_w, vrex_context* vrex) {
 	XmNrightPosition, 2,
 	NULL);
 
-	/* create quit widget + callback */
+	if ((widget = XtNameToWidget(menu_bar, "button_1")) != (Widget) 0)
+		XtVaSetValues(menu_bar, XmNmenuHelpWidget, widget, NULL);
 
-	quit = XtVaCreateManagedWidget("Quit", xmCascadeButtonWidgetClass, menu_bar,
-	XmNmnemonic, 'Q',
+	quit_str = XmStringCreateLocalized("Quit");
+	vrex_menu = XmVaCreateSimplePulldownMenu(menu_bar, "vrex_menu", 0, vrex_cb,
+	XmVaSEPARATOR,
+	XmVaPUSHBUTTON, pref_str, 'R', NULL, NULL,
+	XmVaPUSHBUTTON, quit_str, 'Q', NULL, NULL,
 	NULL);
+	XtVaSetValues(XtNameToWidget(vrex_menu, "button_0"), XmNsensitive, False,
+	NULL);
+	XmStringFree(pref_str);
+	XmStringFree(quit_str);
 
-	XtAddCallback(quit, XmNactivateCallback, quit_call, NULL);
+	help_menu = XmVaCreateSimplePulldownMenu(menu_bar, "help_menu", 1, NULL,
+	XmVaPUSHBUTTON, help_str, 'H', NULL, NULL,
+	XmVaPUSHBUTTON, version_str, 'V', NULL, NULL,
+	XmVaPUSHBUTTON, about_str, 'A', NULL, NULL, NULL);
+	XmStringFree(help_str);
+	XmStringFree(version_str);
+	XmStringFree(about_str);
 
-	docker_version = XtVaCreateManagedWidget("Docker Version",
-			xmCascadeButtonWidgetClass, menu_bar,
-			XmNmnemonic, 'V',
-			NULL);
+	XtAddCallback(XtNameToWidget(help_menu, "button_0"), XmNactivateCallback,
+			help_cb, vrex);
+	XtAddCallback(XtNameToWidget(help_menu, "button_1"), XmNactivateCallback,
+			docker_version_show, vrex);
+	XtAddCallback(XtNameToWidget(help_menu, "button_2"), XmNactivateCallback,
+			help_cb, vrex);
 
-	XtAddCallback(quit, XmNactivateCallback, quit_call, NULL);
-	XtAddCallback(docker_version, XmNactivateCallback, docker_version_show,
-			vrex);
+//	docker_version = XtVaCreateManagedWidget("Docker Version",
+//			xmCascadeButtonWidgetClass, menu_bar,
+//			XmNmnemonic, 'V',
+//			NULL);
+//
+//	XtAddCallback(docker_version, XmNactivateCallback, docker_version_show,
+//			vrex);
 
 	XtVaSetValues(main_w,
 	XmNmenuBar, header_container, NULL);
 
-	create_docker_server_toolbar(header_container, vrex);
+	XtManageChild(menu_bar);
+	create_vrex_toolbar(header_container, vrex);
 }
 
 void exit_if_no_threads() {
@@ -355,7 +424,8 @@ int main(int argc, char *argv[]) {
 
 	XtSetLanguageProc(NULL, NULL, NULL);
 	toplevel = XtVaOpenApplication(&app, "V-Rex", NULL, 0, &argc, argv,
-			fallback, sessionShellWidgetClass, NULL);
+			fallback, sessionShellWidgetClass,
+			XmNtitle, "V-Rex verson 0.1a", NULL);
 
 	connected = extract_args_url_connection(argc, &url, argv, &ctx, &res);
 	if (!connected) {
@@ -395,7 +465,7 @@ int main(int argc, char *argv[]) {
 	make_docker_images_list_window(vrex, docker_server_w);
 	make_docker_volumes_list_window(vrex, docker_server_w);
 
-	set_statusbar_message(vrex, "woah! loaded.");
+	set_statusbar_message(vrex, "V-Rex Loaded.");
 	set_statusbar_url(vrex, url);
 
 	XtRealizeWidget(toplevel);

@@ -54,7 +54,6 @@ vrex_err_t create_statusbar(vrex_context* vrex, Widget main_w) {
 	XmNbottomPosition, 100,
 	XmNrightAttachment, XmATTACH_POSITION,
 	XmNrightPosition, 80,
-	XmNborderColor, 0xFFF8DC,
 	XmNborderWidth, 1,
 	NULL);
 
@@ -76,7 +75,6 @@ vrex_err_t create_statusbar(vrex_context* vrex, Widget main_w) {
 	XmNbottomPosition, 100,
 	XmNrightAttachment, XmATTACH_POSITION,
 	XmNrightPosition, 100,
-//	XmNborderColor, 0xFFA07A,
 	XmNborderWidth, 1,
 	NULL);
 

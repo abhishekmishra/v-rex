@@ -20,12 +20,104 @@
  */
 
 #include <stdlib.h>
+#include <pthread.h>
 #include <Xbae/Matrix.h>
 #include <Xm/Frame.h>
 #include <Xm/LabelG.h>
+#include <Xm/RowColumn.h>
+#include <Xm/Text.h>
+#include <Xm/PushB.h>
 #include <log.h>
 #include <docker_images.h>
 #include "images_list_window.h"
+#include "statusbar_window.h"
+#include "vrex_util.h"
+#include "messages_window.h"
+
+static pthread_mutex_t images_list_w_lock;
+
+void docker_pull_status_cb(docker_image_create_status* status, void* cbargs) {
+	vrex_context* vrex = (vrex_context*) cbargs;
+	add_messages_entry(vrex, status->status);
+}
+
+struct pull_args {
+	vrex_context* vrex;
+	char* image_name;
+};
+
+void* docker_pull_util(void* args) {
+//	vrex_context* vrex = (vrex_context*) args;
+	struct pull_args* pa = (struct pull_args*) args;
+	docker_result* result;
+	docker_image_create_from_image_cb(pa->vrex->d_ctx, &result,
+			&docker_pull_status_cb, pa->vrex, pa->image_name, NULL, NULL);
+	pa->vrex->handle_error(pa->vrex, result);
+	free(pa->image_name);
+	free(pa);
+	pthread_exit(0);
+	return NULL;
+}
+
+void docker_pull_cb(Widget widget, XtPointer client_data, XtPointer call_data) {
+	vrex_context* vrex = (vrex_context*) client_data;
+	pthread_t docker_pull_thread;
+	struct pull_args* pa = (struct pull_args*) calloc(1,
+			sizeof(struct pull_args));
+	pa->vrex = vrex;
+	String val;
+	Widget imageWidget = XtNameToWidget(XtParent(widget), "Image Name");
+	XtVaGetValues(imageWidget, XmNvalue, &val, NULL);
+	pa->image_name = (char*) val;
+	int thread_id = pthread_create(&docker_pull_thread, NULL, &docker_pull_util,
+			pa);
+}
+
+void create_images_toolbar(vrex_context* vrex, Widget toolbar_w) {
+	Widget toolbarButton;
+	Widget images_toolbar_frame_w, label, request_time_text;
+	int n = 0;
+	Arg args[10];
+	n = 0;
+	XtSetArg(args[n], XmNshadowType, XmSHADOW_OUT);
+	n++;
+	XtSetArg(args[n], XmNmarginWidth, 1);
+	n++;
+	XtSetArg(args[n], XmNmarginHeight, 1);
+	n++;
+	images_toolbar_frame_w = XmCreateFrame(toolbar_w, "images_toolbar_frame_w",
+			args, n);
+	XtVaSetValues(images_toolbar_frame_w, XmNmarginWidth, 0, XmNmarginHeight, 0,
+			XmNtopAttachment, XmATTACH_POSITION, XmNtopPosition, 0,
+			XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 0,
+			XmNbottomAttachment, XmATTACH_POSITION, XmNbottomPosition, 2,
+			XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 2, NULL);
+	Widget images_toolbar_w = XtVaCreateManagedWidget("images_toolbar_w",
+			xmRowColumnWidgetClass, images_toolbar_frame_w, XmNorientation,
+			XmHORIZONTAL, XmNmarginWidth, 0, XmNmarginHeight, 0,
+			XmNtopAttachment, XmATTACH_POSITION, XmNtopPosition, 0,
+			XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 0,
+			XmNbottomAttachment, XmATTACH_POSITION, XmNbottomPosition, 2,
+			XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 2, NULL);
+	n = 0;
+	label = XmCreateLabelGadget(images_toolbar_w, "Image", args, n);
+
+	request_time_text = XtVaCreateManagedWidget("Image Name", xmTextWidgetClass,
+			images_toolbar_w,
+			XmNeditable, True,
+			XmNvalue, "alpine:latest",
+			XmNcolumns, 40,
+			NULL);
+
+	toolbarButton = XtVaCreateManagedWidget("Pull",
+			xmPushButtonWidgetClass, images_toolbar_w, NULL);
+	XtAddCallback(toolbarButton, XmNactivateCallback, docker_pull_cb, vrex);
+	XtManageChild(toolbarButton);
+
+	XtManageChild(label);
+	XtManageChild(images_toolbar_frame_w);
+}
+
 
 /**
  * Create a new docker images list window
@@ -126,16 +218,14 @@ char* get_image_tags_concat(docker_image* img) {
 	return tags;
 }
 
-/**
- * Refresh the images list in the window.
- *
- * \param vrex the app context
- * \return error code
- */
-vrex_err_t refresh_images_list(vrex_context* vrex) {
-	docker_result* res;
-	Widget docker_images_list_w = get_images_list_window(vrex);
+void* refresh_images_list_util(void* args) {
+	int ret = pthread_mutex_lock(&images_list_w_lock);
 
+	vrex_context* vrex = (vrex_context*) args;
+	docker_result* res;
+	set_statusbar_message(vrex, "Loading images...");
+
+	Widget docker_images_list_w = get_images_list_window(vrex);
 	int col_num = 0;
 	xbae_matrix_add_column(docker_images_list_w, "Image Tag", col_num, 40);
 	col_num++;
@@ -143,7 +233,6 @@ vrex_err_t refresh_images_list(vrex_context* vrex) {
 	col_num++;
 	xbae_matrix_add_column(docker_images_list_w, "Virtual Size", col_num, 20);
 	col_num++;
-
 	struct array_list* images;
 	docker_images_list(vrex->d_ctx, &res, &images, 0, 1, NULL, 0, NULL, NULL,
 	NULL);
@@ -167,6 +256,22 @@ vrex_err_t refresh_images_list(vrex_context* vrex) {
 		free(tags);
 		free(rows);
 	}
+
+	set_statusbar_message(vrex, "Loaded images.");
+	pthread_mutex_unlock(&images_list_w_lock);
+	return NULL;
+}
+
+/**
+ * Refresh the images list in the window.
+ *
+ * \param vrex the app context
+ * \return error code
+ */
+vrex_err_t refresh_images_list(vrex_context* vrex) {
+	pthread_t docker_ping_thread;
+	int thread_id = pthread_create(&docker_ping_thread, NULL,
+			&refresh_images_list_util, vrex);
 	return VREX_SUCCESS;
 }
 

@@ -48,6 +48,23 @@ static String dark_fallback[] =
 				"V-Rex*Docker API Interactions.foreground:			#696969",
 				"V-Rex*Docker Server Summary.foreground:			#696969",
 
+// Status bar
+				"V-Rex*statusbar_msg.foreground: 					#AFEEEE",
+				"V-Rex*statusbar_msg.background: 					#444444",
+				"V-Rex*urlbar_msg.foreground: 						#AFEEEE",
+				"V-Rex*urlbar_msg.background: 						#444444",
+
+// Toolbars
+				"V-Rex*server_toolbar_frame_w.topShadowColor: 		#696969",
+				"V-Rex*server_toolbar_frame_w.bottomShadowColor:	#696969",
+				"V-Rex*server_toolbar_frame_w.shadowThickness:		3",
+				"V-Rex*container_toolbar_frame_w.topShadowColor: 	#696969",
+				"V-Rex*container_toolbar_frame_w.bottomShadowColor:	#696969",
+				"V-Rex*container_toolbar_frame_w.shadowThickness:	3",
+				"V-Rex*images_toolbar_frame_w.topShadowColor: 		#696969",
+				"V-Rex*images_toolbar_frame_w.bottomShadowColor:	#696969",
+				"V-Rex*images_toolbar_frame_w.shadowThickness:		3",
+
 //TODO: see https://gist.github.com/unix-junkie/68bdf8420d6c7b7925f4
 // and https://stackoverflow.com/questions/34360066/xmstringgenerate-in-xmmultibyte-text-or-xmwidechar-text-mode
 // for UTF-8

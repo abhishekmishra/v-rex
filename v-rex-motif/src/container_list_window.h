@@ -26,6 +26,8 @@
 
 // View methods
 
+void create_container_toolbar(vrex_context* vrex, Widget toolbar_w);
+
 /**
  * Create a new container list window
  *
@@ -38,11 +40,10 @@ int make_container_list_window(Widget parent, Widget* container_ls_w, vrex_conte
 /**
  * Set the docker container id for the table
  *
- * \param container_ls_w the window handle
  * \param vrex already initialized vrex_context
  * \return error code
  */
-int load_containers_list(Widget container_ls_w, vrex_context* vrex);
+int refresh_containers_list(vrex_context* vrex);
 
 int list_containers(Widget mw, vrex_context* ctx);
 

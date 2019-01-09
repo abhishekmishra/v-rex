@@ -35,6 +35,79 @@
 
 static int show_running = 1;
 
+void show_running_callback(Widget widget, XtPointer client_data,
+		XtPointer call_data) {
+	XmToggleButtonCallbackStruct *state =
+			(XmToggleButtonCallbackStruct *) call_data;
+	docker_log_debug("%s: %s\n", XtName(widget),
+			state->set == XmSET ? "on" :
+			state->set == XmOFF ? "off" : "indeterminate");
+	if (state->set == XmSET) {
+		show_running = 1;
+	} else {
+		show_running = 0;
+	}
+}
+//void refresh_call(Widget widget, XtPointer client_data, XtPointer call_data) {
+//	vrex_context* vrex = (vrex_context*) client_data;
+//	XtSetSensitive(widget, False);
+////	Widget top = XtParent(XtParent(widget));
+////	docker_log_debug("Refresh button name - %s", XtName(widget));
+////	docker_log_debug("top - %s", XtName(top));
+//	load_containers_list(get_container_list_w(vrex), vrex);
+//}
+
+void create_container_toolbar(vrex_context* vrex, Widget toolbar_w) {
+	Widget toolbarButton, runningToggleButton, refreshButton;
+	Widget container_toolbar_frame_w, label;
+	int n = 0;
+	Arg args[10];
+	n = 0;
+	XtSetArg(args[n], XmNshadowType, XmSHADOW_OUT);
+	n++;
+	XtSetArg(args[n], XmNmarginWidth, 1);
+	n++;
+	XtSetArg(args[n], XmNmarginHeight, 1);
+	n++;
+	container_toolbar_frame_w = XmCreateFrame(toolbar_w,
+			"container_toolbar_frame_w", args, n);
+	XtVaSetValues(container_toolbar_frame_w, XmNmarginWidth, 0, XmNmarginHeight,
+			0,
+			XmNtopAttachment, XmATTACH_POSITION, XmNtopPosition, 0,
+			XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 0,
+			XmNbottomAttachment, XmATTACH_POSITION, XmNbottomPosition, 2,
+			XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 2, NULL);
+	Widget container_toolbar_w = XtVaCreateManagedWidget("container_toolbar_w",
+			xmRowColumnWidgetClass, container_toolbar_frame_w, XmNorientation,
+			XmHORIZONTAL, XmNmarginWidth, 0, XmNmarginHeight, 0,
+			XmNtopAttachment, XmATTACH_POSITION, XmNtopPosition, 0,
+			XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 0,
+			XmNbottomAttachment, XmATTACH_POSITION, XmNbottomPosition, 2,
+			XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 2, NULL);
+	n = 0;
+	label = XmCreateLabelGadget(container_toolbar_w, "Container", args, n);
+	toolbarButton = XtVaCreateManagedWidget("Run Container",
+			xmPushButtonWidgetClass, container_toolbar_w, XmNsensitive, False,
+			NULL);
+	XtManageChild(toolbarButton);
+
+	runningToggleButton = XtVaCreateManagedWidget("Show Running",
+			xmToggleButtonWidgetClass, container_toolbar_w,
+			XmNset, XmSET,
+			NULL);
+	XtAddCallback(runningToggleButton, XmNvalueChangedCallback,
+			show_running_callback, vrex->d_ctx);
+
+//	refreshButton = XtVaCreateManagedWidget("Refresh", xmPushButtonWidgetClass,
+//			container_toolbar_w, NULL);
+//	XtManageChild(refreshButton);
+//
+//	XtAddCallback(refreshButton, XmNactivateCallback, refresh_call, vrex);
+
+	XtManageChild(label);
+	XtManageChild(container_toolbar_frame_w);
+}
+
 int list_containers(Widget mw, vrex_context* vrex) {
 	char* id;
 	docker_result* res;
@@ -102,16 +175,25 @@ int list_containers(Widget mw, vrex_context* vrex) {
 	Widget refresh = XtNameToWidget(toolbar, "Refresh");
 
 	if (first_id) {
-		set_ps_window_docker_id(vrex,
-				first_id);
+		set_ps_window_docker_id(vrex, first_id);
 	}
 
-	XtSetSensitive(refresh, True);
 	XmUpdateDisplay(XtParent(XtParent(mw)));
 	return 0;
 }
 
-int load_containers_list(Widget matrix_w, vrex_context* vrex) {
+Widget get_container_list_window(vrex_context* vrex) {
+	Widget container_list_toplevel = XtNameToWidget(
+			XtNameToWidget(
+					XtNameToWidget(*(vrex->main_w), "docker_server_frame_w"),
+					"docker_server_w"), "container_list_toplevel");
+	return XtNameToWidget(
+			XtNameToWidget(container_list_toplevel,
+					"docker_containers_list_frame_w"), "mw");
+}
+
+int refresh_containers_list(vrex_context* vrex) {
+	Widget matrix_w = get_container_list_window(vrex);
 	int num_rows = XbaeMatrixNumRows(matrix_w);
 	if (num_rows > 0) {
 		XbaeMatrixDeleteRows(matrix_w, 0, num_rows);
@@ -133,53 +215,6 @@ void labelCB(Widget mw, XtPointer cd, XtPointer cb) {
 		XbaeMatrixDeselectColumn(mw, cbs->column);
 	else
 		XbaeMatrixSelectColumn(mw, cbs->column);
-}
-
-void show_running_callback(Widget widget, XtPointer client_data,
-		XtPointer call_data) {
-	XmToggleButtonCallbackStruct *state =
-			(XmToggleButtonCallbackStruct *) call_data;
-	docker_log_debug("%s: %s\n", XtName(widget),
-			state->set == XmSET ? "on" :
-			state->set == XmOFF ? "off" : "indeterminate");
-	if (state->set == XmSET) {
-		show_running = 1;
-	} else {
-		show_running = 0;
-	}
-}
-void refresh_call(Widget widget, XtPointer client_data, XtPointer call_data) {
-	vrex_context* vrex = (vrex_context*) client_data;
-	XtSetSensitive(widget, False);
-//	Widget top = XtParent(XtParent(widget));
-//	docker_log_debug("Refresh button name - %s", XtName(widget));
-//	docker_log_debug("top - %s", XtName(top));
-	load_containers_list(get_container_list_w(vrex), vrex);
-}
-
-void create_docker_list_toolbar(Widget container_list_toplevel,
-		vrex_context* vrex) {
-	Widget toolbar, runningToggleButton, refreshButton;
-//	toolbar = XtVaCreateManagedWidget("docker_list_toolbar",
-//			xmRowColumnWidgetClass, container_list_toplevel,
-//			XmNorientation, XmHORIZONTAL,
-//			NULL);
-	toolbar = get_toolbar_w(vrex);
-
-	runningToggleButton = XtVaCreateManagedWidget("Show Running",
-			xmToggleButtonWidgetClass, toolbar,
-			XmNset, XmSET,
-			NULL);
-	XtAddCallback(runningToggleButton, XmNvalueChangedCallback,
-			show_running_callback, vrex->d_ctx);
-
-	refreshButton = XtVaCreateManagedWidget("Refresh", xmPushButtonWidgetClass,
-			toolbar, NULL);
-	XtManageChild(refreshButton);
-
-	XtAddCallback(refreshButton, XmNactivateCallback, refresh_call, vrex);
-
-	XtManageChild(toolbar);
 }
 
 /**
@@ -217,8 +252,6 @@ int make_container_list_window(Widget parent, Widget* container_ls_w,
 			XmNrightAttachment, XmATTACH_POSITION,
 			XmNrightPosition, 70,
 			NULL);
-
-	create_docker_list_toolbar(parent, vrex);
 
 	n = 0;
 	XtSetArg(args[n], XmNshadowType, XmSHADOW_OUT);
@@ -264,7 +297,7 @@ int make_container_list_window(Widget parent, Widget* container_ls_w,
 
 	XtAddCallback(matrix_w, XmNlabelActivateCallback, labelCB, NULL);
 	XtAddCallback(matrix_w, XmNenterCellCallback, xbae_matrix_readonly_cell_cb,
-			NULL);
+	NULL);
 	XtManageChild(label);
 	XtManageChild(matrix_w);
 	XtManageChild(docker_containers_list_frame_w);
@@ -273,7 +306,7 @@ int make_container_list_window(Widget parent, Widget* container_ls_w,
 	XtManageChild(ps_w);
 
 	container_ls_w = &matrix_w;
-	load_containers_list(matrix_w, vrex);
+	refresh_containers_list(vrex);
 	return 0;
 }
 

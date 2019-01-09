@@ -25,6 +25,8 @@
 #include <Xm/Xm.h>
 #include "vrex_util.h"
 
+void create_images_toolbar(vrex_context* vrex, Widget toolbar_w);
+
 /**
  * Create a new docker images list window
  *
