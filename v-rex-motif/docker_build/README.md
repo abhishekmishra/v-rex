@@ -13,7 +13,7 @@ docker run --rm -it --privileged \
     abhishekmishra3/v-rex-motif:latest /root/v-rex/v-rex-motif/bin/release/v-rex
 ```
 
-#####To connect to a remote docker via http, do the following...
+##### To connect to a remote docker via http, do the following...
 
  (Note: slash at the end of url is essential)
 
