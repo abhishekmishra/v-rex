@@ -61,4 +61,13 @@ void MakePosVisible(Widget list_w, int item_no);
 void xbae_matrix_add_column(Widget mw, char* name, int num, int width);
 void xbae_matrix_readonly_cell_cb(Widget mw, XtPointer cd, XtPointer cb);
 
+/**
+ * Get the size in bytes, kb, mb, gb, tb etc.
+ * (higest possible unit)
+ *
+ * \param size
+ * \return string with the description of the size
+ */
+char* calculate_size(uint64_t size);
+
 #endif /* SRC_VREX_UTIL_H_ */

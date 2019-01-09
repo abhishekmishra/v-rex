@@ -74,7 +74,7 @@ vrex_err_t make_docker_networks_list_window(vrex_context* vrex, Widget parent_w)
 	XmNtopAttachment, XmATTACH_POSITION,
 	XmNtopPosition, 60,
 	XmNleftAttachment, XmATTACH_POSITION,
-	XmNleftPosition, 23,
+	XmNleftPosition, 30,
 	XmNbottomAttachment, XmATTACH_POSITION,
 	XmNbottomPosition, 100,
 	XmNrightAttachment, XmATTACH_POSITION,

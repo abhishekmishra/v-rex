@@ -24,7 +24,11 @@
 static String null_fallback[] = { NULL };
 
 static String dark_fallback[] =
-		{ "V-Rex*main_w.width:		1024", "V-Rex*main_w.height:		768",
+		{ "V-Rex*XmScrollBar.sliderVisual: XmTROUGH_COLOR",
+				"V-Rex*XmScrollBar.sliderMark: XmETCHED_LINE",
+				"V-Rex*XmScrollBar.troughColor: #696969",
+				"V-Rex*XmScrollBar.showArrows: XmNONE",
+				"V-Rex*main_w.width:		1024", "V-Rex*main_w.height:		768",
 				"V-Rex*main_w.borderWidth:		10",
 				"V-Rex*main_w.shadowThickness:		0",
 				"V-Rex*.background:		#000000", "V-Rex*.foreground:		#C0C0C0",
@@ -33,7 +37,6 @@ static String dark_fallback[] =
 				"V-Rex*.bottomShadowColor:		#333333",
 				"V-Rex*.topShadowColor:		#333333", "V-Rex*.shadowThickness: 1",
 				"V-Rex*.selectColor: #2F4F4F", "V-Rex*.unselectColor: #000000",
-
 // Frame label colors
 				"V-Rex*Volumes.foreground:							#696969",
 				"V-Rex*Networks.foreground:							#696969",
@@ -77,7 +80,6 @@ static String light_fallback[] =
 //For tables
 				"V-Rex*columnLabelColor: #F5DEB3",
 				NULL };
-
 
 String* get_null_theme() {
 	return null_fallback;
