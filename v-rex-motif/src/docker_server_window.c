@@ -33,6 +33,7 @@
 #include "docker_server_window.h"
 #include "docker_system.h"
 #include "log.h"
+#include "vrex_util.h"
 
 void create_summary_scrolled_text(Widget* dst, Widget docker_server_w) {
 	int n;
@@ -77,7 +78,7 @@ void create_summary_scrolled_text(Widget* dst, Widget docker_server_w) {
 	XmNcursorPositionVisible, False,
 	XmNhighlightThickness, 0,
 	XmNshadowThickness, 0,
-			NULL);
+	NULL);
 	XtManageChild(docker_server_w);
 
 	(*dst) = docker_summary_text;
@@ -92,8 +93,8 @@ vrex_err_t make_docker_server_window(vrex_context* vrex, Widget* server_w) {
 	n = 0;
 	XtSetArg(args[n], XmNshadowType, XmSHADOW_OUT);
 	n++;
-	docker_server_frame = XmCreateFrame(*(vrex->main_w), "docker_server_frame_w",
-			args, n);
+	docker_server_frame = XmCreateFrame(*(vrex->main_w),
+			"docker_server_frame_w", args, n);
 	XtVaSetValues(*(vrex->main_w), XmNworkWindow, docker_server_frame,
 	NULL);
 
@@ -119,9 +120,9 @@ vrex_err_t make_docker_server_window(vrex_context* vrex, Widget* server_w) {
 
 	char* summary = (char*) calloc(1024, sizeof(char));
 	sprintf(summary,
-			"| Server: %s | CPU: %d | Memtotal: %lu | Containers: %lu (Running: %lu, Paused: %lu, Stopped: %lu) | Images: %lu |",
+			"| Server: %s | CPU: %d | Memtotal: %s | Containers: %lu (Running: %lu, Paused: %lu, Stopped: %lu) | Images: %lu |",
 			info->name, docker_info_get_ncpu(info),
-			docker_info_get_memtotal(info), info->containers,
+			calculate_size(docker_info_get_memtotal(info)), info->containers,
 			info->containers_running, info->containers_paused,
 			info->containers_stopped, docker_info_get_images(info));
 
