@@ -77,25 +77,57 @@ static String dark_fallback[] =
 				NULL };
 
 static String light_fallback[] =
-		{ "V-Rex*main_w.width:		1024", "V-Rex*main_w.height:		768",
+		{ "V-Rex*XmScrollBar.sliderVisual: XmTROUGH_COLOR",
+				"V-Rex*XmScrollBar.sliderMark: XmETCHED_LINE",
+				"V-Rex*XmScrollBar.troughColor: #A9A9A9",
+				"V-Rex*XmScrollBar.showArrows: XmNONE",
+				"V-Rex*main_w.width:		1024", "V-Rex*main_w.height:		768",
 				"V-Rex*main_w.borderWidth:		0",
 				"V-Rex*main_w.shadowThickness:		0",
 				"V-Rex*.background:		#DCDCDC", "V-Rex*.foreground:		#000000",
 				"V-Rex*.borderColor:		#A9A9A9",
-				"V-Rex*.highlightColor:		#008080",
+				"V-Rex*.highlightColor:		#F5F5DC",
 				"V-Rex*.bottomShadowColor:		#696969",
 				"V-Rex*.topShadowColor:		#696969", "V-Rex*.shadowThickness: 1",
 				"V-Rex*.selectColor: #B0E0E6", "V-Rex*.unselectColor: #FFFFFF",
+
+// Frame label colors
+				"V-Rex*Volumes.foreground:							#696969",
+				"V-Rex*Networks.foreground:							#696969",
+				"V-Rex*Images.foreground:							#696969",
+				"V-Rex*Docker Events.foreground:					#696969",
+				"V-Rex*Messages.foreground:							#696969",
+				"V-Rex*Containers.foreground:						#696969",
+				"V-Rex*Container PS.foreground:						#696969",
+				"V-Rex*Docker API Interactions.foreground:			#696969",
+				"V-Rex*Docker Server Summary.foreground:			#696969",
+
+// Status bar
+				"V-Rex*statusbar_msg.foreground: 					#FFE4E1",
+				"V-Rex*statusbar_msg.background: 					#808080",
+				"V-Rex*urlbar_msg.foreground: 						#FFE4E1",
+				"V-Rex*urlbar_msg.background: 						#808080",
+
+// Toolbars
+				"V-Rex*server_toolbar_frame_w.topShadowColor: 		#A9A9A9",
+				"V-Rex*server_toolbar_frame_w.bottomShadowColor:	#A9A9A9",
+				"V-Rex*server_toolbar_frame_w.shadowThickness:		3",
+				"V-Rex*container_toolbar_frame_w.topShadowColor: 	#A9A9A9",
+				"V-Rex*container_toolbar_frame_w.bottomShadowColor:	#A9A9A9",
+				"V-Rex*container_toolbar_frame_w.shadowThickness:	3",
+				"V-Rex*images_toolbar_frame_w.topShadowColor: 		#A9A9A9",
+				"V-Rex*images_toolbar_frame_w.bottomShadowColor:	#A9A9A9",
+				"V-Rex*images_toolbar_frame_w.shadowThickness:		3",
 
 //TODO: see https://gist.github.com/unix-junkie/68bdf8420d6c7b7925f4
 // and https://stackoverflow.com/questions/34360066/xmstringgenerate-in-xmmultibyte-text-or-xmwidechar-text-mode
 // for UTF-8
 //UTF-8 font	"V-Rex*fontList: terminus-12",
 				"V-Rex*fontList: -*-terminus-medium-r-*-*-12-*-*-*-*-*-*-*",
-				"V-Rex*labelFont: -*-lucida-medium-r-*-*-12-*-*-*-*-*-*-*",
-				"V-Rex*docker_server_summary_text.fontList: -*-terminus-bold-r-*-*-12-*-*-*-*-*-*-*",
+				"V-Rex*labelFont: -*-terminus-medium-r-*-*-12-*-*-*-*-*-*-*",
+				"V-Rex*docker_server_summary_text.fontList: -*-terminus-bold-r-*-*-14-*-*-*-*-*-*-*",
 //For tables
-				"V-Rex*columnLabelColor: #F5DEB3",
+				"V-Rex*columnLabelColor: #4169E1",
 				NULL };
 
 String* get_null_theme() {

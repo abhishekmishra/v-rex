@@ -420,7 +420,9 @@ int main(int argc, char *argv[]) {
 
 	curl_global_init(CURL_GLOBAL_ALL);
 
-	String* fallback = get_dark_theme();
+//	String* fallback = get_null_theme();
+//	String* fallback = get_dark_theme();
+	String* fallback = get_light_theme();
 
 	XtSetLanguageProc(NULL, NULL, NULL);
 	toplevel = XtVaOpenApplication(&app, "V-Rex", NULL, 0, &argc, argv,
