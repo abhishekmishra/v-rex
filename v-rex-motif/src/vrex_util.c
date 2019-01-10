@@ -76,6 +76,9 @@ void xbae_matrix_add_column(Widget mw, char* name, int num, int width) {
 void xbae_matrix_readonly_cell_cb(Widget mw, XtPointer cd, XtPointer cb) {
 	XbaeMatrixEnterCellCallbackStruct *cbs =
 			(XbaeMatrixEnterCellCallbackStruct*) cb;
+	XbaeMatrixDeselectAll(mw);
+	XbaeMatrixSelectRow(mw, cbs->row);
+	XbaeMatrixSelectCell(mw, cbs->row, cbs->column);
 	cbs->map = True;
 	cbs->doit = False;
 	cbs->select_text = True;

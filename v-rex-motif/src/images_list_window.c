@@ -161,9 +161,9 @@ vrex_err_t make_docker_images_list_window(vrex_context* vrex, Widget parent_w) {
 			XmNcellHighlightThickness, 1,
 			NULL);
 
-//	XtAddCallback(docker_images_list_w, XmNlabelActivateCallback, labelCB, NULL);
-	XtAddCallback(docker_images_list_frame_w, XmNenterCellCallback,
+	XtAddCallback(docker_images_list_w, XmNenterCellCallback,
 			xbae_matrix_readonly_cell_cb, NULL);
+
 	XtVaSetValues(docker_images_list_frame_w,
 	XmNtopAttachment, XmATTACH_POSITION,
 	XmNtopPosition, 60,

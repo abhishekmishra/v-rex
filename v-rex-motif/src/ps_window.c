@@ -53,6 +53,9 @@ int make_ps_window(Widget parent, Widget* ps_w) {
 			XmNcellHighlightThickness, 1,
 			NULL);
 
+	XtAddCallback((*ps_w), XmNenterCellCallback,
+			xbae_matrix_readonly_cell_cb, NULL);
+
 	XtVaSetValues(docker_process_list_frame_w,
 	XmNtopAttachment, XmATTACH_POSITION,
 	XmNtopPosition, 0,

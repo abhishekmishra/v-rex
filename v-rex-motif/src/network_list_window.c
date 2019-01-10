@@ -53,8 +53,8 @@ vrex_err_t make_docker_networks_list_window(vrex_context* vrex, Widget parent_w)
 	n++;
 	XtSetArg(args[n], XmNchildVerticalAlignment, XmALIGNMENT_CENTER);
 	n++;
-	label = XmCreateLabelGadget(docker_networks_list_frame_w, "Networks",
-			args, n);
+	label = XmCreateLabelGadget(docker_networks_list_frame_w, "Networks", args,
+			n);
 
 	docker_networks_list_w = XtVaCreateManagedWidget("docker_networks_list_w",
 			xbaeMatrixWidgetClass, docker_networks_list_frame_w,
@@ -68,8 +68,9 @@ vrex_err_t make_docker_networks_list_window(vrex_context* vrex, Widget parent_w)
 			XmNcellHighlightThickness, 1,
 			NULL);
 
-//	XtAddCallback(docker_networks_list_w, XmNlabelActivateCallback, labelCB, NULL);
-	XtAddCallback(docker_networks_list_w, XmNenterCellCallback, xbae_matrix_readonly_cell_cb, NULL);
+	XtAddCallback(docker_networks_list_w, XmNenterCellCallback,
+			xbae_matrix_readonly_cell_cb, NULL);
+
 	XtVaSetValues(docker_networks_list_frame_w,
 	XmNtopAttachment, XmATTACH_POSITION,
 	XmNtopPosition, 60,
@@ -126,13 +127,12 @@ vrex_err_t refresh_networks_list(vrex_context* vrex) {
 
 	struct array_list* networks;
 	docker_networks_list(vrex->d_ctx, &res, &networks, NULL, NULL, NULL, NULL,
-			NULL,
-			NULL);
+	NULL,
+	NULL);
 	vrex->handle_error(vrex, res);
 	int len_nets = array_list_length(networks);
 	for (int i = 0; i < len_nets; i++) {
-		docker_network* ni = (docker_network*) array_list_get_idx(
-				networks, i);
+		docker_network* ni = (docker_network*) array_list_get_idx(networks, i);
 		docker_log_info("Found network %s %s", ni->name, ni->id);
 
 		col_num = 0;
@@ -143,9 +143,9 @@ vrex_err_t refresh_networks_list(vrex_context* vrex) {
 		rows[col_num++] = docker_network_get_driver(ni);
 		rows[col_num++] = docker_network_get_scope(ni);
 		char* attachable_str = calloc(6, sizeof(char));
-		if(docker_network_get_attachable(ni) == 0) {
+		if (docker_network_get_attachable(ni) == 0) {
 			strcpy(attachable_str, "false");
-		}else {
+		} else {
 			strcpy(attachable_str, "true");
 		}
 		rows[col_num++] = attachable_str;

@@ -54,8 +54,8 @@ vrex_err_t make_docker_volumes_list_window(vrex_context* vrex, Widget parent_w) 
 	n++;
 	XtSetArg(args[n], XmNchildVerticalAlignment, XmALIGNMENT_CENTER);
 	n++;
-	label = XmCreateLabelGadget(docker_volumes_list_frame_w, "Volumes",
-			args, n);
+	label = XmCreateLabelGadget(docker_volumes_list_frame_w, "Volumes", args,
+			n);
 
 	docker_volumes_list_w = XtVaCreateManagedWidget("docker_volumes_list_w",
 			xbaeMatrixWidgetClass, docker_volumes_list_frame_w,
@@ -69,8 +69,9 @@ vrex_err_t make_docker_volumes_list_window(vrex_context* vrex, Widget parent_w) 
 			XmNcellHighlightThickness, 1,
 			NULL);
 
-//	XtAddCallback(docker_volumes_list_w, XmNlabelActivateCallback, labelCB, NULL);
-//	XtAddCallback(docker_volumes_list_w, XmNenterCellCallback, cellCB, NULL);
+	XtAddCallback(docker_volumes_list_w, XmNenterCellCallback,
+			xbae_matrix_readonly_cell_cb, NULL);
+
 	XtVaSetValues(docker_volumes_list_frame_w,
 	XmNtopAttachment, XmATTACH_POSITION,
 	XmNtopPosition, 60,
@@ -128,12 +129,11 @@ vrex_err_t refresh_volumes_list(vrex_context* vrex) {
 	struct array_list* volumes;
 	struct array_list* warnings;
 	docker_volumes_list(vrex->d_ctx, &res, &volumes, &warnings, 1, NULL, NULL,
-			NULL);
+	NULL);
 	vrex->handle_error(vrex, res);
 	int len_nets = array_list_length(volumes);
 	for (int i = 0; i < len_nets; i++) {
-		docker_volume* vol = (docker_volume*) array_list_get_idx(
-				volumes, i);
+		docker_volume* vol = (docker_volume*) array_list_get_idx(volumes, i);
 		docker_log_info("Found volume %s %s", vol->name, vol->mountpoint);
 
 		col_num = 0;

@@ -108,11 +108,14 @@ void create_container_toolbar(vrex_context* vrex, Widget toolbar_w) {
 	XtManageChild(container_toolbar_frame_w);
 }
 
+//TODO move this to vrex_context object, so that it can be locked and shared
+// in a thread-safe manner
+static docker_containers_list* containers;
+
 int list_containers(Widget mw, vrex_context* vrex) {
 	char* id;
 	docker_result* res;
 	docker_containers_list_filter* filter;
-	docker_containers_list* containers;
 
 	char* first_id = NULL;
 
@@ -170,6 +173,9 @@ int list_containers(Widget mw, vrex_context* vrex) {
 		XbaeMatrixAddRows(mw, XbaeMatrixNumRows(mw), rows, NULL, NULL, 1);
 		free(rows);
 	}
+	if(XbaeMatrixNumRows(mw) > 0) {
+		XbaeMatrixSelectRow(mw, 0);
+	}
 
 	Widget toolbar = get_toolbar_w(vrex);
 	Widget refresh = XtNameToWidget(toolbar, "Refresh");
@@ -215,6 +221,26 @@ void labelCB(Widget mw, XtPointer cd, XtPointer cb) {
 		XbaeMatrixDeselectColumn(mw, cbs->column);
 	else
 		XbaeMatrixSelectColumn(mw, cbs->column);
+}
+
+static int current_row = -1;
+
+//TODO: this is a hack to look like a select cell,
+//but select cell callback never happens will need to investigate why.
+void select_container_cell_cb(Widget mw, XtPointer cd, XtPointer cb) {
+	XbaeMatrixEnterCellCallbackStruct *cbs =
+			(XbaeMatrixEnterCellCallbackStruct *) cb;
+	vrex_context* vrex = (vrex_context*) cd;
+	if (current_row != -1 && current_row == cbs->row) {
+		//do nothing
+		return;
+	} else {
+		docker_container_list_item* item = docker_containers_list_get_idx(
+				containers, cbs->row);
+		char* id = docker_container_list_item_get_id(item);
+		set_ps_window_docker_id(vrex, id);
+		current_row = cbs->row;
+	}
 }
 
 /**
@@ -298,6 +324,8 @@ int make_container_list_window(Widget parent, Widget* container_ls_w,
 	XtAddCallback(matrix_w, XmNlabelActivateCallback, labelCB, NULL);
 	XtAddCallback(matrix_w, XmNenterCellCallback, xbae_matrix_readonly_cell_cb,
 	NULL);
+	XtAddCallback(matrix_w, XmNenterCellCallback, select_container_cell_cb,
+			vrex);
 	XtManageChild(label);
 	XtManageChild(matrix_w);
 	XtManageChild(docker_containers_list_frame_w);
