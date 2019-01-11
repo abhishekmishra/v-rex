@@ -40,23 +40,15 @@ void show_running_callback(Widget widget, XtPointer client_data,
 		XtPointer call_data) {
 	XmToggleButtonCallbackStruct *state =
 			(XmToggleButtonCallbackStruct *) call_data;
-	docker_log_debug("%s: %s\n", XtName(widget),
-			state->set == XmSET ? "on" :
-			state->set == XmOFF ? "off" : "indeterminate");
+//	docker_log_debug("%s: %s\n", XtName(widget),
+//			state->set == XmSET ? "on" :
+//			state->set == XmOFF ? "off" : "indeterminate");
 	if (state->set == XmSET) {
 		show_running = 1;
 	} else {
 		show_running = 0;
 	}
 }
-//void refresh_call(Widget widget, XtPointer client_data, XtPointer call_data) {
-//	vrex_context* vrex = (vrex_context*) client_data;
-//	XtSetSensitive(widget, False);
-////	Widget top = XtParent(XtParent(widget));
-////	docker_log_debug("Refresh button name - %s", XtName(widget));
-////	docker_log_debug("top - %s", XtName(top));
-//	load_containers_list(get_container_list_w(vrex), vrex);
-//}
 
 void create_container_toolbar(vrex_context* vrex, Widget toolbar_w) {
 	Widget toolbarButton, runningToggleButton, refreshButton;

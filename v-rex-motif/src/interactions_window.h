@@ -28,4 +28,7 @@ vrex_err_t make_interactions_window(vrex_context* vrex);
 
 vrex_err_t add_interactions_entry(vrex_context* vrex, docker_result* res);
 
+vrex_err_t show_interactions_window(vrex_context* vrex);
+vrex_err_t hide_interactions_window(vrex_context* vrex);
+
 #endif /* SRC_INTERACTIONS_WINDOW_H_ */

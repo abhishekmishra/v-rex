@@ -50,6 +50,7 @@
 //#define VREX_USE_THREADS 0
 
 static pthread_mutex_t interactions_w_lock;
+static int show_calls = 0;
 
 void docker_error_handler_log(docker_result* res) {
 	docker_log_debug("DOCKER_RESULT: For URL: %s", get_docker_result_url(res));
@@ -62,27 +63,19 @@ void docker_error_handler_log(docker_result* res) {
 }
 
 void handle_error(vrex_context* vrex, docker_result* res) {
-	int ret = pthread_mutex_lock(&interactions_w_lock);
-	printf("thread lock returned %d\n", ret);
-	fflush(0);
 //	docker_error_handler_log(res);
-	add_interactions_entry(vrex, res);
-	pthread_mutex_unlock(&interactions_w_lock);
+	if (show_calls) {
+		int ret = pthread_mutex_lock(&interactions_w_lock);
+		fflush(0);
+		add_interactions_entry(vrex, res);
+		pthread_mutex_unlock(&interactions_w_lock);
+	}
 }
 
 Widget interactions_w(struct vrex_context_t* vrex) {
 //	return XtNameToWidget(XtNameToWidget(*(vrex->main_w), "ClipWindow"), "interactions_pane");
 	return XtNameToWidget(XtNameToWidget(*(vrex->main_w), "interactions_frame"),
 			"interactions_pane");
-}
-
-void quit_call() {
-	docker_log_info("Quitting program\n");
-	exit(0);
-}
-
-void help_call() {
-	docker_log_info("Sorry, I'm Not Much Help\n");
 }
 
 void docker_version_show(Widget widget, XtPointer client_data,
@@ -169,10 +162,10 @@ void create_server_toolbar(vrex_context* vrex, Widget toolbar_w) {
 	server_toolbar_frame_w = XmCreateFrame(toolbar_w, "server_toolbar_frame_w",
 			args, n);
 	XtVaSetValues(server_toolbar_frame_w, XmNmarginWidth, 0, XmNmarginHeight, 0,
-			XmNtopAttachment, XmATTACH_POSITION, XmNtopPosition, 0,
-			XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 0,
-			XmNbottomAttachment, XmATTACH_POSITION, XmNbottomPosition, 2,
-			XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 2, NULL);
+	XmNtopAttachment, XmATTACH_POSITION, XmNtopPosition, 0,
+	XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 0,
+	XmNbottomAttachment, XmATTACH_POSITION, XmNbottomPosition, 2,
+	XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 2, NULL);
 	Widget server_toolbar_w = XtVaCreateManagedWidget("server_toolbar_w",
 			xmRowColumnWidgetClass, server_toolbar_frame_w, XmNorientation,
 			XmHORIZONTAL, XmNmarginWidth, 0, XmNmarginHeight, 0,
@@ -196,6 +189,22 @@ void create_server_toolbar(vrex_context* vrex, Widget toolbar_w) {
 	XtManageChild(server_toolbar_frame_w);
 }
 
+void show_calls_callback(Widget widget, XtPointer client_data,
+		XtPointer call_data) {
+	vrex_context* vrex = (vrex_context*) client_data;
+	XmToggleButtonCallbackStruct *state =
+			(XmToggleButtonCallbackStruct *) call_data;
+//	docker_log_debug("%s: %s\n", XtName(widget),
+//			state->set == XmSET ? "on" :
+//			state->set == XmOFF ? "off" : "indeterminate");
+	if (state->set == XmSET) {
+		show_calls = 1;
+		show_interactions_window(vrex);
+	} else {
+		show_calls = 0;
+		hide_interactions_window(vrex);
+	}
+}
 
 void create_vrex_toolbar(Widget docker_server_w, vrex_context* vrex) {
 	Widget toolbar_w, runningToggleButton, toolbarButton;
@@ -216,10 +225,24 @@ void create_vrex_toolbar(Widget docker_server_w, vrex_context* vrex) {
 	create_container_toolbar(vrex, toolbar_w);
 	create_images_toolbar(vrex, toolbar_w);
 
-	toolbarButton = XtVaCreateManagedWidget("Refresh All", xmPushButtonWidgetClass,
-			toolbar_w, NULL);
+	toolbarButton = XtVaCreateManagedWidget("Refresh All",
+			xmPushButtonWidgetClass, toolbar_w, NULL);
 	XtAddCallback(toolbarButton, XmNactivateCallback, refresh_all_cb, vrex);
 	XtManageChild(toolbarButton);
+
+	runningToggleButton = XtVaCreateManagedWidget("Calls",
+			xmToggleButtonWidgetClass, toolbar_w,
+			XmNset, XmSET,
+			NULL);
+	XtAddCallback(runningToggleButton, XmNvalueChangedCallback,
+			show_calls_callback, vrex);
+	if (show_calls == 0) {
+		hide_interactions_window(vrex);
+		XmToggleButtonSetState(runningToggleButton, False, False);
+	} else {
+		show_interactions_window(vrex);
+		XmToggleButtonSetState(runningToggleButton, True, False);
+	}
 
 	XtManageChild(toolbar_w);
 }
@@ -406,7 +429,7 @@ int main(int argc, char *argv[]) {
 	char* url;
 	int row, column, n_rows, n_columns;
 	int connected = 0;
-	docker_log_set_level(LOG_DEBUG);
+	docker_log_set_level(LOG_FATAL);
 
 	exit_if_no_threads();
 

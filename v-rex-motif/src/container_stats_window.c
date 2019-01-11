@@ -19,6 +19,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <signal.h>
+#include <unistd.h>
+#include <errno.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <Xm/Scale.h>
@@ -30,9 +33,10 @@
 #include "container_stats_window.h"
 #include <log.h>
 
-static pthread_mutex_t stats_scale_lock;
+//static pthread_mutex_t stats_on;
+static pthread_mutex_t thread_start_lock;
 static Widget cpu_scale = NULL, mem_scale = NULL, mem_usage_label = NULL;
-static pthread_t stats_thread = 0;
+static char* id;
 
 void new_value(Widget scale_w, XtPointer client_data, XtPointer call_data) {
 	XmScaleCallbackStruct *cbs = (XmScaleCallbackStruct *) call_data;
@@ -123,12 +127,21 @@ vrex_err_t make_docker_container_stats_window(vrex_context* vrex,
 	mem_usage_label = XmCreateLabel(container_stats_w, "mem_usage_label", args,
 			n);
 
-	cpu_scale = create_scale(container_stats_w, "CPU Usage", 10000, 0, 0);
 	mem_scale = create_scale(container_stats_w, "Mem Usage", 10000, 0, 0);
+	cpu_scale = create_scale(container_stats_w, "CPU Usage", 10000, 0, 0);
 
 	XtManageChild(mem_usage_label);
 	XtManageChild(label);
 	XtManageChild(container_stats_frame_w);
+
+	pthread_mutexattr_t Attr;
+	pthread_mutexattr_settype(&Attr, PTHREAD_MUTEX_RECURSIVE);
+	pthread_mutexattr_init(&Attr);
+	if (pthread_mutex_init(&thread_start_lock, &Attr) != 0) {
+		printf("\n thread_start_lock mutex init has failed\n");
+		return 1;
+	}
+
 	return VREX_SUCCESS;
 }
 
@@ -138,6 +151,13 @@ typedef struct {
 } stats_args;
 
 void log_stats(docker_container_stats* stats, void* client_cbargs) {
+	stats_args* sargs = (stats_args*) client_cbargs;
+	if (strcmp(id, sargs->id) != 0) {
+		printf("%lu is dying\n", pthread_self());
+		fflush(0);
+		pthread_exit(0);
+	}
+
 	if (stats) {
 		docker_container_cpu_stats* cpu_stats =
 				docker_container_stats_get_cpu_stats(stats);
@@ -145,7 +165,8 @@ void log_stats(docker_container_stats* stats, void* client_cbargs) {
 				docker_container_stats_get_mem_stats(stats);
 		float mem_usage =
 				(docker_container_mem_stats_get_usage(mem_stats) * 1.0)
-						/ docker_container_mem_stats_get_limit(mem_stats) * 100 * 100;
+						/ docker_container_mem_stats_get_limit(mem_stats) * 100
+						* 100;
 		float cpu_usage = docker_container_stats_get_cpu_usage_percent(stats);
 //		docker_log_info("cpu usage%% is %f, mem usage%% is %f, %lu", cpu_usage,
 //				mem_usage, docker_container_mem_stats_get_usage(mem_stats));
@@ -165,20 +186,17 @@ void log_stats(docker_container_stats* stats, void* client_cbargs) {
 		XtVaSetValues(mem_usage_label, XmNlabelString, mem_usage_str,
 		NULL);
 		XmStringFree(mem_usage_str);
-		XmUpdateDisplay(XtParent(mem_usage_label));
+		XmUpdateDisplay(XtParent(mem_scale));
 	}
 }
 
 void* show_stats_util(void* args) {
 	stats_args* sargs = (stats_args*) args;
 	if (cpu_scale && mem_scale) {
-		int ret = pthread_mutex_lock(&stats_scale_lock);
 		docker_result* res;
 		docker_container_get_stats_cb(sargs->vrex->d_ctx, &res, &log_stats,
-		NULL, sargs->id);
+		sargs, sargs->id);
 		sargs->vrex->handle_error(sargs->vrex, res);
-
-		pthread_mutex_unlock(&stats_scale_lock);
 	}
 	return NULL;
 }
@@ -187,20 +205,31 @@ void* show_stats_util(void* args) {
  * Show stats for the given container id (must be running).
  *
  * \param vrex the app context
- * \param id container id
+ * \param new_id container id
  * \return error code.
  */
-vrex_err_t show_stats_for_container(vrex_context* vrex, char* id) {
-	if (stats_thread > 0) {
-		pthread_cancel(stats_thread);
-		pthread_mutex_unlock(&stats_scale_lock);
-		stats_thread = 0;
+vrex_err_t show_stats_for_container(vrex_context* vrex, char* new_id) {
+	int ret;
+	pthread_t self = pthread_self();
+	ret = pthread_mutex_trylock(&thread_start_lock);
+	if (ret == EBUSY) {
+		printf("%lu could not take a lock to shutdown.\n", self);
+		fflush(0);
+		return E_INVALID_INPUT;
 	}
+
+	id = new_id;
+
 	stats_args* sargs = (stats_args*) calloc(1, sizeof(stats_args));
 	sargs->id = id;
 	sargs->vrex = vrex;
+	pthread_t stats_thread;
 	int thread_id = pthread_create(&stats_thread, NULL, &show_stats_util,
 			sargs);
+//	printf("%lu created thread id %lu...\n", self, stats_thread);
+//	fflush(0);
+
+	pthread_mutex_unlock(&thread_start_lock);
 	return VREX_SUCCESS;
 }
 

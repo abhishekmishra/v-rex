@@ -442,3 +442,15 @@ vrex_err_t add_interactions_entry(vrex_context* vrex, docker_result* res) {
 	}
 	return VREX_SUCCESS;
 }
+
+vrex_err_t hide_interactions_window(vrex_context* vrex) {
+	Widget iw = vrex->interactions_w(vrex);
+	XtUnmanageChild(XtParent(iw));
+	return VREX_SUCCESS;
+}
+
+vrex_err_t show_interactions_window(vrex_context* vrex) {
+	Widget iw = vrex->interactions_w(vrex);
+	XtManageChild(XtParent(iw));
+	return VREX_SUCCESS;
+}

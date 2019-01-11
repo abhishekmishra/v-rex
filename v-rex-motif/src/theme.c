@@ -48,6 +48,10 @@ static String dark_fallback[] =
 				"V-Rex*Docker API Interactions.foreground:			#696969",
 				"V-Rex*Docker Server Summary.foreground:			#696969",
 
+// Stats bars
+				"V-Rex*CPU Usage.XmScrollBar.troughColor: 					#90EE90",
+				"V-Rex*Mem Usage.XmScrollBar.troughColor: 					#AFEEEE",
+
 // Status bar
 				"V-Rex*statusbar_msg.foreground: 					#AFEEEE",
 				"V-Rex*statusbar_msg.background: 					#444444",
