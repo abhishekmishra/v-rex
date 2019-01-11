@@ -32,6 +32,7 @@
 
 #include "vrex_util.h"
 #include "ps_window.h"
+#include "container_stats_window.h"
 
 static int show_running = 1;
 
@@ -97,12 +98,6 @@ void create_container_toolbar(vrex_context* vrex, Widget toolbar_w) {
 			NULL);
 	XtAddCallback(runningToggleButton, XmNvalueChangedCallback,
 			show_running_callback, vrex->d_ctx);
-
-//	refreshButton = XtVaCreateManagedWidget("Refresh", xmPushButtonWidgetClass,
-//			container_toolbar_w, NULL);
-//	XtManageChild(refreshButton);
-//
-//	XtAddCallback(refreshButton, XmNactivateCallback, refresh_call, vrex);
 
 	XtManageChild(label);
 	XtManageChild(container_toolbar_frame_w);
@@ -182,6 +177,7 @@ int list_containers(Widget mw, vrex_context* vrex) {
 
 	if (first_id) {
 		set_ps_window_docker_id(vrex, first_id);
+		show_stats_for_container(vrex, first_id);
 	}
 
 	XmUpdateDisplay(XtParent(XtParent(mw)));
@@ -239,6 +235,7 @@ void select_container_cell_cb(Widget mw, XtPointer cd, XtPointer cb) {
 				containers, cbs->row);
 		char* id = docker_container_list_item_get_id(item);
 		set_ps_window_docker_id(vrex, id);
+		show_stats_for_container(vrex, id);
 		current_row = cbs->row;
 	}
 }
@@ -331,6 +328,8 @@ int make_container_list_window(Widget parent, Widget* container_ls_w,
 	XtManageChild(docker_containers_list_frame_w);
 
 	make_ps_window(container_list_toplevel, &ps_w);
+	make_docker_container_stats_window(vrex, container_list_toplevel);
+
 	XtManageChild(ps_w);
 
 	container_ls_w = &matrix_w;
