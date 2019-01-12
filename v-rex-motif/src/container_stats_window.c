@@ -153,8 +153,8 @@ typedef struct {
 void log_stats(docker_container_stats* stats, void* client_cbargs) {
 	stats_args* sargs = (stats_args*) client_cbargs;
 	if (strcmp(id, sargs->id) != 0) {
-		printf("%lu is dying\n", pthread_self());
-		fflush(0);
+//		printf("%lu is dying\n", pthread_self());
+//		fflush(0);
 		pthread_exit(0);
 	}
 
@@ -213,8 +213,8 @@ vrex_err_t show_stats_for_container(vrex_context* vrex, char* new_id) {
 	pthread_t self = pthread_self();
 	ret = pthread_mutex_trylock(&thread_start_lock);
 	if (ret == EBUSY) {
-		printf("%lu could not take a lock to shutdown.\n", self);
-		fflush(0);
+//		printf("%lu could not take a lock to shutdown.\n", self);
+//		fflush(0);
 		return E_INVALID_INPUT;
 	}
 
