@@ -33,6 +33,7 @@
 #include "vrex_util.h"
 #include "ps_window.h"
 #include "container_stats_window.h"
+#include "container_log_window.h"
 
 static int show_running = 1;
 
@@ -170,6 +171,7 @@ int list_containers(Widget mw, vrex_context* vrex) {
 	if (first_id) {
 		set_ps_window_docker_id(vrex, first_id);
 		show_stats_for_container(vrex, first_id);
+		show_log_for_container(vrex, first_id);
 	}
 
 	XmUpdateDisplay(XtParent(XtParent(mw)));
@@ -228,6 +230,7 @@ void select_container_cell_cb(Widget mw, XtPointer cd, XtPointer cb) {
 		char* id = docker_container_list_item_get_id(item);
 		set_ps_window_docker_id(vrex, id);
 		show_stats_for_container(vrex, id);
+		show_log_for_container(vrex, id);
 		current_row = cbs->row;
 	}
 }
@@ -299,13 +302,16 @@ int make_container_list_window(Widget parent, Widget* container_ls_w,
 			XmNcellHighlightThickness, 1,
 			NULL);
 
+	//make log window first so we can attach to the top of it.
+	make_docker_container_log_window(vrex, container_list_toplevel);
+
 	XtVaSetValues(docker_containers_list_frame_w,
 	XmNtopAttachment, XmATTACH_POSITION,
 	XmNtopPosition, 0,
 	XmNleftAttachment, XmATTACH_POSITION,
 	XmNleftPosition, 0,
-	XmNbottomAttachment, XmATTACH_POSITION,
-	XmNbottomPosition, 100,
+	XmNbottomAttachment, XmATTACH_WIDGET,
+	XmNbottomWidget, get_log_window(vrex),
 	XmNrightAttachment, XmATTACH_POSITION,
 	XmNrightPosition, 50,
 	NULL);

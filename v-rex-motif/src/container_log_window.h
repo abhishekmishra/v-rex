@@ -1,6 +1,6 @@
 /*
-* v-rex-motif: container_stats_window.h
-* Created on: 11-Jan-2019
+* v-rex-motif: container_log_window.h
+* Created on: 12-Jan-2019
 * 
 * v-rex-motif
 * Copyright (C) 2018 Abhishek Mishra <abhishekmishra3@gmail.com>
@@ -19,30 +19,28 @@
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef SRC_CONTAINER_STATS_WINDOW_H_
-#define SRC_CONTAINER_STATS_WINDOW_H_
+#ifndef SRC_CONTAINER_LOG_WINDOW_H_
+#define SRC_CONTAINER_LOG_WINDOW_H_
 
 #include "vrex_util.h"
 
 /**
- * Create a new container stats window
+ * Create a new container log window
  *
  * \param vrex the app context
  * \param parent_w the parent window widget
  * \return error code.
  */
-vrex_err_t make_docker_container_stats_window(vrex_context* vrex, Widget parent_w);
+vrex_err_t make_docker_container_log_window(vrex_context* vrex, Widget parent_w);
 
 /**
- * Show stats for the given container id (must be running).
+ * Show log for the given container id (must be running).
  *
  * \param vrex the app context
  * \param id container id
  * \return error code.
  */
-vrex_err_t show_stats_for_container(vrex_context* vrex, char* id);
-
-Widget get_log_window(vrex_context* vrex);
+vrex_err_t show_log_for_container(vrex_context* vrex, char* id);
 
 
-#endif /* SRC_CONTAINER_STATS_WINDOW_H_ */
+#endif /* SRC_CONTAINER_LOG_WINDOW_H_ */

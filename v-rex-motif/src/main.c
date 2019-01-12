@@ -429,7 +429,7 @@ int main(int argc, char *argv[]) {
 	char* url;
 	int row, column, n_rows, n_columns;
 	int connected = 0;
-	docker_log_set_level(LOG_FATAL);
+	docker_log_set_level(LOG_DEBUG);
 
 	exit_if_no_threads();
 

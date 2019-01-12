@@ -52,6 +52,9 @@ static String dark_fallback[] =
 				"V-Rex*CPU Usage.XmScrollBar.troughColor: 					#90EE90",
 				"V-Rex*Mem Usage.XmScrollBar.troughColor: 					#AFEEEE",
 
+// Log text
+				"V-Rex*container_log_text_w.foreground: 					#98FB98",
+
 // Status bar
 				"V-Rex*statusbar_msg.foreground: 					#AFEEEE",
 				"V-Rex*statusbar_msg.background: 					#444444",
