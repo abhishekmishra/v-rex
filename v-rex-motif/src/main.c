@@ -64,12 +64,12 @@ void docker_error_handler_log(docker_result* res) {
 
 void handle_error(vrex_context* vrex, docker_result* res) {
 //	docker_error_handler_log(res);
-	if (show_calls) {
-		int ret = pthread_mutex_lock(&interactions_w_lock);
-		fflush(0);
-		add_interactions_entry(vrex, res);
-		pthread_mutex_unlock(&interactions_w_lock);
-	}
+//	if (show_calls) {
+	int ret = pthread_mutex_lock(&interactions_w_lock);
+	fflush(0);
+	add_interactions_entry(vrex, res);
+	pthread_mutex_unlock(&interactions_w_lock);
+//	}
 }
 
 Widget interactions_w(struct vrex_context_t* vrex) {
