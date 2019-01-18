@@ -20,3 +20,4 @@ RUN ./configure --prefix=/root/movingmotif
 RUN make
 RUN make install
 RUN ./libtool --finish /root/movingmotif
+ENV LD_LIBRARY_PATH="/root/movingmotif/lib:${LD_LIBRARY_PATH}"
