@@ -29,11 +29,17 @@
 #include <docker_containers.h>
 #include "container_stats_window.h"
 #include <log.h>
+#include <WScroll.h>
 
-#define STAT_UPDATE_INTERVAL 10000L //in milliseconds
+#define STAT_UPDATE_INTERVAL 5000L //in milliseconds
 
-static Widget cpu_scale = NULL, mem_scale = NULL, mem_usage_label = NULL;
+static Widget cpu_scale = NULL, mem_scale = NULL, mem_usage_label = NULL,
+		stats_plot_w;
+
 static char* id;
+
+static long cpu_curve, mem_curve;
+static time_t start_time = 0;
 
 void new_value(Widget scale_w, XtPointer client_data, XtPointer call_data) {
 	XmScaleCallbackStruct *cbs = (XmScaleCallbackStruct *) call_data;
@@ -71,6 +77,72 @@ Widget create_scale(Widget parent, char *title, int max, int min, int value) {
 	XtManageChild(scale);
 
 	return scale;
+}
+
+Pixel GetPixel(char *str, Widget wid) {
+	Display *dpy = XtDisplay(wid);
+	int scr = DefaultScreen(dpy);
+	Colormap cmap = DefaultColormap(dpy, scr);
+	XColor color, ignore;
+
+	if (XAllocNamedColor(dpy, cmap, str, &color, &ignore))
+		return (color.pixel);
+	else
+		return (BlackPixel(dpy, scr));
+}
+
+Widget make_stats_plot_w(Widget parent) {
+	int n = 0;
+	Arg args[10];
+	float scal[4] = { 0, 100., 0, 100. };
+	float grid[4] = { 0, 10., 0, 25. };
+//	XtSetArg(args[n], XmNleftAttachment, XmATTACH_SELF);
+//	n++;
+//	XtSetArg(args[n], XmNx, 15);
+//	n++;
+//	XtSetArg(args[n], XmNtopAttachment, XmATTACH_SELF);
+//	n++;
+//	XtSetArg(args[n], XmNy, 360);
+//	n++;
+//	XtSetArg(args[n], XmNrightAttachment, XmATTACH_SELF);
+//	n++;
+	XtSetArg(args[n], XmNwidth, 250);
+	n++;
+//	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_SELF);
+//	n++;
+	XtSetArg(args[n], XmNheight, 50);
+	n++;
+	XtSetArg(args[n], XwNscrollHistory, True);
+	n++;
+	XtSetArg(args[n], XwNscrollScale, scal);
+	n++;
+	XtSetArg(args[n], XwNscrollGridScale, grid);
+	n++;
+	XtSetArg(args[n], XwNscrollCUcolor, GetPixel("#000000", parent)); //black
+	n++;
+	XtSetArg(args[n], XwNscrollGridColor, GetPixel("#444444", parent)); //very dark gray
+	n++;
+	XtSetArg(args[n], XwNscrollAnnotColor, GetPixel("696969", parent)); //DimGray
+	n++;
+	stats_plot_w = XtCreateWidget("stats_plot_w", XwScrollWidgetClass, parent,
+			args, n);
+
+	XtVaSetValues(stats_plot_w,
+	XmNtopAttachment, XmATTACH_POSITION,
+	XmNtopPosition, 0,
+	XmNleftAttachment, XmATTACH_POSITION,
+	XmNleftPosition, 0,
+	XmNbottomAttachment, XmATTACH_POSITION,
+	XmNbottomPosition, 30,
+	XmNrightAttachment, XmATTACH_POSITION,
+	XmNrightPosition, 100,
+	NULL);
+
+	cpu_curve = XwScrollAddcurve(stats_plot_w, GetPixel("blue", parent));
+	mem_curve = XwScrollAddcurve(stats_plot_w, GetPixel("green", parent));
+
+	XtManageChild(stats_plot_w);
+	return stats_plot_w;
 }
 
 /**
@@ -162,6 +234,8 @@ vrex_err_t make_docker_container_stats_window(vrex_context* vrex,
 	XmNrightPosition, 100,
 	NULL);
 
+	make_stats_plot_w(container_stats_w);
+
 	XtManageChild(mem_usage_label);
 	XtManageChild(label);
 	XtManageChild(container_stats_frame_w);
@@ -188,6 +262,13 @@ void log_stats(XtPointer client_sargs, XtIntervalId* interval_id) {
 	}
 
 	if (stats) {
+		float cpu_xy[2], mem_xy[2];
+		time_t now;
+		time(&now);
+
+		cpu_xy[0] = now - start_time;
+		mem_xy[0] = now - start_time;
+
 		docker_container_cpu_stats* cpu_stats =
 				docker_container_stats_get_cpu_stats(stats);
 		docker_container_mem_stats* mem_stats =
@@ -196,11 +277,17 @@ void log_stats(XtPointer client_sargs, XtIntervalId* interval_id) {
 				(docker_container_mem_stats_get_usage(mem_stats) * 1.0)
 						/ docker_container_mem_stats_get_limit(mem_stats) * 100
 						* 100;
-		float cpu_usage = docker_container_stats_get_cpu_usage_percent(stats);
+		mem_xy[1] = mem_usage / 100;
+		XwScrollcurve(stats_plot_w, mem_curve, mem_xy, 1);
+
+		float cpu_usage = docker_container_stats_get_cpu_usage_percent(stats)
+				* 100;
 //		docker_log_info("cpu usage%% is %f, mem usage%% is %f, %lu", cpu_usage,
 //				mem_usage, docker_container_mem_stats_get_usage(mem_stats));
-		XmScaleSetValue(cpu_scale,
-				docker_container_stats_get_cpu_usage_percent(stats) * 100);
+		XmScaleSetValue(cpu_scale, cpu_usage);
+		cpu_xy[1] = cpu_usage / 100;
+		XwScrollcurve(stats_plot_w, cpu_curve, cpu_xy, 1);
+
 		char* mem_mesg = (char*) calloc(1024, sizeof(char));
 		strcpy(mem_mesg, "Using ");
 		strcat(mem_mesg,
@@ -232,13 +319,15 @@ void log_stats(XtPointer client_sargs, XtIntervalId* interval_id) {
  */
 vrex_err_t show_stats_for_container(vrex_context* vrex, char* new_id) {
 	XtAppContext app = XtWidgetToApplicationContext(cpu_scale);
-
+	if (start_time == 0) {
+		start_time = time(NULL);
+	}
 	id = new_id;
 	stats_args* sargs = (stats_args*) calloc(1, sizeof(stats_args));
 	sargs->id = id;
 	sargs->vrex = vrex;
 
-	XtAppAddTimeOut(app, STAT_UPDATE_INTERVAL, &log_stats, sargs);
+	XtAppAddTimeOut(app, 2000L, &log_stats, sargs);
 	return VREX_SUCCESS;
 }
 
