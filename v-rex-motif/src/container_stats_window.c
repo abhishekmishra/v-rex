@@ -19,10 +19,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <signal.h>
-#include <unistd.h>
-#include <errno.h>
-#include <pthread.h>
 #include <stdlib.h>
 #include <Xm/Scale.h>
 #include <Xm/RowColumn.h>
@@ -33,8 +29,8 @@
 #include "container_stats_window.h"
 #include <log.h>
 
-//static pthread_mutex_t stats_on;
-static pthread_mutex_t thread_start_lock;
+#define STAT_UPDATE_INTERVAL 10000L //in milliseconds
+
 static Widget cpu_scale = NULL, mem_scale = NULL, mem_usage_label = NULL;
 static char* id;
 
@@ -134,14 +130,6 @@ vrex_err_t make_docker_container_stats_window(vrex_context* vrex,
 	XtManageChild(label);
 	XtManageChild(container_stats_frame_w);
 
-	pthread_mutexattr_t Attr;
-	pthread_mutexattr_settype(&Attr, PTHREAD_MUTEX_RECURSIVE);
-	pthread_mutexattr_init(&Attr);
-	if (pthread_mutex_init(&thread_start_lock, &Attr) != 0) {
-		printf("\n thread_start_lock mutex init has failed\n");
-		return 1;
-	}
-
 	return VREX_SUCCESS;
 }
 
@@ -150,12 +138,17 @@ typedef struct {
 	char* id;
 } stats_args;
 
-void log_stats(docker_container_stats* stats, void* client_cbargs) {
-	stats_args* sargs = (stats_args*) client_cbargs;
+void log_stats(XtPointer client_sargs, XtIntervalId* interval_id) {
+	docker_container_stats* stats;
+	stats_args* sargs = (stats_args*) client_sargs;
+	docker_result* res;
+	docker_container_get_stats(sargs->vrex->d_ctx, &res, &stats, sargs->id);
+	sargs->vrex->handle_error(sargs->vrex, res);
+
 	if (strcmp(id, sargs->id) != 0) {
-//		printf("%lu is dying\n", pthread_self());
-//		fflush(0);
-		pthread_exit(0);
+		printf("container id is changed. exiting.\n");
+		free(sargs);
+		return;
 	}
 
 	if (stats) {
@@ -187,18 +180,11 @@ void log_stats(docker_container_stats* stats, void* client_cbargs) {
 		NULL);
 		XmStringFree(mem_usage_str);
 		XmUpdateDisplay(XtParent(mem_scale));
+		free_docker_container_stats(stats);
 	}
-}
 
-void* show_stats_util(void* args) {
-	stats_args* sargs = (stats_args*) args;
-	if (cpu_scale && mem_scale) {
-		docker_result* res;
-		docker_container_get_stats_cb(sargs->vrex->d_ctx, &res, &log_stats,
-		sargs, sargs->id);
-		sargs->vrex->handle_error(sargs->vrex, res);
-	}
-	return NULL;
+	XtAppContext app = XtWidgetToApplicationContext(cpu_scale);
+	XtAppAddTimeOut(app, STAT_UPDATE_INTERVAL, &log_stats, sargs);
 }
 
 /**
@@ -209,27 +195,14 @@ void* show_stats_util(void* args) {
  * \return error code.
  */
 vrex_err_t show_stats_for_container(vrex_context* vrex, char* new_id) {
-	int ret;
-	pthread_t self = pthread_self();
-	ret = pthread_mutex_trylock(&thread_start_lock);
-	if (ret == EBUSY) {
-//		printf("%lu could not take a lock to shutdown.\n", self);
-//		fflush(0);
-		return E_INVALID_INPUT;
-	}
+	XtAppContext app = XtWidgetToApplicationContext(cpu_scale);
 
 	id = new_id;
-
 	stats_args* sargs = (stats_args*) calloc(1, sizeof(stats_args));
 	sargs->id = id;
 	sargs->vrex = vrex;
-	pthread_t stats_thread;
-	int thread_id = pthread_create(&stats_thread, NULL, &show_stats_util,
-			sargs);
-//	printf("%lu created thread id %lu...\n", self, stats_thread);
-//	fflush(0);
 
-	pthread_mutex_unlock(&thread_start_lock);
+	XtAppAddTimeOut(app, STAT_UPDATE_INTERVAL, &log_stats, sargs);
 	return VREX_SUCCESS;
 }
 
