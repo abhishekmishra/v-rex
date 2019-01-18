@@ -25,6 +25,7 @@
 #include <Xm/Frame.h>
 #include <Xm/Label.h>
 #include <Xm/LabelG.h>
+#include <Xm/Form.h>
 #include <docker_containers.h>
 #include "container_stats_window.h"
 #include <log.h>
@@ -96,7 +97,7 @@ vrex_err_t make_docker_container_stats_window(vrex_context* vrex,
 	XtVaSetValues(container_stats_frame_w, XmNmarginWidth, 0, XmNmarginHeight,
 			0,
 			XmNtopAttachment, XmATTACH_POSITION,
-			XmNtopPosition, 50,
+			XmNtopPosition, 30,
 			XmNleftAttachment, XmATTACH_POSITION,
 			XmNleftPosition, 50,
 			XmNbottomAttachment, XmATTACH_POSITION,
@@ -105,8 +106,11 @@ vrex_err_t make_docker_container_stats_window(vrex_context* vrex,
 			XmNrightPosition, 100,
 			NULL);
 	Widget container_stats_w = XtVaCreateManagedWidget("container_stats_w",
-			xmRowColumnWidgetClass, container_stats_frame_w, XmNorientation,
-			XmVERTICAL, XmNmarginWidth, 0, XmNmarginHeight, 0,
+			xmFormWidgetClass, container_stats_frame_w,
+			XmNorientation, XmVERTICAL,
+			XmNmarginWidth, 0,
+			XmNmarginHeight, 0,
+			XmNfractionBase, 100,
 			NULL);
 	n = 0;
 	XtSetArg(args[n], XmNframeChildType, XmFRAME_TITLE_CHILD);
@@ -123,8 +127,40 @@ vrex_err_t make_docker_container_stats_window(vrex_context* vrex,
 	mem_usage_label = XmCreateLabel(container_stats_w, "mem_usage_label", args,
 			n);
 
+	XtVaSetValues(mem_usage_label,
+	XmNtopAttachment, XmATTACH_POSITION,
+	XmNtopPosition, 30,
+	XmNleftAttachment, XmATTACH_POSITION,
+	XmNleftPosition, 0,
+	XmNbottomAttachment, XmATTACH_POSITION,
+	XmNbottomPosition, 40,
+	XmNrightAttachment, XmATTACH_POSITION,
+	XmNrightPosition, 100,
+	NULL);
+
 	mem_scale = create_scale(container_stats_w, "Mem Usage", 10000, 0, 0);
+	XtVaSetValues(mem_scale,
+	XmNtopAttachment, XmATTACH_POSITION,
+	XmNtopPosition, 40,
+	XmNleftAttachment, XmATTACH_POSITION,
+	XmNleftPosition, 0,
+	XmNbottomAttachment, XmATTACH_POSITION,
+	XmNbottomPosition, 70,
+	XmNrightAttachment, XmATTACH_POSITION,
+	XmNrightPosition, 100,
+	NULL);
+
 	cpu_scale = create_scale(container_stats_w, "CPU Usage", 10000, 0, 0);
+	XtVaSetValues(cpu_scale,
+	XmNtopAttachment, XmATTACH_POSITION,
+	XmNtopPosition, 70,
+	XmNleftAttachment, XmATTACH_POSITION,
+	XmNleftPosition, 0,
+	XmNbottomAttachment, XmATTACH_POSITION,
+	XmNbottomPosition, 100,
+	XmNrightAttachment, XmATTACH_POSITION,
+	XmNrightPosition, 100,
+	NULL);
 
 	XtManageChild(mem_usage_label);
 	XtManageChild(label);

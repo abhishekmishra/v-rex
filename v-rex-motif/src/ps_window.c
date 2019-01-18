@@ -62,7 +62,7 @@ int make_ps_window(Widget parent, Widget* ps_w) {
 	XmNleftAttachment, XmATTACH_POSITION,
 	XmNleftPosition, 50,
 	XmNbottomAttachment, XmATTACH_POSITION,
-	XmNbottomPosition, 50,
+	XmNbottomPosition, 30,
 	XmNrightAttachment, XmATTACH_POSITION,
 	XmNrightPosition, 100,
 	NULL);
