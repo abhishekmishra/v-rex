@@ -31,7 +31,7 @@
 #include <log.h>
 #include <WScroll.h>
 
-#define STAT_UPDATE_INTERVAL 5000L //in milliseconds
+#define STAT_UPDATE_INTERVAL 10000L //in milliseconds
 
 static Widget cpu_scale = NULL, mem_scale = NULL, mem_usage_label = NULL,
 		stats_plot_w;
