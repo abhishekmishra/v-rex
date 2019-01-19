@@ -255,8 +255,8 @@ void log_stats(XtPointer client_sargs, XtIntervalId* interval_id) {
 	docker_container_get_stats(sargs->vrex->d_ctx, &res, &stats, sargs->id);
 	sargs->vrex->handle_error(sargs->vrex, res);
 
-	if (strcmp(id, sargs->id) != 0) {
-		printf("container id is changed. exiting.\n");
+	if (id == NULL | strcmp(id, sargs->id) != 0) {
+		docker_log_debug("container id is changed. exiting.\n");
 		free(sargs);
 		return;
 	}
@@ -322,12 +322,17 @@ vrex_err_t show_stats_for_container(vrex_context* vrex, char* new_id) {
 	if (start_time == 0) {
 		start_time = time(NULL);
 	}
-	id = new_id;
-	stats_args* sargs = (stats_args*) calloc(1, sizeof(stats_args));
-	sargs->id = id;
-	sargs->vrex = vrex;
+	if (new_id == NULL) {
+		id = NULL;
+	} else if (id == NULL || strcmp(new_id, id) != 0) {
+		id = new_id;
 
-	XtAppAddTimeOut(app, 2000L, &log_stats, sargs);
+		stats_args* sargs = (stats_args*) calloc(1, sizeof(stats_args));
+		sargs->id = id;
+		sargs->vrex = vrex;
+
+		XtAppAddTimeOut(app, 2000L, &log_stats, sargs);
+	}
 	return VREX_SUCCESS;
 }
 
