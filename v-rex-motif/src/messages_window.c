@@ -22,8 +22,8 @@
 #include <pthread.h>
 #include <Xm/Frame.h>
 #include <Xm/LabelG.h>
-#include <log.h>
 #include "messages_window.h"
+#include <docker_log.h>
 
 static pthread_mutex_t messages_w_lock;
 

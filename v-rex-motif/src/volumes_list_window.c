@@ -22,9 +22,9 @@
 #include <Xbae/Matrix.h>
 #include <Xm/Frame.h>
 #include <Xm/LabelG.h>
-#include <log.h>
 #include <docker_volumes.h>
 #include "volumes_list_window.h"
+#include <docker_log.h>
 
 /**
  * Create a new docker volumes list window

@@ -10,7 +10,8 @@
 #include <string.h>
 #include <Xbae/Matrix.h>
 #include "vrex_util.h"
-#include "log.h"
+
+#include <docker_log.h>
 
 vrex_err_t init_results_list(vrex_context* vrex) {
 	if (vrex != NULL) {

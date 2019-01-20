@@ -31,8 +31,9 @@
 #include <X11/Xos.h>
 #include <XmHTML/XmHTML.h>
 #include "docker_server_window.h"
+
+#include <docker_log.h>
 #include "docker_system.h"
-#include "log.h"
 #include "vrex_util.h"
 
 void create_summary_scrolled_text(Widget* dst, Widget docker_server_w) {

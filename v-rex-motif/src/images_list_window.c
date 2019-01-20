@@ -27,9 +27,11 @@
 #include <Xm/RowColumn.h>
 #include <Xm/Text.h>
 #include <Xm/PushB.h>
-#include <log.h>
 #include <docker_images.h>
 #include "images_list_window.h"
+
+#include <docker_log.h>
+
 #include "statusbar_window.h"
 #include "vrex_util.h"
 #include "messages_window.h"

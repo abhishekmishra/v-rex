@@ -28,7 +28,8 @@
 #include <Xm/Form.h>
 #include <docker_containers.h>
 #include "container_stats_window.h"
-#include <log.h>
+
+#include <docker_log.h>
 #include <WScroll.h>
 
 #define STAT_UPDATE_INTERVAL 10000L //in milliseconds

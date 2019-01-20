@@ -5,10 +5,12 @@
  *      Author: abhishek
  */
 #include <stdlib.h>
-#include <log.h>
 #include <Xm/Frame.h>
 #include <Xm/LabelG.h>
 #include "ps_window.h"
+
+#include <docker_log.h>
+
 #include "vrex_util.h"
 
 /**

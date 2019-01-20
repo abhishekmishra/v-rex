@@ -25,8 +25,8 @@
 #include <Xm/Frame.h>
 #include <Xm/LabelG.h>
 #include <docker_system.h>
-#include <log.h>
 #include "events_window.h"
+#include <docker_log.h>
 
 void docker_events_cb(docker_event* event, void* cbargs) {
 	Widget* events_w = (Widget*) cbargs;

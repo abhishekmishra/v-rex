@@ -22,8 +22,8 @@
 #include <Xm/Frame.h>
 #include <Xm/LabelG.h>
 #include <docker_networks.h>
-#include <log.h>
 #include "network_list_window.h"
+#include <docker_log.h>
 
 /**
  * Create a new docker networks list window

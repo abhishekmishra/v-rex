@@ -20,7 +20,7 @@
  */
 #include <stdlib.h>
 #include <docker_containers.h>
-#include <log.h>
+#include <docker_log.h>
 #include <X11/Intrinsic.h>
 #include <X11/Xmu/Editres.h>
 #include <Xm/PushB.h>

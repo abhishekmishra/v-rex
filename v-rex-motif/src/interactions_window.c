@@ -18,6 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <docker_log.h>
 #include <time.h>
 #include <X11/Intrinsic.h>
 #include <Xm/Label.h>
@@ -36,7 +37,6 @@
 
 #include "vrex_util.h"
 #include "docker_connection_util.h"
-#include "log.h"
 
 vrex_err_t update_request_form(Widget interactions_pane, time_t request_time,
 		char* method, char* request_json, time_t response_time, int http_code,

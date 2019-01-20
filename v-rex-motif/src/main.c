@@ -42,7 +42,7 @@
 #include "network_list_window.h"
 #include "volumes_list_window.h"
 
-#include <log.h>
+#include <docker_log.h>
 
 #define USE_RENDER_TABLE 0
 
