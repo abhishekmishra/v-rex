@@ -1,3 +1,4 @@
+CC=tcc
 MOVING_MOTIF_HOME=../../movingmotif
 CLD_HOME=../../clibdocker
 PROGRAMS = v-rex
