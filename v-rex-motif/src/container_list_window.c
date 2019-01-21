@@ -103,17 +103,15 @@ static docker_containers_list* containers;
 int list_containers(Widget mw, vrex_context* vrex) {
 	char* id;
 	docker_result* res;
-	docker_containers_list_filter* filter;
 
 	char* first_id = NULL;
 
-	make_docker_containers_list_filter(&filter);
 	int limit = -1;
 	if (show_running == 0) {
 		limit = 25;
 	}
 	docker_container_list(vrex->d_ctx, &res, &containers, show_running == 0,
-			limit, 1, filter);
+			limit, 1, NULL);
 	vrex->handle_error(vrex, res);
 	docker_log_debug("Read %d containers.\n",
 			docker_containers_list_length(containers));
