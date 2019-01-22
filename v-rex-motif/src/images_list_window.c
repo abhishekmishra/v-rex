@@ -247,9 +247,9 @@ void* refresh_images_list_util(void* args) {
 		rows = (char**) XtCalloc(10, sizeof(String));
 		char* tags = get_image_tags_concat(img);
 		rows[col_num++] = tags;
-		char* size = calculate_size(docker_image_get_size(img));
+		char* size = calculate_size(img->size);
 		rows[col_num++] = size;
-		char* virtual_size = calculate_size(docker_image_get_virtual_size(img));
+		char* virtual_size = calculate_size(img->virtual_size);
 		rows[col_num++] = virtual_size;
 		XbaeMatrixAddRows(docker_images_list_w,
 				XbaeMatrixNumRows(docker_images_list_w), rows, NULL, NULL, 1);

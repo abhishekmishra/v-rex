@@ -270,14 +270,10 @@ void log_stats(XtPointer client_sargs, XtIntervalId* interval_id) {
 		cpu_xy[0] = now - start_time;
 		mem_xy[0] = now - start_time;
 
-		docker_container_cpu_stats* cpu_stats =
-				docker_container_stats_get_cpu_stats(stats);
-		docker_container_mem_stats* mem_stats =
-				docker_container_stats_get_mem_stats(stats);
-		float mem_usage =
-				(docker_container_mem_stats_get_usage(mem_stats) * 1.0)
-						/ docker_container_mem_stats_get_limit(mem_stats) * 100
-						* 100;
+		docker_container_cpu_stats* cpu_stats = stats->cpu_stats;
+		docker_container_mem_stats* mem_stats = stats->mem_stats;
+		float mem_usage = (mem_stats->usage * 1.0) / mem_stats->limit * 100
+				* 100;
 		mem_xy[1] = mem_usage / 100;
 		XwScrollcurve(stats_plot_w, mem_curve, mem_xy, 1);
 
@@ -291,13 +287,9 @@ void log_stats(XtPointer client_sargs, XtIntervalId* interval_id) {
 
 		char* mem_mesg = (char*) calloc(1024, sizeof(char));
 		strcpy(mem_mesg, "Using ");
-		strcat(mem_mesg,
-				calculate_size(
-						docker_container_mem_stats_get_usage(mem_stats)));
+		strcat(mem_mesg, calculate_size(mem_stats->usage));
 		strcat(mem_mesg, "/");
-		strcat(mem_mesg,
-				calculate_size(
-						docker_container_mem_stats_get_limit(mem_stats)));
+		strcat(mem_mesg, calculate_size(mem_stats->limit));
 		XmString mem_usage_str = XmStringCreateLocalized(mem_mesg);
 		XmScaleSetValue(mem_scale, mem_usage);
 		XtVaSetValues(mem_usage_label, XmNlabelString, mem_usage_str,

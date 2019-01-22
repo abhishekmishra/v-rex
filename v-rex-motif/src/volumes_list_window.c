@@ -140,10 +140,10 @@ vrex_err_t refresh_volumes_list(vrex_context* vrex) {
 		char** rows;
 		rows = (char**) XtCalloc(10, sizeof(String));
 
-		rows[col_num++] = docker_volume_get_name(vol);
-		rows[col_num++] = docker_volume_get_driver(vol);
-		rows[col_num++] = docker_volume_get_scope(vol);
-		rows[col_num++] = docker_volume_get_mountpoint(vol);
+		rows[col_num++] = vol->name;
+		rows[col_num++] = vol->driver;
+		rows[col_num++] = vol->scope;
+		rows[col_num++] = vol->mountpoint;
 
 		XbaeMatrixAddRows(docker_volumes_list_w,
 				XbaeMatrixNumRows(docker_volumes_list_w), rows, NULL, NULL, 1);

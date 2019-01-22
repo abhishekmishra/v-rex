@@ -130,30 +130,30 @@ int list_containers(Widget mw, vrex_context* vrex) {
 
 		docker_container_list_item* item = docker_containers_list_get_idx(
 				containers, i);
-		rows[col_num++] = docker_container_list_item_names_get_idx(item, 0);
+		rows[col_num++] = array_list_get_idx(item->names, 0);
 		if (i == 0) {
-			first_id = docker_container_list_item_get_id(item);
+			first_id = (item->id);
 		}
-		rows[col_num++] = docker_container_list_item_get_image(item);
-		rows[col_num++] = docker_container_list_item_get_command(item);
-		if (docker_container_list_item_ports_length(item) > 0) {
+		rows[col_num++] = item->image;
+		rows[col_num++] = item->command;
+		if (array_list_length(item->ports) > 0) {
 			docker_container_ports* first_port =
-					docker_container_list_item_ports_get_idx(item, 0);
+					array_list_get_idx(item->ports, 0);
 			if (first_port
-					&& docker_container_ports_get_public_port(first_port) > 0
-					&& docker_container_ports_get_private_port(first_port)
+					&& first_port->public_port > 0
+					&& first_port->private_port
 							> 0) {
 				char* ports_str = (char*) XtCalloc(128, sizeof(char));
 				sprintf(ports_str, "%ld:%ld",
-						docker_container_ports_get_public_port(first_port),
-						docker_container_ports_get_private_port(first_port));
+						first_port->public_port,
+						first_port->private_port);
 				rows[col_num++] = ports_str;
 			}
 		}
 		char* status = (char*) XtCalloc(1024, sizeof(char));
-		strcpy(status, docker_container_list_item_get_state(item));
+		strcpy(status, item->state);
 		strcat(status, ":");
-		strcat(status, docker_container_list_item_get_status(item));
+		strcat(status, item->status);
 		rows[col_num++] = status;
 
 		XbaeMatrixAddRows(mw, XbaeMatrixNumRows(mw), rows, NULL, NULL, 1);
@@ -225,7 +225,7 @@ void select_container_cell_cb(Widget mw, XtPointer cd, XtPointer cb) {
 	} else {
 		docker_container_list_item* item = docker_containers_list_get_idx(
 				containers, cbs->row);
-		char* id = docker_container_list_item_get_id(item);
+		char* id = item->id;
 		set_ps_window_docker_id(vrex, id);
 		show_stats_for_container(vrex, id);
 		show_log_for_container(vrex, id);

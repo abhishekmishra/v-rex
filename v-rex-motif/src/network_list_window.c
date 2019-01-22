@@ -139,11 +139,11 @@ vrex_err_t refresh_networks_list(vrex_context* vrex) {
 		char** rows;
 		rows = (char**) XtCalloc(10, sizeof(String));
 
-		rows[col_num++] = docker_network_get_name(ni);
-		rows[col_num++] = docker_network_get_driver(ni);
-		rows[col_num++] = docker_network_get_scope(ni);
+		rows[col_num++] = ni->name;
+		rows[col_num++] = ni->driver;
+		rows[col_num++] = ni->scope;
 		char* attachable_str = calloc(6, sizeof(char));
-		if (docker_network_get_attachable(ni) == 0) {
+		if (ni->attachable == 0) {
 			strcpy(attachable_str, "false");
 		} else {
 			strcpy(attachable_str, "true");
