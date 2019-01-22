@@ -122,10 +122,9 @@ vrex_err_t make_docker_server_window(vrex_context* vrex, Widget* server_w) {
 	char* summary = (char*) calloc(1024, sizeof(char));
 	sprintf(summary,
 			"| Server: %s | CPU: %d | Memtotal: %s | Containers: %lu (Running: %lu, Paused: %lu, Stopped: %lu) | Images: %lu |",
-			info->name, docker_info_get_ncpu(info),
-			calculate_size(docker_info_get_memtotal(info)), info->containers,
-			info->containers_running, info->containers_paused,
-			info->containers_stopped, docker_info_get_images(info));
+			info->name, info->ncpu, calculate_size(info->memtotal),
+			info->containers, info->containers_running, info->containers_paused,
+			info->containers_stopped, info->images);
 
 	create_summary_scrolled_text(&docker_summary_text, docker_server_w);
 
