@@ -53,12 +53,12 @@ static pthread_mutex_t interactions_w_lock;
 static int show_calls = 0;
 
 void docker_error_handler_log(docker_result* res) {
-	docker_log_debug("DOCKER_RESULT: For URL: %s", get_docker_result_url(res));
+	docker_log_debug("DOCKER_RESULT: For URL: %s", res->url);
 	docker_log_debug(
 			"DOCKER RESULT: Response error_code = %d, http_response = %ld",
-			get_docker_result_error(res), get_docker_result_http_error(res));
+			res->error_code, res->http_error_code);
 	if (!is_ok(res)) {
-		docker_log_error("DOCKER RESULT: %s", get_docker_result_message(res));
+		docker_log_error("DOCKER RESULT: %s", res->message);
 	}
 }
 

@@ -369,10 +369,10 @@ void sel_callback(Widget list_w, XtPointer client_data, XtPointer call_data) {
 			results_list_length(vrex) - cbs->item_position);
 
 	update_request_form(XtParent(XtParent(list_w)),
-			get_docker_result_start_time(res),
-			get_docker_result_http_method(res), get_docker_result_request(res),
-			get_docker_result_end_time(res), get_docker_result_http_error(res),
-			get_docker_result_message(res), get_docker_result_response(res));
+			res->start_time,
+			res->method, res->request_json_str,
+			res->end_time, res->http_error_code,
+			res->message, res->response_json_str);
 }
 
 vrex_err_t make_interactions_window(vrex_context* vrex) {
@@ -430,7 +430,7 @@ vrex_err_t add_interactions_entry(vrex_context* vrex, docker_result* res) {
 	Widget list_w = XtNameToWidget(XtNameToWidget(iw, "interact_listSW"),
 			"interact_list");
 	if (res) {
-		char* url = get_docker_result_url(res);
+		char* url = res->url;
 		if (url != NULL && (strlen(url) > 0)) {
 			int pos_to_add;
 			XtVaGetValues(list_w, XmNtopItemPosition, &pos_to_add, NULL);
