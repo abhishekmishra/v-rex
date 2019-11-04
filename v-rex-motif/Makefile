@@ -1,6 +1,7 @@
-CC=tcc
+CC=gcc
 MOVING_MOTIF_HOME=../../movingmotif
 CLD_HOME=../../clibdocker
+COLL_HOME=../../coll
 PROGRAMS = v-rex
 SRC_DIR=./src
 OUT_DIR=./bin/release
@@ -8,8 +9,8 @@ TEST_DIR=./test
 OBJ_DIR=./obj
 MKDIR_P=mkdir -p
 
-CFLAGS=-std=c11 `pkg-config --cflags json-c` `pkg-config --cflags libcurl` -I/usr/Motif21/include -I/usr/X11R6/include  -I$(CLD_HOME)/src -I$(MOVING_MOTIF_HOME)/src -D_GNU_SOURCE
-LIBS=$(CLD_HOME)/bin/debug/clibdocker.so -L$(MOVING_MOTIF_HOME)/lib -lmovingmotif `pkg-config --libs json-c` `pkg-config --libs libcurl` -L/usr/Motif21/lib -L/usr/X11R6/lib -lXbae -lXm -lXt -lSM -lICE -lX11 -lpthread -lXmHTML
+CFLAGS=-std=c11 `pkg-config --cflags json-c` `pkg-config --cflags libcurl` -I/usr/Motif21/include -I/usr/X11R6/include  -I$(CLD_HOME)/include -I../../coll/src -I$(MOVING_MOTIF_HOME)/src -D_GNU_SOURCE
+LIBS=$(CLD_HOME)/build/libclibdocker.a $(COLL_HOME)/build/libcoll.a -L$(MOVING_MOTIF_HOME)/lib -lmovingmotif `pkg-config --libs json-c` `pkg-config --libs libcurl` -L/usr/Motif21/lib -L/usr/X11R6/lib -lXbae -lXm -lXt -lSM -lICE -lX11 -lpthread -lXmHTML
 debug: CFLAGS += -DDEBUG -g -O0
 debug: OUT_DIR = ./bin/debug
 
