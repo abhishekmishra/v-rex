@@ -100,12 +100,12 @@ int set_ps_window_docker_id(vrex_context* vrex, char* id) {
 	vrex->handle_error(vrex, result);
 	if (is_ok(result)) {
 		docker_log_debug("num titles %d num processes %d",
-				array_list_length(ps->titles),
-				array_list_length(ps->processes));
-		for (int i = 0; i < array_list_length(ps->titles); i++) {
-//		docker_log_info("Title is %s at %d", array_list_get_idx(ps->titles, i),
+				arraylist_length(ps->titles),
+				arraylist_length(ps->processes));
+		for (int i = 0; i < arraylist_length(ps->titles); i++) {
+//		docker_log_info("Title is %s at %d", arraylist_get(ps->titles, i),
 //				i);
-			xbae_matrix_add_column(ps_w, array_list_get_idx(ps->titles, i), i,
+			xbae_matrix_add_column(ps_w, arraylist_get(ps->titles, i), i,
 					10);
 		}
 
@@ -114,19 +114,18 @@ int set_ps_window_docker_id(vrex_context* vrex, char* id) {
 			XbaeMatrixDeleteRows(ps_w, 0, num_rows);
 		}
 
-		for (int i = 0; i < array_list_length(ps->processes); i++) {
-			struct array_list* process = array_list_get_idx(ps->processes, i);
-			char** rows;
-			rows = (char**) XtCalloc(array_list_length(process),
-					sizeof(String));
-			for (int j = 0; j < array_list_length(process); j++) {
-//			docker_log_info("Title is %s at %d", array_list_get_idx(process, j),
-//					j);
-				rows[j] = array_list_get_idx(process, j);
+		for (int i = 0; i < arraylist_length(ps->processes); i++) {
+			arraylist* process = arraylist_get(ps->processes, i);
+			printf("%d\n", arraylist_length(process));
+			char** row = (char**) XtCalloc(arraylist_length(process) * 2,
+					sizeof(char*));
+			for (int j = 0; j < arraylist_length(process); j++) {
+				// docker_log_info("Value is %s at %d", arraylist_get(process, j),
+				// 		j);
+				row[j] = str_clone(arraylist_get(process, j));
 			}
-			XbaeMatrixAddRows(ps_w, XbaeMatrixNumRows(ps_w), rows, NULL, NULL,
-					1);
-			free(rows);
+			XbaeMatrixAddRows(ps_w, XbaeMatrixNumRows(ps_w), row, NULL, NULL, 1);
+			free(row);
 		}
 	}
 	return 0;

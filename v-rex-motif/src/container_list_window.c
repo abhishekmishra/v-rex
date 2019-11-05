@@ -130,15 +130,15 @@ int list_containers(Widget mw, vrex_context* vrex) {
 
 		docker_container_list_item* item = docker_containers_list_get_idx(
 				containers, i);
-		rows[col_num++] = array_list_get_idx(item->names, 0);
+		rows[col_num++] = arraylist_get(item->names, 0);
 		if (i == 0) {
 			first_id = (item->id);
 		}
 		rows[col_num++] = item->image;
 		rows[col_num++] = item->command;
-		if (array_list_length(item->ports) > 0) {
+		if (arraylist_length(item->ports) > 0) {
 			docker_container_ports* first_port =
-					array_list_get_idx(item->ports, 0);
+					arraylist_get(item->ports, 0);
 			if (first_port
 					&& first_port->public_port > 0
 					&& first_port->private_port
@@ -169,10 +169,10 @@ int list_containers(Widget mw, vrex_context* vrex) {
 	if (first_id) {
 		set_ps_window_docker_id(vrex, first_id);
 		//show_stats_for_container(vrex, first_id);
-		show_log_for_container(vrex, first_id);
+		// show_log_for_container(vrex, first_id);
 	}
 
-	XmUpdateDisplay(XtParent(XtParent(mw)));
+	// XmUpdateDisplay(XtParent(XtParent(mw)));
 	return 0;
 }
 
@@ -324,7 +324,7 @@ int make_container_list_window(Widget parent, Widget* container_ls_w,
 	XtManageChild(docker_containers_list_frame_w);
 
 	make_ps_window(container_list_toplevel, &ps_w);
-	//make_docker_container_stats_window(vrex, container_list_toplevel);
+// 	//make_docker_container_stats_window(vrex, container_list_toplevel);
 
 	XtManageChild(ps_w);
 

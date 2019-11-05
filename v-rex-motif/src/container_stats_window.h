@@ -42,7 +42,4 @@ vrex_err_t make_docker_container_stats_window(vrex_context* vrex, Widget parent_
  */
 vrex_err_t show_stats_for_container(vrex_context* vrex, char* id);
 
-Widget get_log_window(vrex_context* vrex);
-
-
 #endif /* SRC_CONTAINER_STATS_WINDOW_H_ */

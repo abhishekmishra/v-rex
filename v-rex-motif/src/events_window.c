@@ -60,7 +60,7 @@ void docker_events_cb(docker_event* event, void* cbargs) {
 
 void* update_events_table_cb(void* args) {
 	docker_result* res;
-	array_list* evts;
+	arraylist* evts;
 	time_t now = time(NULL);
 	vrex_context* vrex = (vrex_context*) args;
 	docker_system_events_cb(vrex->d_ctx, &res, &docker_events_cb,
@@ -70,17 +70,17 @@ void* update_events_table_cb(void* args) {
 
 void* update_events_table(void* args) {
 	docker_result* res;
-	array_list* evts;
+	arraylist* evts;
 	time_t now = time(NULL);
 	vrex_context* vrex = (vrex_context*) args;
 	Widget events_w = *(vrex->events_w);
 	docker_system_events(vrex->d_ctx, &res, &evts, now - (3600 * 24), now);
 	vrex->handle_error(vrex, res);
 
-	int evts_len = array_list_length(evts);
+	int evts_len = arraylist_length(evts);
 	docker_log_debug("Num events %d", evts_len);
 	for (int i = 0; i < evts_len; i++) {
-		docker_event* event = array_list_get_idx(evts, i);
+		docker_event* event = arraylist_get(evts, i);
 		String content = (char*) calloc(2048, sizeof(char));
 		strcat(content, "");
 		struct tm* timeinfo = localtime(&event->time);

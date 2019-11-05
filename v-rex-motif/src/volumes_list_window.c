@@ -25,6 +25,7 @@
 #include <docker_volumes.h>
 #include "volumes_list_window.h"
 #include <docker_log.h>
+#include <arraylist.h>
 
 /**
  * Create a new docker volumes list window
@@ -126,14 +127,14 @@ vrex_err_t refresh_volumes_list(vrex_context* vrex) {
 		XbaeMatrixDeleteRows(docker_volumes_list_w, 0, num_rows);
 	}
 
-	struct array_list* volumes;
-	struct array_list* warnings;
+	arraylist* volumes;
+	arraylist* warnings;
 	docker_volumes_list(vrex->d_ctx, &res, &volumes, &warnings, 1, NULL, NULL,
 	NULL);
 	vrex->handle_error(vrex, res);
-	int len_nets = array_list_length(volumes);
+	int len_nets = arraylist_length(volumes);
 	for (int i = 0; i < len_nets; i++) {
-		docker_volume* vol = (docker_volume*) array_list_get_idx(volumes, i);
+		docker_volume* vol = (docker_volume*) arraylist_get(volumes, i);
 		docker_log_info("Found volume %s %s", vol->name, vol->mountpoint);
 
 		col_num = 0;

@@ -119,10 +119,15 @@ vrex_err_t make_docker_server_window(vrex_context* vrex, Widget* server_w) {
 	docker_system_info(vrex->d_ctx, &res, &info);
 	vrex->handle_error(vrex, res);
 
+	// printf("| Server: %s | CPU: %d | Memtotal: %s | Containers: %lu (Running: %lu, Paused: %lu, Stopped: %lu) | Images: %lu |",
+	// 		info->name, info->ncpu, calculate_size_str(info->memtotal),
+	// 		info->containers, info->containers_running, info->containers_paused,
+	// 		info->containers_stopped, info->images);
+
 	char* summary = (char*) calloc(1024, sizeof(char));
 	sprintf(summary,
 			"| Server: %s | CPU: %d | Memtotal: %s | Containers: %lu (Running: %lu, Paused: %lu, Stopped: %lu) | Images: %lu |",
-			info->name, info->ncpu, calculate_size(info->memtotal),
+			info->name, info->ncpu, calculate_size_str(info->memtotal),
 			info->containers, info->containers_running, info->containers_paused,
 			info->containers_stopped, info->images);
 

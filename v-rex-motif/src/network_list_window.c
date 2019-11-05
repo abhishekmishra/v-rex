@@ -125,14 +125,14 @@ vrex_err_t refresh_networks_list(vrex_context* vrex) {
 		XbaeMatrixDeleteRows(docker_networks_list_w, 0, num_rows);
 	}
 
-	struct array_list* networks;
+	arraylist* networks;
 	docker_networks_list(vrex->d_ctx, &res, &networks, NULL, NULL, NULL, NULL,
 	NULL,
 	NULL);
 	vrex->handle_error(vrex, res);
-	int len_nets = array_list_length(networks);
+	int len_nets = arraylist_length(networks);
 	for (int i = 0; i < len_nets; i++) {
-		docker_network* ni = (docker_network*) array_list_get_idx(networks, i);
+		docker_network* ni = (docker_network*) arraylist_get(networks, i);
 		docker_log_info("Found network %s %s", ni->name, ni->id);
 
 		col_num = 0;

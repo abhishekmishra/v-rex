@@ -199,10 +199,10 @@ Widget get_images_list_window(vrex_context* vrex) {
 char* get_image_tags_concat(docker_image* img) {
 	char* tags = NULL;
 	if (img->repo_tags) {
-		int len_tags = array_list_length(img->repo_tags);
+		int len_tags = arraylist_length(img->repo_tags);
 		int tag_strlen = 0;
 		for (int i = 0; i < len_tags; i++) {
-			tag_strlen += strlen((char*) array_list_get_idx(img->repo_tags, i));
+			tag_strlen += strlen((char*) arraylist_get(img->repo_tags, i));
 			tag_strlen += 1; //for newline
 		}
 		tag_strlen += 1; //for null terminator
@@ -210,7 +210,7 @@ char* get_image_tags_concat(docker_image* img) {
 		if (tags != NULL) {
 			tags[0] = '\0';
 			for (int i = 0; i < len_tags; i++) {
-				strcat(tags, (char*) array_list_get_idx(img->repo_tags, i));
+				strcat(tags, (char*) arraylist_get(img->repo_tags, i));
 				if (i != (len_tags - 1)) {
 					strcat(tags, "\n");
 				}
@@ -235,13 +235,13 @@ void* refresh_images_list_util(void* args) {
 	col_num++;
 	xbae_matrix_add_column(docker_images_list_w, "Virtual Size", col_num, 20);
 	col_num++;
-	struct array_list* images;
+	arraylist* images;
 	docker_images_list(vrex->d_ctx, &res, &images, 0, 1, NULL, 0, NULL, NULL,
 	NULL);
 	vrex->handle_error(vrex, res);
-	int len_images = array_list_length(images);
+	int len_images = arraylist_length(images);
 	for (int i = 0; i < len_images; i++) {
-		docker_image* img = (docker_image*) array_list_get_idx(images, i);
+		docker_image* img = (docker_image*) arraylist_get(images, i);
 		col_num = 0;
 		char** rows;
 		rows = (char**) XtCalloc(10, sizeof(String));

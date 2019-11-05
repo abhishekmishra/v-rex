@@ -102,13 +102,20 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 target_link_libraries(${PROJECT_NAME} PUBLIC Threads::Threads)
 
+# Motif must be linked before Xt
+# see https://babbage.cs.qc.cuny.edu/courses/GUIDesign/motif-faq.html#314
+message(STATUS "MOTIF_FOUND = ${MOTIF_FOUND}")
+include_directories(${MOTIF_INCLUDE_DIR})
+link_directories(${MOTIF_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${MOTIF_LIBRARIES})
+
 # need to link to -lXbae -lXm -lXt -lSM -lICE -lX11 -lpthread -lXmHTML
 # see https://stackoverflow.com/questions/34014970/what-difference-lx11-option-vs-target-link-libraries-in-cmake
 # for X11 linking via cmake
 find_package(X11 REQUIRED)
 
 message(STATUS "X11_FOUND = ${X11_FOUND}")
-message(STATUS "Xmu found = ${X11_Xmu_FOUND}")
+message(STATUS "Xt found = ${X11_Xt_FOUND}")
 message(STATUS "X11_INCLUDE_DIR = ${X11_INCLUDE_DIR}")
 message(STATUS "X11_LIBRARIES = ${X11_LIBRARIES}")
 
@@ -142,11 +149,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ${X11_SM_LIB})
 include_directories(${X11_Xt_INCLUDE_PATH})
 link_directories(${X11_Xt_LIB})
 target_link_libraries(${PROJECT_NAME} PUBLIC ${X11_Xt_LIB})
-
-message(STATUS "MOTIF_FOUND = ${MOTIF_FOUND}")
-include_directories(${MOTIF_INCLUDE_DIR})
-link_directories(${MOTIF_LIBRARIES})
-target_link_libraries(${PROJECT_NAME} PUBLIC ${MOTIF_LIBRARIES})
 
 check_include_file("Xbae/Matrix.h" HAVE_XBAE)
 message(STATUS "HAVE_XBAE = ${HAVE_XBAE}")

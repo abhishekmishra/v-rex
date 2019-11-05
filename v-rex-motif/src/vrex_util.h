@@ -42,7 +42,7 @@ typedef struct vrex_context_t {
 	Widget* events_w;
 	Widget (*interactions_w)(struct vrex_context_t* vrex);
 	void (*handle_error)(struct vrex_context_t* vrex, docker_result* res);
-	struct array_list* results;
+	arraylist* results;
 } vrex_context;
 
 void add_column(Widget mw, char* name, int num, int width);
@@ -68,6 +68,6 @@ void xbae_matrix_readonly_cell_cb(Widget mw, XtPointer cd, XtPointer cb);
  * \param size
  * \return string with the description of the size
  */
-//char* calculate_size(uint64_t size);
+char* calculate_size_str(uint64_t size);
 
 #endif /* SRC_VREX_UTIL_H_ */

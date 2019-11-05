@@ -466,7 +466,7 @@ int main(int argc, char *argv[]) {
 			XmNborderWidth, 0,
 			NULL);
 
-	//docker_log_debug(XtName(XtParent(main_w)));
+	docker_log_debug(XtName(XtParent(main_w)));
 
 	vrex = (vrex_context*) malloc(sizeof(vrex_context));
 	vrex->main_w = &main_w;

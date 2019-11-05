@@ -42,5 +42,5 @@ vrex_err_t make_docker_container_log_window(vrex_context* vrex, Widget parent_w)
  */
 vrex_err_t show_log_for_container(vrex_context* vrex, char* id);
 
-
+Widget get_log_window(vrex_context* vrex);
 #endif /* SRC_CONTAINER_LOG_WINDOW_H_ */

@@ -10,12 +10,13 @@
 #include <string.h>
 #include <Xbae/Matrix.h>
 #include "vrex_util.h"
+#include <arraylist.h>
 
 #include <docker_log.h>
 
 vrex_err_t init_results_list(vrex_context* vrex) {
 	if (vrex != NULL) {
-		vrex->results = array_list_new((void (*)(void *)) &free_docker_result);
+		arraylist_new(&vrex->results, (void (*)(void *)) &free_docker_result);
 		return VREX_SUCCESS;
 	}
 	return VREX_E_UNKNOWN;
@@ -23,7 +24,7 @@ vrex_err_t init_results_list(vrex_context* vrex) {
 
 vrex_err_t results_list_add(vrex_context* vrex, docker_result* res) {
 	if (vrex != NULL && vrex->results != NULL) {
-		array_list_add(vrex->results, res);
+		arraylist_add(vrex->results, res);
 		return VREX_SUCCESS;
 	}
 	return VREX_E_UNKNOWN;
@@ -31,13 +32,13 @@ vrex_err_t results_list_add(vrex_context* vrex, docker_result* res) {
 
 int results_list_length(vrex_context* vrex) {
 	if (vrex != NULL && vrex->results != NULL) {
-		return array_list_length(vrex->results);
+		return arraylist_length(vrex->results);
 	}
 	return 0;
 }
 
 docker_result* results_list_get_idx(vrex_context* vrex, int i) {
-	return (docker_result*) array_list_get_idx(vrex->results, i);
+	return (docker_result*) arraylist_get(vrex->results, i);
 }
 
 Widget get_toolbar_w(vrex_context* vrex) {
@@ -92,22 +93,22 @@ static const char     *sizes[]   = { "EiB", "PiB", "TiB", "GiB", "MiB", "KiB", "
 static const uint64_t  exbibytes = 1024ULL * 1024ULL * 1024ULL *
                                    1024ULL * 1024ULL * 1024ULL;
 
-// char* calculate_size(uint64_t size)
-// {
-//     char     *result = (char *) malloc(sizeof(char) * 20);
-//     uint64_t  multiplier = exbibytes;
-//     int i;
+char* calculate_size_str(uint64_t size)
+{
+    char     *result = (char *) malloc(sizeof(char) * 20);
+    uint64_t  multiplier = exbibytes;
+    int i;
 
-//     for (i = 0; i < DIM(sizes); i++, multiplier /= 1024)
-//     {
-//         if (size < multiplier)
-//             continue;
-//         if (size % multiplier == 0)
-//             sprintf(result, "%" PRIu64 " %s", size / multiplier, sizes[i]);
-//         else
-//             sprintf(result, "%.1f %s", (float) size / multiplier, sizes[i]);
-//         return result;
-//     }
-//     strcpy(result, "0");
-//     return result;
-// }
+    for (i = 0; i < DIM(sizes); i++, multiplier /= 1024)
+    {
+        if (size < multiplier)
+            continue;
+        if (size % multiplier == 0)
+            sprintf(result, "%" PRIu64 " %s", size / multiplier, sizes[i]);
+        else
+            sprintf(result, "%.1f %s", (float) size / multiplier, sizes[i]);
+        return result;
+    }
+    strcpy(result, "0");
+    return result;
+}
