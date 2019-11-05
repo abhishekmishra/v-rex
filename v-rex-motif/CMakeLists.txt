@@ -119,15 +119,15 @@ message(STATUS "Xt found = ${X11_Xt_FOUND}")
 message(STATUS "X11_INCLUDE_DIR = ${X11_INCLUDE_DIR}")
 message(STATUS "X11_LIBRARIES = ${X11_LIBRARIES}")
 
-check_include_file("XmHTML/XmHTML.h" HAVE_XMHTML)
+# check_include_file("XmHTML/XmHTML.h" HAVE_XMHTML)
 
-if(NOT HAVE_XMHTML)
-	# To find and use XMHTML
-	find_path(XMHTML_INCLUDE_DIR "XmHTML/XmHTML.h")
-	find_library(XMHTML_LIBRARY XmHTML)
-	include_directories(${XMHTML_INCLUDE_DIR})
-	target_link_libraries(${PROJECT_NAME} PUBLIC ${XMHTML_LIBRARY})
-endif (NOT HAVE_XMHTML)
+# if(NOT HAVE_XMHTML)
+# 	# To find and use XMHTML
+# 	find_path(XMHTML_INCLUDE_DIR "XmHTML/XmHTML.h")
+# 	find_library(XMHTML_LIBRARY XmHTML)
+# 	include_directories(${XMHTML_INCLUDE_DIR})
+# 	target_link_libraries(${PROJECT_NAME} PUBLIC ${XMHTML_LIBRARY})
+# endif (NOT HAVE_XMHTML)
 
 
 # include X11

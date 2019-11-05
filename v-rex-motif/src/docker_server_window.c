@@ -29,7 +29,7 @@
 #include <Xm/PushB.h>
 #include <Xm/ToggleB.h>
 #include <X11/Xos.h>
-#include <XmHTML/XmHTML.h>
+// #include <XmHTML/XmHTML.h>
 #include "docker_server_window.h"
 
 #include <docker_log.h>
