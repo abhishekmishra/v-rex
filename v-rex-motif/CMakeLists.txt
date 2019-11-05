@@ -3,6 +3,7 @@ cmake_minimum_required ( VERSION 3.9 )
 include(CheckIncludeFile)
 
 project ( v-rex-motif C )
+include(FindMotif)
 
 # Set the project source dir (just convention)
 set( V-REX-MOTIF_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
@@ -23,7 +24,7 @@ include_directories( src )
 set( V-REX-MOTIF_SOURCES
   src/container_list_window.c
   src/container_log_window.c
-  src/container_stats_window.c
+# src/container_stats_window.c
   src/docker_server_window.c
   src/events_window.c
   src/images_list_window.c
@@ -39,7 +40,7 @@ set( V-REX-MOTIF_SOURCES
 
   src/container_list_window.h
   src/container_log_window.h
-  src/container_stats_window.h
+# src/container_stats_window.h
   src/docker_server_window.h
   src/events_window.h
   src/images_list_window.h
@@ -95,6 +96,65 @@ if(NOT HAVE_GETOPT)
 	include_directories(${GETOPT_INCLUDE_DIR})
 	target_link_libraries(${PROJECT_NAME} PUBLIC ${GETOPT_LIBRARY})
 endif (NOT HAVE_GETOPT)
+
+# see inclusion of pthread https://stackoverflow.com/a/29871891/9483968
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+target_link_libraries(${PROJECT_NAME} PUBLIC Threads::Threads)
+
+# need to link to -lXbae -lXm -lXt -lSM -lICE -lX11 -lpthread -lXmHTML
+# see https://stackoverflow.com/questions/34014970/what-difference-lx11-option-vs-target-link-libraries-in-cmake
+# for X11 linking via cmake
+find_package(X11 REQUIRED)
+
+message(STATUS "X11_FOUND = ${X11_FOUND}")
+message(STATUS "Xmu found = ${X11_Xmu_FOUND}")
+message(STATUS "X11_INCLUDE_DIR = ${X11_INCLUDE_DIR}")
+message(STATUS "X11_LIBRARIES = ${X11_LIBRARIES}")
+
+check_include_file("XmHTML/XmHTML.h" HAVE_XMHTML)
+
+if(NOT HAVE_XMHTML)
+	# To find and use XMHTML
+	find_path(XMHTML_INCLUDE_DIR "XmHTML/XmHTML.h")
+	find_library(XMHTML_LIBRARY XmHTML)
+	include_directories(${XMHTML_INCLUDE_DIR})
+	target_link_libraries(${PROJECT_NAME} PUBLIC ${XMHTML_LIBRARY})
+endif (NOT HAVE_XMHTML)
+
+
+# include X11
+include_directories(${X11_INCLUDE_DIR})
+link_directories(${X11_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${X11_LIBRARIES})
+
+# include Xmu
+include_directories(${X11_Xmu_INCLUDE_PATH})
+link_directories(${X11_Xmu_LIB})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${X11_Xmu_LIB})
+
+# include SM
+include_directories(${X11_SM_INCLUDE_PATH})
+link_directories(${X11_SM_LIB})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${X11_SM_LIB})
+
+# include Xt
+include_directories(${X11_Xt_INCLUDE_PATH})
+link_directories(${X11_Xt_LIB})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${X11_Xt_LIB})
+
+message(STATUS "MOTIF_FOUND = ${MOTIF_FOUND}")
+include_directories(${MOTIF_INCLUDE_DIR})
+link_directories(${MOTIF_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${MOTIF_LIBRARIES})
+
+check_include_file("Xbae/Matrix.h" HAVE_XBAE)
+message(STATUS "HAVE_XBAE = ${HAVE_XBAE}")
+# To find and use Xbae
+find_path(XBAE_INCLUDE_DIR "Xbae/Matrix.h")
+find_library(XBAE_LIBRARY Xbae)
+include_directories(${XBAE_INCLUDE_DIR})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${XBAE_LIBRARY})
 
 # See https://gitlab.kitware.com/cmake/community/wikis/doc/cpack/Packaging-With-CPack
 INCLUDE(InstallRequiredSystemLibraries)

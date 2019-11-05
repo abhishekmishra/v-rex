@@ -68,6 +68,6 @@ void xbae_matrix_readonly_cell_cb(Widget mw, XtPointer cd, XtPointer cb);
  * \param size
  * \return string with the description of the size
  */
-char* calculate_size(uint64_t size);
+//char* calculate_size(uint64_t size);
 
 #endif /* SRC_VREX_UTIL_H_ */

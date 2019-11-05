@@ -396,7 +396,7 @@ int extract_args_url_connection(int argc, char** ret_url, char* argv[],
 			}
 		}
 	} else {
-		url = DOCKER_DEFINE_DEFAULT_UNIX_SOCKET;
+		url = DOCKER_DEFAULT_UNIX_SOCKET;
 		if (make_docker_context_socket(ctx, url) == E_SUCCESS) {
 			connected = 1;
 		}
@@ -466,7 +466,7 @@ int main(int argc, char *argv[]) {
 			XmNborderWidth, 0,
 			NULL);
 
-	docker_log_debug(XtName(XtParent(main_w)));
+	//docker_log_debug(XtName(XtParent(main_w)));
 
 	vrex = (vrex_context*) malloc(sizeof(vrex_context));
 	vrex->main_w = &main_w;

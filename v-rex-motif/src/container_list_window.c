@@ -32,7 +32,7 @@
 
 #include "vrex_util.h"
 #include "ps_window.h"
-#include "container_stats_window.h"
+//#include "container_stats_window.h"
 #include "container_log_window.h"
 
 static int show_running = 1;
@@ -168,7 +168,7 @@ int list_containers(Widget mw, vrex_context* vrex) {
 
 	if (first_id) {
 		set_ps_window_docker_id(vrex, first_id);
-		show_stats_for_container(vrex, first_id);
+		//show_stats_for_container(vrex, first_id);
 		show_log_for_container(vrex, first_id);
 	}
 
@@ -227,7 +227,7 @@ void select_container_cell_cb(Widget mw, XtPointer cd, XtPointer cb) {
 				containers, cbs->row);
 		char* id = item->id;
 		set_ps_window_docker_id(vrex, id);
-		show_stats_for_container(vrex, id);
+		//show_stats_for_container(vrex, id);
 		show_log_for_container(vrex, id);
 		current_row = cbs->row;
 	}
@@ -324,7 +324,7 @@ int make_container_list_window(Widget parent, Widget* container_ls_w,
 	XtManageChild(docker_containers_list_frame_w);
 
 	make_ps_window(container_list_toplevel, &ps_w);
-	make_docker_container_stats_window(vrex, container_list_toplevel);
+	//make_docker_container_stats_window(vrex, container_list_toplevel);
 
 	XtManageChild(ps_w);
 
