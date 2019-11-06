@@ -1,13 +1,11 @@
 // v-rex-win32.cpp : Defines the entry point for the application.
 //
 
-#include "stdafx.h"
-#include <curl/curl.h>
+#include "framework.h"
 #include "v-rex-win32.h"
-#include "vrex-util.h"
-#include <docker_connection_util.h>
-#include <docker_system.h>
-#include <wchar.h>
+
+#include <arraylist.h>
+#include <docker_all.h>
 
 /**
  * A simple error handler suitable for programs
@@ -15,13 +13,13 @@
  */
 wchar_t* docker_simple_error_handler_wsprintf(docker_result* res) {
 	wchar_t* report = (wchar_t*)calloc(2048, sizeof(wchar_t));
-	wsprintf(report, 
-		L"DOCKER_RESULT: For URL: %S\n DOCKER RESULT: Response error_code = %d, http_response = %ld\n", 
-		get_docker_result_url(res),
-		get_docker_result_error(res), 
-		get_docker_result_http_error(res));
+	wsprintf(report,
+		L"DOCKER_RESULT: For URL: %S\n DOCKER RESULT: Response error_code = %d, http_response = %ld\n",
+		res->url,
+		res->error_code,
+		res->http_error_code);
 	if (!is_ok(res)) {
-		wsprintf(report, L"DOCKER RESULT: %S\n", get_docker_result_message(res));
+		wsprintf(report, L"DOCKER RESULT: %S\n", res->message);
 	}
 	return report;
 }
@@ -49,9 +47,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_ int       nCmdShow)
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
-	//UNREFERENCED_PARAMETER(lpCmdLine);
+	UNREFERENCED_PARAMETER(lpCmdLine);
 
-
+	// TODO: Place code here.
 
 	// Initialize global strings
 	LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -67,8 +65,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_VREXWIN32));
 
 	MSG msg;
-
-	// TODO: Place code here.
 
 	// Main message loop:
 	while (GetMessage(&msg, nullptr, 0, 0))
@@ -151,8 +147,29 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	docker_context* ctx;
+	docker_result* res;
+	docker_version* version;
+
 	switch (message)
 	{
+	case WM_CREATE:
+	{
+		// connect to docker
+		d_err_t err = make_docker_context_default_local(&ctx);
+		if (err == E_SUCCESS) {
+			docker_system_version(ctx, &res, &version);
+			wchar_t* report = handle_error(res);
+			if (report != NULL && res->http_error_code == 200) {
+				wchar_t* version_info = (wchar_t*)calloc(10240, sizeof(wchar_t));
+				wsprintf(version_info, L"%S", res->response_json_str);
+				MessageBox(NULL, version_info,
+					L"woah", MB_ICONINFORMATION);
+			}
+			free_docker_context(&ctx);
+		}
+	}
+	break;
 	case WM_COMMAND:
 	{
 		int wmId = LOWORD(wParam);
@@ -175,31 +192,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hWnd, &ps);
 		// TODO: Add any drawing code that uses hdc here...
-		curl_global_init(CURL_GLOBAL_ALL);
-		const char* url = "http://192.168.1.33:2376/";
-		docker_context* ctx;
-		docker_result* res;
-		extract_args_url_connection(url, &ctx, &res);
-
-		wchar_t* output_str = (wchar_t*)calloc(1024, sizeof(wchar_t));
-		if (output_str != NULL) {
-			wsprintf(output_str, L"Connected to %S", url);
-			MessageBox(NULL, output_str,
-				L"woah", MB_ICONINFORMATION);
-		}
-
-		docker_version* version;
-		docker_system_version(ctx, &res, &version);
-		wchar_t* report = handle_error(res);
-		if (report != NULL && res->http_error_code == 200) {
-			wchar_t* version_info = (wchar_t*)calloc(10240, sizeof(wchar_t));
-			wsprintf(version_info, L"%S", res->response_json_str);
-			MessageBox(NULL, version_info,
-				L"woah", MB_ICONINFORMATION);
-		}
-		free_docker_context(&ctx);
-		curl_global_cleanup();
-
 		EndPaint(hWnd, &ps);
 	}
 	break;
@@ -231,3 +223,4 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	return (INT_PTR)FALSE;
 }
+

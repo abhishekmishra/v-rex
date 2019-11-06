@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
+    <ClInclude Include="framework.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">
@@ -27,18 +27,9 @@
     <ClInclude Include="v-rex-win32.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vrex-util.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="v-rex-win32.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vrex-util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
