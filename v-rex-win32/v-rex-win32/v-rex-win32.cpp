@@ -35,6 +35,10 @@ HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
+docker_context* ctx;
+docker_result* res;
+docker_version* version = NULL;
+
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
@@ -147,10 +151,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	docker_context* ctx;
-	docker_result* res;
-	docker_version* version;
-
 	switch (message)
 	{
 	case WM_CREATE:
@@ -163,10 +163,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			if (report != NULL && res->http_error_code == 200) {
 				wchar_t* version_info = (wchar_t*)calloc(10240, sizeof(wchar_t));
 				wsprintf(version_info, L"%S", res->response_json_str);
-				MessageBox(NULL, version_info,
-					L"woah", MB_ICONINFORMATION);
+				//MessageBox(NULL, version_info,
+				//	L"Docker Version Info", MB_ICONINFORMATION);
 			}
-			free_docker_context(&ctx);
 		}
 	}
 	break;
@@ -190,12 +189,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_PAINT:
 	{
 		PAINTSTRUCT ps;
+		RECT rect;
 		HDC hdc = BeginPaint(hWnd, &ps);
 		// TODO: Add any drawing code that uses hdc here...
+		GetClientRect(hWnd, &rect);
+		wchar_t* version_info = (wchar_t*)calloc(10240, sizeof(wchar_t));
+		wsprintf(version_info, L"Docker Version Is %S [%S], running at %S.", version->version, version->os, ctx->url);
+		DrawText(hdc, version_info, -1, &rect,
+			DT_SINGLELINE | DT_CENTER | DT_VCENTER);
 		EndPaint(hWnd, &ps);
 	}
 	break;
 	case WM_DESTROY:
+		free_docker_context(&ctx);
 		PostQuitMessage(0);
 		break;
 	default:
