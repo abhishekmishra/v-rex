@@ -13,6 +13,12 @@
 #define IDI_SMALL				108
 #define IDC_VREXWIN32			109
 #define IDC_MYICON				2
+
+#define IDM_NEW 200
+#define IDM_OPEN 201
+#define IDM_SAVE 202
+#define IDM_EDIT 204
+
 #ifndef IDC_STATIC
 #define IDC_STATIC				-1
 #endif

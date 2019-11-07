@@ -3,9 +3,16 @@
 
 #include "framework.h"
 #include "v-rex-win32.h"
+#include "v-rex-toolbar.h"
 
 #include <arraylist.h>
 #include <docker_all.h>
+
+//For Docker API
+docker_context* ctx;
+docker_result* res;
+docker_version* version = NULL;
+docker_info* info = NULL;
 
 /**
  * A simple error handler suitable for programs
@@ -28,17 +35,13 @@ wchar_t* handle_error(docker_result* res) {
 	return docker_simple_error_handler_wsprintf(res);
 }
 
+// Main Window
 #define MAX_LOADSTRING 100
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
-
-docker_context* ctx;
-docker_result* res;
-docker_version* version = NULL;
-docker_info* info = NULL;
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -134,6 +137,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 		return FALSE;
 	}
 
+	CreateSimpleToolbar(hWnd);
+
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
 
@@ -208,12 +213,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			info->containers, info->containers_running, info->containers_paused, 
 			info->containers_stopped, info->images);
 
+		OffsetRect(&rect, 0, 250);
 		// see https://stackoverflow.com/questions/34181233/winapi-drawtext-new-line
 		int height = DrawText(hdc, version_info, -1, &rect,
-			DT_CENTER | DT_VCENTER);
+			DT_CENTER | DT_VCENTER | DT_BOTTOM);
 		OffsetRect(&rect, 0, height);
 		DrawText(hdc, system_info, -1, &rect,
-			DT_CENTER | DT_VCENTER);
+			DT_CENTER | DT_VCENTER | DT_BOTTOM);
 
 		EndPaint(hWnd, &ps);
 	}
@@ -247,4 +253,3 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	return (INT_PTR)FALSE;
 }
-
