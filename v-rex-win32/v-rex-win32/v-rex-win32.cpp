@@ -38,6 +38,7 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 docker_context* ctx;
 docker_result* res;
 docker_version* version = NULL;
+docker_info* info = NULL;
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -166,6 +167,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				//MessageBox(NULL, version_info,
 				//	L"Docker Version Info", MB_ICONINFORMATION);
 			}
+			free_docker_result(&res);
+
+			docker_system_info(ctx, &res, &info);
+			report = handle_error(res);
+			if (report != NULL && res->http_error_code == 200) {
+			}
 		}
 	}
 	break;
@@ -195,8 +202,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		GetClientRect(hWnd, &rect);
 		wchar_t* version_info = (wchar_t*)calloc(10240, sizeof(wchar_t));
 		wsprintf(version_info, L"Docker Version Is %S [%S], running at %S.", version->version, version->os, ctx->url);
-		DrawText(hdc, version_info, -1, &rect,
-			DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+		wchar_t* system_info = (wchar_t*)calloc(10240, sizeof(wchar_t));
+		wsprintf(system_info, 
+			L"System Info: Containers %ld [Running %ld, Paused %d, Stopped %d], Images %d.", 
+			info->containers, info->containers_running, info->containers_paused, 
+			info->containers_stopped, info->images);
+
+		// see https://stackoverflow.com/questions/34181233/winapi-drawtext-new-line
+		int height = DrawText(hdc, version_info, -1, &rect,
+			DT_CENTER | DT_VCENTER);
+		OffsetRect(&rect, 0, height);
+		DrawText(hdc, system_info, -1, &rect,
+			DT_CENTER | DT_VCENTER);
+
 		EndPaint(hWnd, &ps);
 	}
 	break;
