@@ -19,7 +19,7 @@ include_directories( src )
 # Lists
 # Setup the list of source files
 set( V-REX-WX_SOURCES
-	src/dummy.cpp
+	src/v-rex-main.cpp
 )
 
 if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
