@@ -35,13 +35,6 @@ endif()
 add_executable( ${PROJECT_NAME} WIN32 ${V-REX-WX_SOURCES} )
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 11)
 
-#set (wxWidgets_CONFIG_EXECUTABLE "/usr/local/Cellar/wxmac/3.0.4_2/bin/wx-config")
-set(wxWidgets_CONFIG_OPTIONS --prefix="/usr/local/Cellar/wxmac/3.0.4_2/")
-find_package(wxWidgets REQUIRED
-	COMPONENTS core base)
-include(${wxWidgets_USE_FILE})
-target_link_libraries(${PROJECT_NAME} PUBLIC ${wxWidgets_LIBRARIES})
-
 set(CMAKE_FIND_USE_PACKAGE_REGISTRY ON)
 
 if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
@@ -66,3 +59,10 @@ if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
 	set (wxWidgets_ROOT_DIR "D:\\wxWidgets-3.1.3")
 	set (wxWidgets_LIB_DIR "D:\\wxWidgets-3.1.3\\lib\\vc_x64_lib")
 endif()
+
+#set (wxWidgets_CONFIG_EXECUTABLE "/usr/local/Cellar/wxmac/3.0.4_2/bin/wx-config")
+set(wxWidgets_CONFIG_OPTIONS --prefix="/usr/local/Cellar/wxmac/3.0.4_2/")
+find_package(wxWidgets REQUIRED
+	COMPONENTS core base)
+include(${wxWidgets_USE_FILE})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${wxWidgets_LIBRARIES})

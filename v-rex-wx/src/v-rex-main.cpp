@@ -6,6 +6,8 @@
 #endif
 
 #include <wx/grid.h>
+#include <wx/toolbar.h>
+#include <wx/artprov.h>
 
 #include <arraylist.h>
 #include <docker_all.h>
@@ -72,9 +74,11 @@ bool VRexApp::OnInit()
 			wchar_t* report = handle_error(res);
 			if (report != NULL && res->http_error_code == 200) {
 				wchar_t* version_info = (wchar_t*)calloc(10240, sizeof(wchar_t));
-				wsprintf(version_info, L"%S", res->response_json_str);
-				wxMessageBox(version_info,
-					"Docker Version Info", wxOK | wxICON_INFORMATION);
+				wsprintf(version_info, L"Docker: %S [%S]", ctx->socket == NULL? ctx->url : ctx->socket, version->os);
+				//wxMessageBox(version_info,
+				//	"Docker Version Info", wxOK | wxICON_INFORMATION);
+				frame->SetStatusText("Connected", 0);
+				frame->SetStatusText(version_info, 2);
 				//MessageBox(NULL, version_info,
 				//	L"Docker Version Info", MB_ICONINFORMATION);
 			}
@@ -90,7 +94,8 @@ bool VRexApp::OnInit()
 }
 
 VRexFrame::VRexFrame()
-	: wxFrame(NULL, wxID_ANY, "Hello World")
+	: wxFrame(NULL, wxID_ANY, "V-Rex: Container GUI", wxPoint(0, 0),
+		wxSize(1024, 768))
 {
 	wxMenu* menuFile = new wxMenu;
 	menuFile->Append(ID_Hello, "&Hello...\tCtrl-H",
@@ -103,8 +108,10 @@ VRexFrame::VRexFrame()
 	menuBar->Append(menuFile, "&File");
 	menuBar->Append(menuHelp, "&Help");
 	SetMenuBar(menuBar);
-	CreateStatusBar();
+
+	CreateStatusBar(3);
 	SetStatusText("Welcome to wxWidgets!");
+
 	Bind(wxEVT_MENU, &VRexFrame::OnHello, this, ID_Hello);
 	Bind(wxEVT_MENU, &VRexFrame::OnAbout, this, wxID_ABOUT);
 	Bind(wxEVT_MENU, &VRexFrame::OnExit, this, wxID_EXIT);
@@ -113,7 +120,7 @@ VRexFrame::VRexFrame()
 	wxGrid* grid = new wxGrid(this,
 		-1,
 		wxPoint(0, 0),
-		wxSize(400, 300));
+		wxSize(800, 600));
 	// Then we call CreateGrid to set the dimensions of the grid
 	// (100 rows and 10 columns in this example)
 	grid->CreateGrid(100, 10);
@@ -137,6 +144,17 @@ VRexFrame::VRexFrame()
 	grid->SetColFormatFloat(5, 6, 2);
 	grid->SetCellValue(0, 6, "3.1415");
 
+	wxToolBar* toolBar = CreateToolBar();
+	wxBitmap open = wxArtProvider::GetBitmap(wxART_FILE_OPEN, wxART_TOOLBAR);
+	wxBitmap exit = wxArtProvider::GetBitmap(wxART_QUIT, wxART_TOOLBAR);
+	wxBitmap save = wxArtProvider::GetBitmap(wxART_FILE_SAVE, wxART_TOOLBAR);
+	wxBitmap b_new = wxArtProvider::GetBitmap(wxART_NEW, wxART_TOOLBAR);
+
+	toolBar->AddTool(3, "New file", b_new);
+	toolBar->AddTool(4, "Open file", open);
+	toolBar->AddTool(5, "Save file", save);
+	toolBar->AddTool(wxID_EXIT, "Exit", exit);
+	toolBar->Realize();
 }
 
 void VRexFrame::OnExit(wxCommandEvent& event)
