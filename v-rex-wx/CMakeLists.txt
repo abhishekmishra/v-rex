@@ -1,9 +1,6 @@
 cmake_minimum_required ( VERSION 3.9 )
-
+project ( v-rex-wx C CXX )
 include(CheckIncludeFile)
-
-project ( v-rex-wx C )
-include(FindMotif)
 
 # Set the project source dir (just convention)
 set( V-REX-WX_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
@@ -22,7 +19,7 @@ include_directories( src )
 # Lists
 # Setup the list of source files
 set( V-REX-WX_SOURCES
-	src/dummy.c
+	src/dummy.cpp
 )
 
 if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
@@ -33,10 +30,10 @@ if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
 	pkg_check_modules(archive REQUIRED IMPORTED_TARGET libarchive)
 endif()
 
-add_executable( ${PROJECT_NAME} ${V-REX-WX_SOURCES} )
-target_include_directories(${PROJECT_NAME} PRIVATE ${YOUR_DIRECTORY})
+add_executable( ${PROJECT_NAME} WIN32 ${V-REX-WX_SOURCES} )
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 11)
 
-set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
+set(CMAKE_FIND_USE_PACKAGE_REGISTRY ON)
 
 if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
 	target_link_libraries(${PROJECT_NAME} PUBLIC json-c)
@@ -50,50 +47,15 @@ else()
 	target_link_libraries(${PROJECT_NAME} PUBLIC CURL::libcurl)
 endif()
 
-set(CMAKE_FIND_USE_PACKAGE_REGISTRY ON)
-
 find_package(coll CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PUBLIC coll::coll)
 
 find_package(clibdocker CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PUBLIC clibdocker::clibdocker)
 
-check_include_file("getopt.h" HAVE_GETOPT)
-
-if(NOT HAVE_GETOPT)
-	# To find and use linenoise, as the vcpkg build does not have cmake config
-	find_path(GETOPT_INCLUDE_DIR getopt.h)
-	find_library(GETOPT_LIBRARY getopt)
-	include_directories(${GETOPT_INCLUDE_DIR})
-	target_link_libraries(${PROJECT_NAME} PUBLIC ${GETOPT_LIBRARY})
-endif (NOT HAVE_GETOPT)
-
-# See https://gitlab.kitware.com/cmake/community/wikis/doc/cpack/Packaging-With-CPack
-INCLUDE(InstallRequiredSystemLibraries)
-
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "V-REX-WX: A Docker Command Line Client")
-SET(CPACK_PACKAGE_VENDOR "Abhishek Mishra <abhishekmishra3@gmail.com>")
-SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
-SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
-SET(CPACK_PACKAGE_VERSION_MAJOR "0")
-SET(CPACK_PACKAGE_VERSION_MINOR "1")
-SET(CPACK_PACKAGE_VERSION_PATCH "0")
-SET(CPACK_PACKAGE_INSTALL_DIRECTORY "V-REX-WX")
-IF(WIN32 AND NOT UNIX)
-  # There is a bug in NSI that does not handle full unix paths properly. Make
-  # sure there is at least one set of four (4) backlasshes.
-  #SET(CPACK_PACKAGE_ICON "${CMake_SOURCE_DIR}/Utilities/Release\\\\InstallIcon.bmp")
-  FILE(GLOB files "${CMAKE_CURRENT_BINARY_DIR}/Debug/*")
-  INSTALL(FILES ${files} DESTINATION bin)
-  SET(CPACK_NSIS_INSTALLED_ICON_NAME "Debug\\\\V-REX-WX.exe")
-  SET(CPACK_NSIS_DISPLAY_NAME "V-REX-WX")
-  SET(CPACK_NSIS_HELP_LINK "https:\\\\\\\\github.com/abhishekmishra/V-REX-WX")
-  SET(CPACK_NSIS_URL_INFO_ABOUT "https:\\\\\\\\github.com/abhishekmishra/V-REX-WX")
-  SET(CPACK_NSIS_CONTACT "abhishekmishra3@gmail.com")
-  SET(CPACK_NSIS_MODIFY_PATH ON)
-ELSE(WIN32 AND NOT UNIX)
-  SET(CPACK_STRIP_FILES "V-REX-WX")
-  SET(CPACK_SOURCE_STRIP_FILES "")
-ENDIF(WIN32 AND NOT UNIX)
-SET(CPACK_PACKAGE_EXECUTABLES "V-REX-WX" "V-REX-WX")
-INCLUDE(CPack)
+set (wxWidgets_ROOT_DIR "D:\\wxWidgets-3.1.3")
+set (wxWidgets_LIB_DIR "D:\\wxWidgets-3.1.3\\lib\\vc_x64_lib")
+find_package(wxWidgets REQUIRED
+	COMPONENTS core qa html xml aui adv stc webview base scintilla)
+include(${wxWidgets_USE_FILE})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${wxWidgets_LIBRARIES})
