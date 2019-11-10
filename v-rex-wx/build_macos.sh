@@ -4,8 +4,10 @@
 mkdir -p ./build
 cd ./build
 
+export PKG_CONFIG_PATH=/usr/local/Cellar/libarchive/3.4.0/lib/pkgconfig:/usr/local/Cellar/json-c/0.13.1/lib/pkgconfig:
+
 # generate the build files
-cmake .. -DCMAKE_TOOLCHAIN_FILE=/Users/abhishekmishra/vcpkg/scripts/buildsystems/vcpkg.cmake -DENABLE_TESTS=On
+cmake -G "Unix Makefiles" .. -DwxWidgets_CONFIG_EXECUTABLE=/usr/local/Cellar/wxmac/3.0.4_2/bin/wx-config
 
 # go back to parent directory
 cd ..
