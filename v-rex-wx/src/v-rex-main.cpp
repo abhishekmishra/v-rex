@@ -5,6 +5,9 @@
 #include <wx/wx.h>
 #endif
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <wx/grid.h>
 #include <wx/toolbar.h>
 #include <wx/artprov.h>
@@ -22,21 +25,21 @@ docker_info* info = NULL;
  * A simple error handler suitable for programs
  * which just want to log the error (if any).
  */
-wchar_t* docker_simple_error_handler_wsprintf(docker_result* res) {
-	wchar_t* report = (wchar_t*)calloc(2048, sizeof(wchar_t));
-	wsprintf(report,
-		L"DOCKER_RESULT: For URL: %S\n DOCKER RESULT: Response error_code = %d, http_response = %ld\n",
+char* docker_simple_error_handler_sprintf(docker_result* res) {
+	char* report = (char*)calloc(2048, sizeof(char));
+	sprintf(report,
+		"DOCKER_RESULT: For URL: %s\n DOCKER RESULT: Response error_code = %d, http_response = %ld\n",
 		res->url,
 		res->error_code,
 		res->http_error_code);
 	if (!is_ok(res)) {
-		wsprintf(report, L"DOCKER RESULT: %S\n", res->message);
+		sprintf(report, "DOCKER RESULT: %s\n", res->message);
 	}
 	return report;
 }
 
-wchar_t* handle_error(docker_result* res) {
-	return docker_simple_error_handler_wsprintf(res);
+char* handle_error(docker_result* res) {
+	return docker_simple_error_handler_sprintf(res);
 }
 
 
@@ -71,10 +74,10 @@ bool VRexApp::OnInit()
 		d_err_t err = make_docker_context_default_local(&ctx);
 		if (err == E_SUCCESS) {
 			docker_system_version(ctx, &res, &version);
-			wchar_t* report = handle_error(res);
+			char* report = handle_error(res);
 			if (report != NULL && res->http_error_code == 200) {
-				wchar_t* version_info = (wchar_t*)calloc(10240, sizeof(wchar_t));
-				wsprintf(version_info, L"Docker: %S [%S]", ctx->socket == NULL? ctx->url : ctx->socket, version->os);
+				char* version_info = (char*)calloc(10240, sizeof(char));
+				sprintf(version_info, "Docker: %s [%s]", ctx->socket == NULL? ctx->url : ctx->socket, version->os);
 				//wxMessageBox(version_info,
 				//	"Docker Version Info", wxOK | wxICON_INFORMATION);
 				frame->SetStatusText("Connected", 0);

@@ -60,9 +60,12 @@ if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
 	set (wxWidgets_LIB_DIR "D:\\wxWidgets-3.1.3\\lib\\vc_x64_lib")
 endif()
 
-#set (wxWidgets_CONFIG_EXECUTABLE "/usr/local/Cellar/wxmac/3.0.4_2/bin/wx-config")
-set(wxWidgets_CONFIG_OPTIONS --prefix="/usr/local/Cellar/wxmac/3.0.4_2/")
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
+	#set (wxWidgets_CONFIG_EXECUTABLE "/usr/local/Cellar/wxmac/3.0.4_2/bin/wx-config")
+	set(wxWidgets_CONFIG_OPTIONS --prefix="/usr/local/Cellar/wxmac/3.0.4_2/")
+endif()
+
 find_package(wxWidgets REQUIRED
-	COMPONENTS core base)
+	COMPONENTS core base adv)
 include(${wxWidgets_USE_FILE})
 target_link_libraries(${PROJECT_NAME} PUBLIC ${wxWidgets_LIBRARIES})
