@@ -19,7 +19,11 @@ include_directories( src )
 # Lists
 # Setup the list of source files
 set( V-REX-WX_SOURCES
-	src/v-rex-main.cpp
+	src/vrex_util.c
+	src/main.cpp
+	
+	src/vrex_util.h
+	src/containers_window.h
 )
 
 message (${CMAKE_HOST_SYSTEM_NAME})
