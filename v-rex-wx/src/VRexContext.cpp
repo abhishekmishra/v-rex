@@ -4,16 +4,10 @@
 #include <vrex_util.h>
 
 VRexContext::VRexContext() {
+	this->connected = false;
 	this->docker_ctx = NULL;
 	arraylist_new(&this->results, (void (*)(void*)) & free_docker_result);
 	this->TryConnectLocal();
-}
-
-bool VRexContext::isConnected() {
-	if (this->docker_ctx != NULL && (this->docker_ctx->url != NULL || this->docker_ctx->socket != NULL)) {
-		return true;
-	}
-	return false;
 }
 
 docker_context* VRexContext::getDockerContext() {
@@ -40,6 +34,7 @@ docker_info* VRexContext::getDockerInfo() {
 
 vrex_err_t VRexContext::TryConnectLocal() {
 	docker_result* res;
+	this->connected = false;
 
 	// connect to docker
 	d_err_t err = make_docker_context_default_local(&this->docker_ctx);
@@ -53,9 +48,10 @@ vrex_err_t VRexContext::TryConnectLocal() {
 					this->docker_ctx->socket == NULL ?
 					this->docker_ctx->url : this->docker_ctx->socket, this->version->os);
 			}
+			free_docker_result(&res);
+			this->connected = true;
+			return VREX_SUCCESS;
 		}
-		free_docker_result(&res);
-		return VREX_SUCCESS;
 	}
 
 	free_docker_result(&res);
@@ -77,9 +73,10 @@ vrex_err_t VRexContext::TryConnectURL(const char* url) {
 					this->docker_ctx->socket == NULL ?
 					this->docker_ctx->url : this->docker_ctx->socket, this->version->os);
 			}
+			free_docker_result(&res);
+			this->connected = true;
+			return VREX_SUCCESS;
 		}
-		free_docker_result(&res);
-		return VREX_SUCCESS;
 	}
 
 	free_docker_result(&res);
@@ -88,4 +85,8 @@ vrex_err_t VRexContext::TryConnectURL(const char* url) {
 
 char* VRexContext::handleDockerResult(docker_result* res) {
 	return handle_error(res);
+}
+
+bool VRexContext::isConnected() {
+	return this->connected;
 }

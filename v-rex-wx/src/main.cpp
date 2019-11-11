@@ -50,12 +50,17 @@ bool VRexApp::OnInit()
 	VRexContext* ctx = new VRexContext();
 	VRexFrame* frame = new VRexFrame();
 
+	printf("Connected is %d\n", ctx->isConnected());
+
 	if (ctx->isConnected()) {
 		docker_version* version = ctx->getDockerVersion();
 		frame->SetStatusText("Connected", 0);
 		char* version_info = (char*)calloc(1024, sizeof(char));
 		sprintf(version_info, "Docker v%s on %s [%s] @ %s", version->version, version->os, version->arch, ctx->getDockerContext()->url);
 		frame->SetStatusText(version_info, 2);
+	} else {
+		frame->SetStatusText("Not Connected.", 0);
+		frame->SetStatusText("Error: Unable to connect to a local docker server", 1);
 	}
 
 	frame->Show(true);

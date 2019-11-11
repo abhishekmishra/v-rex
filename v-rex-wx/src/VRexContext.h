@@ -7,7 +7,6 @@
 class VRexContext {
 public:
 	VRexContext();
-	bool isConnected();
 	docker_context* getDockerContext();
 	docker_version* getDockerVersion();
 	docker_info* getDockerInfo();
@@ -15,9 +14,12 @@ public:
 
 	vrex_err_t TryConnectLocal();
 	vrex_err_t TryConnectURL(const char* url);
+
+	bool isConnected();
 private:
 	docker_context* docker_ctx;
 	docker_version* version;
 	arraylist* results;
+	bool connected;
 };
 
