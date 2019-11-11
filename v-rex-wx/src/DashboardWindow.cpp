@@ -33,12 +33,32 @@ DashboardWindow::DashboardWindow(VRexContext* ctx, wxWindow* parent)
 
 	Bind(DOCKER_CONNECT_EVENT, &DashboardWindow::handlerDockerConnect, this, 0);
 
-	wxFlexGridSizer* dashSizer = new wxFlexGridSizer(3);
-	wxCommandLinkButton* containersBtn = new wxCommandLinkButton(this, wxID_ANY, "Containers");
+	dashSizer = new wxFlexGridSizer(3);
+	containersBtn = new wxCommandLinkButton(this, wxID_ANY, "Containers");
+	imagesBtn = new wxCommandLinkButton(this, wxID_ANY, "Images");
+	volumesBtn = new wxCommandLinkButton(this, wxID_ANY, "Volumes");
+	networksBtn = new wxCommandLinkButton(this, wxID_ANY, "Networks");
 
-	// create text ctrl with minimal size 100x60
 	dashSizer->Add(
-		new wxTextCtrl(this, -1, "My text.", wxDefaultPosition, wxSize(100, 60), wxTE_MULTILINE),
+		containersBtn,
+		1,            // make vertically stretchable
+		wxEXPAND |    // make horizontally stretchable
+		wxALL,        //   and make border all around
+		10);         // set border width to 10
+	dashSizer->Add(
+		imagesBtn,
+		1,            // make vertically stretchable
+		wxEXPAND |    // make horizontally stretchable
+		wxALL,        //   and make border all around
+		10);         // set border width to 10
+	dashSizer->Add(
+		volumesBtn,
+		1,            // make vertically stretchable
+		wxEXPAND |    // make horizontally stretchable
+		wxALL,        //   and make border all around
+		10);         // set border width to 10
+	dashSizer->Add(
+		networksBtn,
 		1,            // make vertically stretchable
 		wxEXPAND |    // make horizontally stretchable
 		wxALL,        //   and make border all around
@@ -48,8 +68,25 @@ DashboardWindow::DashboardWindow(VRexContext* ctx, wxWindow* parent)
 }
 
 void DashboardWindow::handlerDockerConnect(wxCommandEvent& event) {
-	wxMessageBox("Docker Connect Event Received",
-		"Docker Connect Event Received", wxOK | wxICON_INFORMATION);
+	//wxMessageBox("Docker Connect Event Received",
+	//	"Docker Connect Event Received", wxOK | wxICON_INFORMATION);
 
 	docker_info* info = this->ctx->getDockerInfo();
+
+	wxString containersNote;
+	containersNote.Printf(
+		wxT("Total:%d Running:%d Paused:%d Stopped:%d"),
+		info->containers,
+		info->containers_running,
+		info->containers_paused,
+		info->containers_stopped);
+	containersBtn->SetNote(containersNote);
+
+	wxString imagesNote;
+	imagesNote.Printf(
+		wxT("Total:%d"),
+		info->images);
+	imagesBtn->SetNote(imagesNote);
+
+	Fit();
 }

@@ -29,7 +29,7 @@ private:
 class VRexFrame : public wxFrame
 {
 public:
-	VRexFrame();
+	VRexFrame(VRexContext* ctx);
 	void SetContext(VRexContext* ctx);
 	void PostEventToCurrentTab(const wxCommandEvent& event);
 
@@ -53,7 +53,7 @@ wxDEFINE_EVENT(DOCKER_CONNECT_EVENT, wxCommandEvent);
 bool VRexApp::OnInit()
 {
 	VRexContext* ctx = new VRexContext();
-	VRexFrame* frame = new VRexFrame();
+	VRexFrame* frame = new VRexFrame(ctx);
 
 	docker_log_debug("Connected is %d\n", ctx->isConnected());
 
@@ -82,10 +82,11 @@ bool VRexApp::OnInit()
 	return true;
 }
 
-VRexFrame::VRexFrame()
+VRexFrame::VRexFrame(VRexContext* ctx)
 	: wxFrame(NULL, wxID_ANY, "V-Rex: Container GUI", wxPoint(0, 0),
 		wxSize(1024, 768))
 {
+	SetContext(ctx);
 	wxMenu* menuFile = new wxMenu;
 	menuFile->Append(ID_Hello, "&Hello...\tCtrl-H",
 		"Help string shown in status bar for this menu item");

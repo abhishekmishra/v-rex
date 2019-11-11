@@ -1,6 +1,7 @@
 #pragma once
 
 #include <wx/wx.h>
+#include <wx/commandlinkbutton.h>
 
 #include "VRexContext.h"
 
@@ -10,6 +11,11 @@ public:
 
 private:
 	VRexContext* ctx;
+	wxFlexGridSizer* dashSizer;
+	wxCommandLinkButton* containersBtn;
+	wxCommandLinkButton* imagesBtn;
+	wxCommandLinkButton* volumesBtn;
+	wxCommandLinkButton* networksBtn;
 
 	void handlerDockerConnect(wxCommandEvent& event);
 };
