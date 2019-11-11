@@ -1,5 +1,8 @@
-#include <DashboardWindow.h>
+#include <wx/richtext/richtextctrl.h>
 
-DashboardWindow::DashboardWindow() {
-    
+#include "DashboardWindow.h"
+
+DashboardWindow::DashboardWindow(VRexContext* ctx, wxWindow* parent)
+	:wxRichTextCtrl(parent) {
+	this->WriteText("V-Rex Dashboard.");
 }

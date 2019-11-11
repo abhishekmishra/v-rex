@@ -17,6 +17,7 @@
 #include <docker_all.h>
 
 #include "VRexContext.h"
+#include "DashboardWindow.h"
 
 class VRexApp : public wxApp
 {
@@ -84,13 +85,16 @@ VRexFrame::VRexFrame()
 	SetMenuBar(menuBar);
 
 	CreateStatusBar(3);
-	SetStatusText("Welcome to wxWidgets!");
+	SetStatusText("Welcome to V-Rex!");
 
 	Bind(wxEVT_MENU, &VRexFrame::OnHello, this, ID_Hello);
 	Bind(wxEVT_MENU, &VRexFrame::OnAbout, this, wxID_ABOUT);
 	Bind(wxEVT_MENU, &VRexFrame::OnExit, this, wxID_EXIT);
 
 	wxNotebook* notebook = new wxNotebook(this, -1, wxPoint(0, 0));
+
+	DashboardWindow* dashboardW = new DashboardWindow(this->ctx, notebook);
+	notebook->AddPage(dashboardW, "Dashboard");
 
 	// Create a wxGrid object
 	wxGrid* grid = new wxGrid(notebook,
@@ -109,6 +113,7 @@ VRexFrame::VRexFrame()
 	grid->SetColLabelValue(2, "Command");
 	grid->SetColLabelValue(3, "State");
 	grid->HideRowLabels();
+
 
 	notebook->AddPage(grid, "Containers");
 
