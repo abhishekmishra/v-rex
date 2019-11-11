@@ -22,11 +22,13 @@ set( V-REX-WX_SOURCES
 	src/VRexContext.cpp
 	src/vrex_util.cpp
 	src/ContainersWindow.cpp
+	src/DashboardWindow.cpp
 	src/main.cpp
 	
 	src/VRexContext.h
 	src/vrex_util.h
 	src/ContainersWindow.h
+	src/DashboardWindow.h
 )
 
 message (${CMAKE_HOST_SYSTEM_NAME})
@@ -72,7 +74,8 @@ if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
 	set(wxWidgets_CONFIG_OPTIONS --prefix="/usr/local/Cellar/wxmac/3.0.4_2/")
 endif()
 
+# richtext, html and xml are required for RichText widget
 find_package(wxWidgets REQUIRED
-	COMPONENTS core base adv)
+	COMPONENTS core base adv richtext html xml)
 include(${wxWidgets_USE_FILE})
 target_link_libraries(${PROJECT_NAME} PUBLIC ${wxWidgets_LIBRARIES})
