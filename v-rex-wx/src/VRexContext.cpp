@@ -21,7 +21,7 @@ docker_context* VRexContext::getDockerContext() {
 }
 
 docker_version* VRexContext::getDockerVersion() {
-	return this->docker_version;
+	return this->version;
 }
 
 docker_info* VRexContext::getDockerInfo() {
@@ -44,14 +44,14 @@ vrex_err_t VRexContext::TryConnectLocal() {
 	// connect to docker
 	d_err_t err = make_docker_context_default_local(&this->docker_ctx);
 	if (err == E_SUCCESS) {
-		docker_system_version(this->docker_ctx, &res, &this->docker_version);
+		docker_system_version(this->docker_ctx, &res, &this->version);
 		char* report = this->handleDockerResult(res);
 		if (report != NULL && res->http_error_code == 200) {
 			char* version_info = (char*)calloc(10240, sizeof(char));
 			if (version_info != NULL) {
 				sprintf(version_info, "Docker: %s [%s]",
 					this->docker_ctx->socket == NULL ?
-					this->docker_ctx->url : this->docker_ctx->socket, this->docker_version->os);
+					this->docker_ctx->url : this->docker_ctx->socket, this->version->os);
 			}
 		}
 		free_docker_result(&res);
@@ -68,14 +68,14 @@ vrex_err_t VRexContext::TryConnectURL(const char* url) {
 	// connect to docker
 	d_err_t err = make_docker_context_url(&this->docker_ctx, url);
 	if (err == E_SUCCESS) {
-		docker_system_version(this->docker_ctx, &res, &this->docker_version);
+		docker_system_version(this->docker_ctx, &res, &this->version);
 		char* report = this->handleDockerResult(res);
 		if (report != NULL && res->http_error_code == 200) {
 			char* version_info = (char*)calloc(10240, sizeof(char));
 			if (version_info != NULL) {
 				sprintf(version_info, "Docker: %s [%s]",
 					this->docker_ctx->socket == NULL ?
-					this->docker_ctx->url : this->docker_ctx->socket, this->docker_version->os);
+					this->docker_ctx->url : this->docker_ctx->socket, this->version->os);
 			}
 		}
 		free_docker_result(&res);

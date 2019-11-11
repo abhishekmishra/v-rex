@@ -17,7 +17,7 @@ public:
 	vrex_err_t TryConnectURL(const char* url);
 private:
 	docker_context* docker_ctx;
-	docker_version* docker_version;
+	docker_version* version;
 	arraylist* results;
 };
 
