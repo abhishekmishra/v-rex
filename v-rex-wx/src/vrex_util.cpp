@@ -11,7 +11,10 @@
 #include "vrex_util.h"
 #include <arraylist.h>
 
+#include <docker_connection_util.h>
+#include <docker_system.h>
 #include <docker_log.h>
+
 
 vrex_err_t init_results_list(vrex_context* vrex) {
 	if (vrex != NULL) {
@@ -66,3 +69,25 @@ char* calculate_size_str(uint64_t size)
     strcpy(result, "0");
     return result;
 }
+
+/**
+ * A simple error handler suitable for programs
+ * which just want to log the error (if any).
+ */
+char* docker_simple_error_handler_sprintf(docker_result* res) {
+	char* report = (char*)calloc(2048, sizeof(char));
+	sprintf(report,
+		"DOCKER_RESULT: For URL: %s\n DOCKER RESULT: Response error_code = %d, http_response = %ld\n",
+		res->url,
+		res->error_code,
+		res->http_error_code);
+	if (!is_ok(res)) {
+		sprintf(report, "DOCKER RESULT: %s\n", res->message);
+	}
+	return report;
+}
+
+char* handle_error(docker_result* res) {
+	return docker_simple_error_handler_sprintf(res);
+}
+

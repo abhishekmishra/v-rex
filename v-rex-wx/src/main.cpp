@@ -16,47 +16,26 @@
 #include <arraylist.h>
 #include <docker_all.h>
 
-//For Docker API
-docker_context* ctx;
-docker_result* res;
-docker_version* version = NULL;
-docker_info* info = NULL;
-
-/**
- * A simple error handler suitable for programs
- * which just want to log the error (if any).
- */
-char* docker_simple_error_handler_sprintf(docker_result* res) {
-	char* report = (char*)calloc(2048, sizeof(char));
-	sprintf(report,
-		"DOCKER_RESULT: For URL: %s\n DOCKER RESULT: Response error_code = %d, http_response = %ld\n",
-		res->url,
-		res->error_code,
-		res->http_error_code);
-	if (!is_ok(res)) {
-		sprintf(report, "DOCKER RESULT: %s\n", res->message);
-	}
-	return report;
-}
-
-char* handle_error(docker_result* res) {
-	return docker_simple_error_handler_sprintf(res);
-}
-
+#include "VRexContext.h"
 
 class VRexApp : public wxApp
 {
 public:
 	virtual bool OnInit();
+private:
+	VRexContext* ctx;
 };
 class VRexFrame : public wxFrame
 {
 public:
 	VRexFrame();
+	void SetContext(VRexContext* ctx);
+
 private:
 	void OnHello(wxCommandEvent& event);
 	void OnExit(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
+	VRexContext* ctx = NULL;
 };
 
 enum
@@ -68,32 +47,18 @@ wxIMPLEMENT_APP(VRexApp);
 
 bool VRexApp::OnInit()
 {
+	VRexContext* ctx = new VRexContext();
 	VRexFrame* frame = new VRexFrame();
+
+	if (ctx->isConnected()) {
+		docker_version* version = ctx->getDockerVersion();
+		frame->SetStatusText("Connected", 0);
+		char* version_info = (char*)calloc(1024, sizeof(char));
+		sprintf(version_info, "Docker v%s on %s [%s] @ %s", version->version, version->os, version->arch, ctx->getDockerContext()->url);
+		frame->SetStatusText(version_info, 2);
+	}
+
 	frame->Show(true);
-
-			// connect to docker
-		d_err_t err = make_docker_context_default_local(&ctx);
-		if (err == E_SUCCESS) {
-			docker_system_version(ctx, &res, &version);
-			char* report = handle_error(res);
-			if (report != NULL && res->http_error_code == 200) {
-				char* version_info = (char*)calloc(10240, sizeof(char));
-				sprintf(version_info, "Docker: %s [%s]", ctx->socket == NULL? ctx->url : ctx->socket, version->os);
-				//wxMessageBox(version_info,
-				//	"Docker Version Info", wxOK | wxICON_INFORMATION);
-				frame->SetStatusText("Connected", 0);
-				frame->SetStatusText(version_info, 2);
-				//MessageBox(NULL, version_info,
-				//	L"Docker Version Info", MB_ICONINFORMATION);
-			}
-			free_docker_result(&res);
-
-			docker_system_info(ctx, &res, &info);
-			report = handle_error(res);
-			if (report != NULL && res->http_error_code == 200) {
-			}
-		}
-
 	return true;
 }
 
@@ -153,6 +118,10 @@ VRexFrame::VRexFrame()
 	toolBar->AddTool(5, "Save file", save);
 	toolBar->AddTool(wxID_EXIT, "Exit", exit);
 	toolBar->Realize();
+}
+
+void VRexFrame::SetContext(VRexContext* ctx) {
+	this->ctx = ctx;
 }
 
 void VRexFrame::OnExit(wxCommandEvent& event)

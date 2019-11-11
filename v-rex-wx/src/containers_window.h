@@ -1,6 +1,0 @@
-#ifndef _CONTAINERS_WINDOW_H_
-#define _CONTAINERS_WINDOW_H_
-
-
-
-#endif /* _CONTAINERS_WINDOW_H_ */

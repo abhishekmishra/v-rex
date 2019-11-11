@@ -51,4 +51,6 @@ docker_result* results_list_get_idx(vrex_context* vrex, int i);
  */
 char* calculate_size_str(uint64_t size);
 
+char* handle_error(docker_result* res);
+
 #endif /* SRC_VREX_UTIL_H_ */
