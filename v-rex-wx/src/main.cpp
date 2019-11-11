@@ -31,12 +31,14 @@ class VRexFrame : public wxFrame
 public:
 	VRexFrame();
 	void SetContext(VRexContext* ctx);
+	void PostEventToCurrentTab(const wxCommandEvent& event);
 
 private:
 	void OnHello(wxCommandEvent& event);
 	void OnExit(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
 	VRexContext* ctx = NULL;
+	wxNotebook* notebook;
 };
 
 enum
@@ -46,19 +48,31 @@ enum
 
 wxIMPLEMENT_APP(VRexApp);
 
+wxDEFINE_EVENT(DOCKER_CONNECT_EVENT, wxCommandEvent);
+
 bool VRexApp::OnInit()
 {
 	VRexContext* ctx = new VRexContext();
 	VRexFrame* frame = new VRexFrame();
 
-	printf("Connected is %d\n", ctx->isConnected());
+	docker_log_debug("Connected is %d\n", ctx->isConnected());
 
 	if (ctx->isConnected()) {
 		docker_version* version = ctx->getDockerVersion();
 		frame->SetStatusText("Connected", 0);
 		char* version_info = (char*)calloc(1024, sizeof(char));
-		sprintf(version_info, "Docker v%s on %s [%s] @ %s", version->version, version->os, version->arch, ctx->getDockerContext()->url);
-		frame->SetStatusText(version_info, 2);
+		if (version_info != NULL) {
+			sprintf(version_info, "Docker v%s on %s [%s] @ %s", 
+				version->version, version->os, version->arch, ctx->getDockerContext()->url);
+			frame->SetStatusText(version_info, 2);
+		}
+
+		wxCommandEvent event(DOCKER_CONNECT_EVENT);
+		event.SetEventObject(this);
+		// Give it some contents
+		event.SetString("Hello");
+		// Do send it
+		frame->PostEventToCurrentTab(event);
 	} else {
 		frame->SetStatusText("Not Connected.", 0);
 		frame->SetStatusText("Error: Unable to connect to a local docker server", 1);
@@ -91,7 +105,7 @@ VRexFrame::VRexFrame()
 	Bind(wxEVT_MENU, &VRexFrame::OnAbout, this, wxID_ABOUT);
 	Bind(wxEVT_MENU, &VRexFrame::OnExit, this, wxID_EXIT);
 
-	wxNotebook* notebook = new wxNotebook(this, -1, wxPoint(0, 0));
+	notebook = new wxNotebook(this, -1, wxPoint(0, 0));
 
 	DashboardWindow* dashboardW = new DashboardWindow(this->ctx, notebook);
 	notebook->AddPage(dashboardW, "Dashboard");
@@ -149,3 +163,9 @@ void VRexFrame::OnHello(wxCommandEvent& event)
 {
 	wxLogMessage("Hello world from wxWidgets!");
 }
+
+void VRexFrame::PostEventToCurrentTab(const wxCommandEvent& event)
+{
+	wxPostEvent(this->notebook->GetCurrentPage(), event);
+}
+

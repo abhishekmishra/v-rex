@@ -23,6 +23,8 @@
 #ifndef SRC_VREX_UTIL_H_
 #define SRC_VREX_UTIL_H_
 
+#include <wx/wx.h>
+
 #include "docker_result.h"
 #include "docker_connection_util.h"
 #include <arraylist.h>
@@ -52,5 +54,8 @@ docker_result* results_list_get_idx(vrex_context* vrex, int i);
 char* calculate_size_str(uint64_t size);
 
 char* handle_error(docker_result* res);
+
+// it just declares DOCKER_CONNECT_EVENT event type
+wxDECLARE_EVENT(DOCKER_CONNECT_EVENT, wxCommandEvent);
 
 #endif /* SRC_VREX_UTIL_H_ */
