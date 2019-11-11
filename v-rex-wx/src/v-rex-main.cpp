@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <wx/notebook.h>
 #include <wx/grid.h>
 #include <wx/toolbar.h>
 #include <wx/artprov.h>
@@ -119,8 +120,10 @@ VRexFrame::VRexFrame()
 	Bind(wxEVT_MENU, &VRexFrame::OnAbout, this, wxID_ABOUT);
 	Bind(wxEVT_MENU, &VRexFrame::OnExit, this, wxID_EXIT);
 
+	wxNotebook* notebook = new wxNotebook(this, -1, wxPoint(0, 0));
+
 	// Create a wxGrid object
-	wxGrid* grid = new wxGrid(this,
+	wxGrid* grid = new wxGrid(notebook,
 		-1,
 		wxPoint(0, 0),
 		wxSize(800, 600));
@@ -136,21 +139,8 @@ VRexFrame::VRexFrame()
 	grid->SetColLabelValue(2, "Command");
 	grid->SetColLabelValue(3, "State");
 	grid->HideRowLabels();
-	//// And set grid cell contents as strings
-	//grid->SetCellValue(0, 0, "wxGrid is good");
-	//// We can specify that some cells are read->only
-	//grid->SetCellValue(0, 3, "This is read->only");
-	//grid->SetReadOnly(0, 3);
-	//// Colours can be specified for grid cell contents
-	//grid->SetCellValue(3, 3, "green on grey");
-	//grid->SetCellTextColour(3, 3, *wxGREEN);
-	//grid->SetCellBackgroundColour(3, 3, *wxLIGHT_GREY);
-	//// We can specify the some cells will store numeric
-	//// values rather than strings. Here we set grid column 5
-	//// to hold floating point values displayed with width of 6
-	//// and precision of 2
-	//grid->SetColFormatFloat(5, 6, 2);
-	//grid->SetCellValue(0, 6, "3.1415");
+
+	notebook->AddPage(grid, "Containers");
 
 	wxToolBar* toolBar = CreateToolBar();
 	wxBitmap open = wxArtProvider::GetBitmap(wxART_FILE_OPEN, wxART_TOOLBAR);
