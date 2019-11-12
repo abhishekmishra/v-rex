@@ -22,6 +22,7 @@ set( V-REX-WX_SOURCES
 	src/VRexFrame.cpp
 	src/VRexContext.cpp
 	src/vrex_util.cpp
+	src/VolumesWindow.cpp
 	src/ImagesWindow.cpp
 	src/ContainersWindow.cpp
 	src/DashboardWindow.cpp
@@ -30,6 +31,7 @@ set( V-REX-WX_SOURCES
 	src/VRexFrame.h
 	src/VRexContext.h
 	src/vrex_util.h
+	src/VolumesWindow.h
 	src/ImagesWindow.h
 	src/ContainersWindow.h
 	src/DashboardWindow.h
