@@ -161,6 +161,8 @@ void ContainersWindow::UpdateContainers(docker_containers_list* containers) {
 		containerListGrid->SetCellValue(row_num, col_num, item->command);
 		col_num += 1;
 
+		//TODO: list all port pairs instead of only the first port
+		//TODO: check if intermediate strings can be freed immediately
 		if (arraylist_length(item->ports) > 0) {
 			docker_container_ports* first_port = (docker_container_ports*)
 				arraylist_get(item->ports, 0);
@@ -180,6 +182,7 @@ void ContainersWindow::UpdateContainers(docker_containers_list* containers) {
 		}
 		col_num += 1;
 
+		//TODO: size should be based on the size of state and status
 		char* status = (char*)calloc(1024, sizeof(char));
 		if (status != NULL) {
 			strcpy(status, item->state);
@@ -191,6 +194,8 @@ void ContainersWindow::UpdateContainers(docker_containers_list* containers) {
 
 		row_num += 1;
 	}
+
+	arraylist_free(containers);
 
 	containerListGrid->AutoSize();
 	Layout();
