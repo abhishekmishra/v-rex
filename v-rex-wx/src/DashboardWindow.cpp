@@ -72,7 +72,7 @@ void DashboardWindow::HandleDockerConnect(wxCommandEvent& event) {
 
 	wxString containersNote;
 	containersNote.Printf(
-		wxT("Total:%d Running:%d Paused:%d Stopped:%d"),
+		wxT("Total:%lu Running:%lu Paused:%lu Stopped:%lu"),
 		info->containers,
 		info->containers_running,
 		info->containers_paused,
@@ -81,7 +81,7 @@ void DashboardWindow::HandleDockerConnect(wxCommandEvent& event) {
 
 	wxString imagesNote;
 	imagesNote.Printf(
-		wxT("Total:%d"),
+		wxT("Total:%lu"),
 		info->images);
 	imagesBtn->SetNote(imagesNote);
 

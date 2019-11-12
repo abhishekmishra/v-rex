@@ -30,7 +30,7 @@ public:
 private:
 	VRexContext* ctx;
 	bool silent_mode;
-	char* docker_url;
+	char* docker_url = NULL;
 };
 class VRexFrame : public wxFrame
 {
