@@ -19,12 +19,14 @@ include_directories( src )
 # Lists
 # Setup the list of source files
 set( V-REX-WX_SOURCES
+	src/VRexFrame.cpp
 	src/VRexContext.cpp
 	src/vrex_util.cpp
 	src/ContainersWindow.cpp
 	src/DashboardWindow.cpp
 	src/main.cpp
 	
+	src/VRexFrame.h
 	src/VRexContext.h
 	src/vrex_util.h
 	src/ContainersWindow.h
