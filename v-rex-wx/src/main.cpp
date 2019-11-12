@@ -16,8 +16,6 @@
 
 #include "VRexFrame.h"
 #include "VRexContext.h"
-#include "DashboardWindow.h"
-#include "ContainersWindow.h"
 
 class VRexApp : public wxApp
 {
