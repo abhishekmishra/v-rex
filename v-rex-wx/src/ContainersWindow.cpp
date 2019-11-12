@@ -1,3 +1,8 @@
+#include <wx/wxprec.h>
+#ifndef WX_PRECOMP
+#include <wx/wx.h>
+#endif
+
 #include <wx/panel.h>
 #include <wx/toolbar.h>
 #include <wx/artprov.h>
@@ -10,6 +15,52 @@
 #include "VRexContext.h"
 #include "vrex_util.h"
 
+wxDEFINE_EVENT(LIST_CONTAINERS_EVENT, wxCommandEvent);
+
+// a thread class that will periodically send events to the GUI thread
+class ListContainersThread : public wxThread
+{
+	wxPanel* m_parent;
+	VRexContext* ctx;
+
+public:
+	ListContainersThread(wxPanel* parent, VRexContext* ctx)
+	{
+		m_parent = parent;
+		this->ctx = ctx;
+	}
+
+	virtual ExitCode Entry();
+};
+
+wxThread::ExitCode ListContainersThread::Entry()
+{
+	bool show_running = true;
+	long limit = 100;
+	docker_containers_list* containers;
+	docker_result* res;
+
+	//Lookup containers
+	docker_container_list(this->ctx->getDockerContext(), &res, &containers, show_running ? 0 : 1,
+		limit, 1, NULL);
+	char* report = this->ctx->handleDockerResult(res);
+	docker_log_debug("Read %d containers.\n",
+		docker_containers_list_length(containers));
+
+	if (report != NULL && res->http_error_code == 200) {
+		docker_log_debug(report);
+	}
+	if (res != NULL) {
+		free_docker_result(&res);
+	}
+
+	// notify the main thread
+	wxCommandEvent list_containers_event(LIST_CONTAINERS_EVENT);
+	list_containers_event.SetClientData(containers);
+	m_parent->GetEventHandler()->AddPendingEvent(list_containers_event);
+	return 0;
+}
+
 ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 	: wxPanel(parent) {
 	this->ctx = ctx;
@@ -18,6 +69,7 @@ ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 
 	Bind(DOCKER_CONNECT_EVENT, &ContainersWindow::HandleDockerConnect, this, 0);
 	Bind(PAGE_REFRESH_EVENT, &ContainersWindow::HandlePageRefresh, this, 0);
+	Bind(LIST_CONTAINERS_EVENT, &ContainersWindow::HandleListContainers, this, 0);
 
 	containersSizer = new wxFlexGridSizer(1);
 
@@ -59,21 +111,32 @@ void ContainersWindow::HandleDockerConnect(wxCommandEvent& event) {
 	}
 }
 
+void ContainersWindow::HandleListContainers(wxCommandEvent& event) {
+	docker_containers_list* containers = (docker_containers_list*)event.GetClientData();
+	UpdateContainers(containers);
+}
+
 void ContainersWindow::RefreshContainers() {
+	// create the thread
+	ListContainersThread* t = new ListContainersThread(this, this->ctx);
+	wxThreadError err = t->Create();
+
+	if (err != wxTHREAD_NO_ERROR)
+	{
+		wxMessageBox(_("Couldn't create thread!"));
+	}
+
+	err = t->Run();
+
+	if (err != wxTHREAD_NO_ERROR)
+	{
+		wxMessageBox(_("Couldn't run thread!"));
+	}
+}
+
+void ContainersWindow::UpdateContainers(docker_containers_list* containers) {
 	//Empty the grid by removing all current rows
 	containerListGrid->DeleteRows(0, containerListGrid->GetNumberRows());
-
-	bool show_running = true;
-	long limit = 100;
-	docker_containers_list* containers;
-	docker_result* res;
-
-	//Lookup containers
-	docker_container_list(this->ctx->getDockerContext(), &res, &containers, show_running? 0: 1,
-		limit, 1, NULL);
-	char* report = this->ctx->handleDockerResult(res);
-	docker_log_debug("Read %d containers.\n",
-		docker_containers_list_length(containers));
 
 	//Add enough rows in the container grid
 	containerListGrid->InsertRows(0, docker_containers_list_length(containers));
@@ -119,17 +182,10 @@ void ContainersWindow::RefreshContainers() {
 		strcpy(status, item->state);
 		strcat(status, ":");
 		strcat(status, item->status);
-		
+
 		containerListGrid->SetCellValue(row_num, col_num, status);
 
 		row_num += 1;
-	}
-
-	if (report != NULL && res->http_error_code == 200) {
-		docker_log_debug(report);
-	}
-	if (res != NULL) {
-		free_docker_result(&res);
 	}
 
 	containerListGrid->AutoSize();
@@ -141,3 +197,4 @@ void ContainersWindow::HandlePageRefresh(wxCommandEvent& event) {
 		this->RefreshContainers();
 	}
 }
+

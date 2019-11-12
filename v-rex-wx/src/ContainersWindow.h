@@ -16,6 +16,8 @@ private:
 	wxGrid* containerListGrid;
 
 	void HandleDockerConnect(wxCommandEvent& event);
+	void HandleListContainers(wxCommandEvent& event);
 	void HandlePageRefresh(wxCommandEvent& event);
 	void RefreshContainers();
+	void UpdateContainers(docker_containers_list* containers);
 };
