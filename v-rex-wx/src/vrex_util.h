@@ -55,7 +55,8 @@ char* calculate_size_str(uint64_t size);
 
 char* handle_error(docker_result* res);
 
-// it just declares DOCKER_CONNECT_EVENT event type
+// just declare event types
 wxDECLARE_EVENT(DOCKER_CONNECT_EVENT, wxCommandEvent);
+wxDECLARE_EVENT(PAGE_REFRESH_EVENT, wxCommandEvent);
 
 #endif /* SRC_VREX_UTIL_H_ */

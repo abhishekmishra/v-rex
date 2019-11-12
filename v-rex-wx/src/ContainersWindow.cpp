@@ -16,7 +16,8 @@ ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 
 	//SetBackgroundColour(*(new wxColour("red")));
 
-	Bind(DOCKER_CONNECT_EVENT, &ContainersWindow::handlerDockerConnect, this, 0);
+	Bind(DOCKER_CONNECT_EVENT, &ContainersWindow::HandleDockerConnect, this, 0);
+	Bind(PAGE_REFRESH_EVENT, &ContainersWindow::HandlePageRefresh, this, 0);
 
 	containersSizer = new wxFlexGridSizer(1);
 
@@ -52,7 +53,7 @@ ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 	SetAutoLayout(true);
 }
 
-void ContainersWindow::handlerDockerConnect(wxCommandEvent& event) {
+void ContainersWindow::HandleDockerConnect(wxCommandEvent& event) {
 	if (this->ctx->isConnected()) {
 		this->RefreshContainers();
 	}
@@ -133,4 +134,10 @@ void ContainersWindow::RefreshContainers() {
 
 	containerListGrid->AutoSize();
 	Layout();
+}
+
+void ContainersWindow::HandlePageRefresh(wxCommandEvent& event) {
+	if (this->ctx->isConnected()) {
+		this->RefreshContainers();
+	}
 }

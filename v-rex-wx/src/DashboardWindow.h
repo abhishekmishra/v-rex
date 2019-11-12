@@ -17,5 +17,5 @@ private:
 	wxCommandLinkButton* volumesBtn;
 	wxCommandLinkButton* networksBtn;
 
-	void handlerDockerConnect(wxCommandEvent& event);
+	void HandleDockerConnect(wxCommandEvent& event);
 };

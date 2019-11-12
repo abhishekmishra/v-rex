@@ -30,6 +30,7 @@ public:
 private:
 	VRexContext* ctx;
 	bool silent_mode;
+	char* docker_url;
 };
 class VRexFrame : public wxFrame
 {
@@ -37,11 +38,14 @@ public:
 	VRexFrame(VRexContext* ctx);
 	void SetContext(VRexContext* ctx);
 	void PostEventToCurrentTab(const wxCommandEvent& event);
+	void PostEventToAllTabs(const wxCommandEvent& event);
 
 private:
 	void OnHello(wxCommandEvent& event);
 	void OnExit(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
+	void OnNBPageChanged(wxBookCtrlEvent& event);
+
 	VRexContext* ctx = NULL;
 	wxNotebook* notebook;
 };
@@ -64,11 +68,25 @@ static const wxCmdLineEntryDesc g_cmdLineDesc[] =
 wxIMPLEMENT_APP(VRexApp);
 
 wxDEFINE_EVENT(DOCKER_CONNECT_EVENT, wxCommandEvent);
+wxDEFINE_EVENT(PAGE_REFRESH_EVENT, wxCommandEvent);
 
 bool VRexApp::OnInit()
 {
+	// call default behaviour (mandatory)
+	if (!wxApp::OnInit())
+		return false;
+
 	ctx = new VRexContext();
+
 	VRexFrame* frame = new VRexFrame(ctx);
+	frame->Show(true);
+
+	if (docker_url != NULL) {
+		ctx->TryConnectURL(docker_url);
+	}
+	else {
+		ctx->TryConnectLocal();
+	}
 
 	docker_log_debug("Connected is %d\n", ctx->isConnected());
 
@@ -94,7 +112,6 @@ bool VRexApp::OnInit()
 		frame->SetStatusText("Error: Unable to connect to a local docker server", 1);
 	}
 
-	frame->Show(true);
 	return true;
 }
 
@@ -130,6 +147,8 @@ VRexFrame::VRexFrame(VRexContext* ctx)
 	ContainersWindow* containersW = new ContainersWindow(this->ctx, notebook);
 	notebook->AddPage(containersW, "Containers");
 
+	notebook->Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &VRexFrame::OnNBPageChanged, this);
+
 	wxToolBar* toolBar = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_FLAT | wxTB_HORIZONTAL | wxTB_HORZ_TEXT);
 	SetToolBar(toolBar);
 	wxBitmap exit = wxArtProvider::GetBitmap(wxART_QUIT, wxART_TOOLBAR);
@@ -163,6 +182,14 @@ void VRexFrame::PostEventToCurrentTab(const wxCommandEvent& event)
 	wxPostEvent(this->notebook->GetCurrentPage(), event);
 }
 
+void VRexFrame::PostEventToAllTabs(const wxCommandEvent& event)
+{
+	for (int i = 0; i < notebook->GetPageCount(); i++) {
+		wxPostEvent(this->notebook->GetPage(i), event);
+	}
+}
+
+
 void VRexApp::OnInitCmdLine(wxCmdLineParser& parser)
 {
 	parser.SetDesc(g_cmdLineDesc);
@@ -173,6 +200,11 @@ void VRexApp::OnInitCmdLine(wxCmdLineParser& parser)
 bool VRexApp::OnCmdLineParsed(wxCmdLineParser& parser)
 {
 	silent_mode = parser.Found(wxT("s"));
+
+	if (parser.GetParamCount() > 0) {
+		wxCharBuffer buffer = parser.GetParam(0).ToUTF8();
+		docker_url = str_clone(buffer.data());
+	}
 
 	// to get at your unnamed parameters use
 	wxArrayString files;
@@ -186,4 +218,15 @@ bool VRexApp::OnCmdLineParsed(wxCmdLineParser& parser)
 	// then do what you need with them.
 
 	return true;
+}
+
+void VRexFrame::OnNBPageChanged(wxBookCtrlEvent& event) {
+	
+	wxCommandEvent page_refresh_event(PAGE_REFRESH_EVENT);
+	page_refresh_event.SetEventObject(event.GetEventObject());
+	page_refresh_event.SetString("RefreshContents");
+	int page_id = event.GetSelection();
+	wxPostEvent(this->notebook->GetPage(page_id), page_refresh_event);
+
+	event.Skip();
 }

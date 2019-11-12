@@ -7,7 +7,6 @@ VRexContext::VRexContext() {
 	this->connected = false;
 	this->docker_ctx = NULL;
 	arraylist_new(&this->results, (void (*)(void*)) & free_docker_result);
-	this->TryConnectLocal();
 }
 
 docker_context* VRexContext::getDockerContext() {

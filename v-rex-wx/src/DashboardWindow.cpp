@@ -31,7 +31,7 @@ DashboardWindow::DashboardWindow(VRexContext* ctx, wxWindow* parent)
 	:wxPanel(parent) {
 	this->ctx = ctx;
 
-	Bind(DOCKER_CONNECT_EVENT, &DashboardWindow::handlerDockerConnect, this, 0);
+	Bind(DOCKER_CONNECT_EVENT, &DashboardWindow::HandleDockerConnect, this, 0);
 
 	dashSizer = new wxFlexGridSizer(3);
 	containersBtn = new wxCommandLinkButton(this, wxID_ANY, "Containers");
@@ -67,7 +67,7 @@ DashboardWindow::DashboardWindow(VRexContext* ctx, wxWindow* parent)
 	SetSizerAndFit(dashSizer);
 }
 
-void DashboardWindow::handlerDockerConnect(wxCommandEvent& event) {
+void DashboardWindow::HandleDockerConnect(wxCommandEvent& event) {
 	docker_info* info = this->ctx->getDockerInfo();
 
 	wxString containersNote;

@@ -15,6 +15,7 @@ private:
 	wxFlexGridSizer* containersSizer;
 	wxGrid* containerListGrid;
 
-	void handlerDockerConnect(wxCommandEvent& event);
+	void HandleDockerConnect(wxCommandEvent& event);
+	void HandlePageRefresh(wxCommandEvent& event);
 	void RefreshContainers();
 };
