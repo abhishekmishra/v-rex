@@ -69,7 +69,7 @@ void ContainersWindow::RefreshContainers() {
 	docker_result* res;
 
 	//Lookup containers
-	docker_container_list(this->ctx->getDockerContext(), &res, &containers, show_running,
+	docker_container_list(this->ctx->getDockerContext(), &res, &containers, show_running? 0: 1,
 		limit, 1, NULL);
 	char* report = this->ctx->handleDockerResult(res);
 	docker_log_debug("Read %d containers.\n",
