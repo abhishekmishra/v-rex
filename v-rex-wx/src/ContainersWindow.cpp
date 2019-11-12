@@ -169,21 +169,25 @@ void ContainersWindow::UpdateContainers(docker_containers_list* containers) {
 				&& first_port->private_port
 							> 0) {
 				char* ports_str = (char*)calloc(128, sizeof(char));
-				sprintf(ports_str, "%ld:%ld",
-					first_port->public_port,
-					first_port->private_port);
+				if (ports_str != NULL) {
+					sprintf(ports_str, "%ld:%ld",
+						first_port->public_port,
+						first_port->private_port);
 
-				containerListGrid->SetCellValue(row_num, col_num, ports_str);
+					containerListGrid->SetCellValue(row_num, col_num, ports_str);
+				}
 			}
 		}
 		col_num += 1;
 
 		char* status = (char*)calloc(1024, sizeof(char));
-		strcpy(status, item->state);
-		strcat(status, ":");
-		strcat(status, item->status);
+		if (status != NULL) {
+			strcpy(status, item->state);
+			strcat(status, ":");
+			strcat(status, item->status);
 
-		containerListGrid->SetCellValue(row_num, col_num, status);
+			containerListGrid->SetCellValue(row_num, col_num, status);
+		}
 
 		row_num += 1;
 	}
