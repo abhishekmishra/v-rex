@@ -1,6 +1,7 @@
 #pragma once
 
 #include <wx/panel.h>
+#include <wx/grid.h>
 
 #include "VRexContext.h"
 #include "vrex_util.h"
@@ -12,6 +13,8 @@ public:
 private:
 	VRexContext* ctx;
 	wxFlexGridSizer* containersSizer;
+	wxGrid* grid;
 
 	void handlerDockerConnect(wxCommandEvent& event);
+	void RefreshContainers();
 };
