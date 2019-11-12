@@ -13,7 +13,7 @@ public:
 private:
 	VRexContext* ctx;
 	wxFlexGridSizer* containersSizer;
-	wxGrid* grid;
+	wxGrid* containerListGrid;
 
 	void handlerDockerConnect(wxCommandEvent& event);
 	void RefreshContainers();

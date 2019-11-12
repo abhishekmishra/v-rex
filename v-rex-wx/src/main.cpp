@@ -114,15 +114,10 @@ VRexFrame::VRexFrame(VRexContext* ctx)
 	ContainersWindow* containersW = new ContainersWindow(this->ctx, notebook);
 	notebook->AddPage(containersW, "Containers");
 
-	wxToolBar* toolBar = CreateToolBar();
-	wxBitmap open = wxArtProvider::GetBitmap(wxART_FILE_OPEN, wxART_TOOLBAR);
+	wxToolBar* toolBar = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_FLAT | wxTB_HORIZONTAL | wxTB_HORZ_TEXT);
+	SetToolBar(toolBar);
 	wxBitmap exit = wxArtProvider::GetBitmap(wxART_QUIT, wxART_TOOLBAR);
-	wxBitmap save = wxArtProvider::GetBitmap(wxART_FILE_SAVE, wxART_TOOLBAR);
-	wxBitmap b_new = wxArtProvider::GetBitmap(wxART_NEW, wxART_TOOLBAR);
 
-	toolBar->AddTool(3, "New file", b_new);
-	toolBar->AddTool(4, "Open file", open);
-	toolBar->AddTool(5, "Save file", save);
 	toolBar->AddTool(wxID_EXIT, "Exit", exit);
 	toolBar->Realize();
 }
