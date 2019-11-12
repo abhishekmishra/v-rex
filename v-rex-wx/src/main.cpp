@@ -4,6 +4,7 @@
 #ifndef WX_PRECOMP
 #include <wx/wx.h>
 #endif
+#include <wx/cmdline.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,8 +24,12 @@ class VRexApp : public wxApp
 {
 public:
 	virtual bool OnInit();
+	virtual void OnInitCmdLine(wxCmdLineParser& parser);
+	virtual bool OnCmdLineParsed(wxCmdLineParser& parser);
+
 private:
 	VRexContext* ctx;
+	bool silent_mode;
 };
 class VRexFrame : public wxFrame
 {
@@ -46,13 +51,23 @@ enum
 	ID_Hello = 1
 };
 
+static const wxCmdLineEntryDesc g_cmdLineDesc[] =
+{
+	{ wxCMD_LINE_SWITCH, "h", "help", "displays help on the command line parameters",
+		  wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
+	{ wxCMD_LINE_SWITCH, "s", "silent", "disables the GUI" },
+	{ wxCMD_LINE_PARAM, NULL, NULL, "Docker URL", wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL },
+	{ wxCMD_LINE_NONE }
+};
+
+
 wxIMPLEMENT_APP(VRexApp);
 
 wxDEFINE_EVENT(DOCKER_CONNECT_EVENT, wxCommandEvent);
 
 bool VRexApp::OnInit()
 {
-	VRexContext* ctx = new VRexContext();
+	ctx = new VRexContext();
 	VRexFrame* frame = new VRexFrame(ctx);
 
 	docker_log_debug("Connected is %d\n", ctx->isConnected());
@@ -62,7 +77,7 @@ bool VRexApp::OnInit()
 		frame->SetStatusText("Connected", 0);
 		char* version_info = (char*)calloc(1024, sizeof(char));
 		if (version_info != NULL) {
-			sprintf(version_info, "Docker v%s on %s [%s] @ %s", 
+			sprintf(version_info, "Docker v%s on %s [%s] @ %s",
 				version->version, version->os, version->arch, ctx->getDockerContext()->url);
 			frame->SetStatusText(version_info, 2);
 		}
@@ -73,7 +88,8 @@ bool VRexApp::OnInit()
 		event.SetString("Hello");
 		// Do send it
 		frame->PostEventToCurrentTab(event);
-	} else {
+	}
+	else {
 		frame->SetStatusText("Not Connected.", 0);
 		frame->SetStatusText("Error: Unable to connect to a local docker server", 1);
 	}
@@ -147,3 +163,27 @@ void VRexFrame::PostEventToCurrentTab(const wxCommandEvent& event)
 	wxPostEvent(this->notebook->GetCurrentPage(), event);
 }
 
+void VRexApp::OnInitCmdLine(wxCmdLineParser& parser)
+{
+	parser.SetDesc(g_cmdLineDesc);
+	// must refuse '/' as parameter starter or cannot use "/path" style paths
+	parser.SetSwitchChars(wxT("-"));
+}
+
+bool VRexApp::OnCmdLineParsed(wxCmdLineParser& parser)
+{
+	silent_mode = parser.Found(wxT("s"));
+
+	// to get at your unnamed parameters use
+	wxArrayString files;
+	for (int i = 0; i < parser.GetParamCount(); i++)
+	{
+		files.Add(parser.GetParam(i));
+	}
+
+	// and other command line parameters
+
+	// then do what you need with them.
+
+	return true;
+}
