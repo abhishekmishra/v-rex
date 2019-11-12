@@ -9,7 +9,6 @@
 #include <stdlib.h>
 
 #include <wx/notebook.h>
-#include <wx/grid.h>
 #include <wx/toolbar.h>
 #include <wx/artprov.h>
 
@@ -18,6 +17,7 @@
 
 #include "VRexContext.h"
 #include "DashboardWindow.h"
+#include "ContainersWindow.h"
 
 class VRexApp : public wxApp
 {
@@ -111,26 +111,8 @@ VRexFrame::VRexFrame(VRexContext* ctx)
 	DashboardWindow* dashboardW = new DashboardWindow(this->ctx, notebook);
 	notebook->AddPage(dashboardW, "Dashboard");
 
-	// Create a wxGrid object
-	wxGrid* grid = new wxGrid(notebook,
-		-1,
-		wxPoint(0, 0),
-		wxSize(800, 600));
-	// Then we call CreateGrid to set the dimensions of the grid
-	// (100 rows and 10 columns in this example)
-	grid->CreateGrid(1, 4);
-	// We can set the sizes of individual rows and columns
-	// in pixels
-	grid->SetRowSize(0, 20);
-	grid->SetColSize(0, 120);
-	grid->SetColLabelValue(0, "Name");
-	grid->SetColLabelValue(1, "Image");
-	grid->SetColLabelValue(2, "Command");
-	grid->SetColLabelValue(3, "State");
-	grid->HideRowLabels();
-
-
-	notebook->AddPage(grid, "Containers");
+	ContainersWindow* containersW = new ContainersWindow(this->ctx, notebook);
+	notebook->AddPage(containersW, "Containers");
 
 	wxToolBar* toolBar = CreateToolBar();
 	wxBitmap open = wxArtProvider::GetBitmap(wxART_FILE_OPEN, wxART_TOOLBAR);

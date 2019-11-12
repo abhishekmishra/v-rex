@@ -68,9 +68,6 @@ DashboardWindow::DashboardWindow(VRexContext* ctx, wxWindow* parent)
 }
 
 void DashboardWindow::handlerDockerConnect(wxCommandEvent& event) {
-	//wxMessageBox("Docker Connect Event Received",
-	//	"Docker Connect Event Received", wxOK | wxICON_INFORMATION);
-
 	docker_info* info = this->ctx->getDockerInfo();
 
 	wxString containersNote;
