@@ -15,6 +15,7 @@
 #include "ContainersWindow.h"
 #include "ImagesWindow.h"
 #include "VolumesWindow.h"
+#include "NetworksWindow.h"
 
 #include "VRexFrame.h"
 
@@ -55,6 +56,9 @@ VRexFrame::VRexFrame(VRexContext* ctx)
 
 	VolumesWindow* volumesW = new VolumesWindow(this->ctx, notebook);
 	notebook->AddPage(volumesW, "Volumes");
+
+	NetworksWindow* networksW = new NetworksWindow(this->ctx, notebook);
+	notebook->AddPage(networksW, "Networks");
 
 	notebook->Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &VRexFrame::OnNBPageChanged, this);
 

@@ -37,8 +37,6 @@ public:
 
 wxThread::ExitCode ListVolumesThread::Entry()
 {
-	bool show_running = true;
-	long limit = 100;
 	arraylist* volumes;
 	arraylist* warnings;
 	docker_result* res;
@@ -46,10 +44,10 @@ wxThread::ExitCode ListVolumesThread::Entry()
 	//Lookup volumes
 	docker_volumes_list(this->ctx->getDockerContext(), &res, &volumes, &warnings, 0, NULL, NULL, NULL);
 	char* report = this->ctx->handleDockerResult(res);
-	free(report);
 
 	if (report != NULL && res->http_error_code == 200) {
 		docker_log_debug(report);
+		free(report);
 	}
 	if (res != NULL) {
 		free_docker_result(&res);

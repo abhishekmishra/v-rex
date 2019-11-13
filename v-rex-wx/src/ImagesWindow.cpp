@@ -37,8 +37,6 @@ public:
 
 wxThread::ExitCode ListImagesThread::Entry()
 {
-	bool show_running = true;
-	long limit = 100;
 	arraylist* images;
 	docker_result* res;
 
@@ -46,10 +44,10 @@ wxThread::ExitCode ListImagesThread::Entry()
 	docker_images_list(this->ctx->getDockerContext(), &res, &images, 0, 1, NULL, 0, NULL, NULL,
 		NULL);
 	char* report = this->ctx->handleDockerResult(res);
-	free(report);
 
 	if (report != NULL && res->http_error_code == 200) {
 		docker_log_debug(report);
+		free(report);
 	}
 	if (res != NULL) {
 		free_docker_result(&res);
