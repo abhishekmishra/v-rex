@@ -35,4 +35,8 @@ private:
 	void RefreshContainers();
 	void UpdateContainers(docker_containers_list* containers);
 	void HandleCellSelection(wxGridEvent& event);
+
+	d_err_t RunContainerCommand(const char* container_name_or_id, int command);
+	void HandleContainerStart(wxCommandEvent& event);
+	void HandleContainerStop(wxCommandEvent& event);
 };

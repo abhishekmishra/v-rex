@@ -168,6 +168,8 @@ ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 	Bind(wxEVT_TOOL, &ContainersWindow::HandleShowRunning, this, VREX_CONTAINERS_TOOL_RUNNING_ONLY);
 	containerListGrid->Bind(wxEVT_GRID_SELECT_CELL, &ContainersWindow::HandleCellSelection, this);
 	containerListGrid->Bind(wxEVT_GRID_CELL_LEFT_CLICK, &ContainersWindow::HandleCellSelection, this);
+	//startBtn->Bind(VREX_CONTAINERS_TOOL_START, &ContainersWindow::HandleContainerStart, this);
+	//stopBtn->Bind(VREX_CONTAINERS_TOOL_START, &ContainersWindow::HandleContainerStop, this);
 
 
 	if (this->ctx->isConnected()) {
@@ -360,6 +362,59 @@ void ContainersWindow::HandleCellSelection(wxGridEvent& event) {
 	//wxMessageBox(wxString::Format(wxT("Container Name is %S"), containerName));
 	if (event.GetId() == wxEVT_GRID_SELECT_CELL) {
 		containerListGrid->SelectRow(row);
+	}
+	event.Skip();
+}
+
+d_err_t ContainersWindow::RunContainerCommand(const char* container_name_or_id, int command) {
+	d_err_t error = E_UNKNOWN_ERROR;
+	if (container_name_or_id != NULL) {
+		char* ctr_name_id = str_clone(container_name_or_id);
+		if (ctr_name_id != NULL) {
+			docker_result* res;
+			switch (command) {
+			case VREX_CONTAINERS_TOOL_START:
+				error = docker_start_container(ctx->getDockerContext(), &res, ctr_name_id, NULL);
+				break;
+			case VREX_CONTAINERS_TOOL_STOP:
+				error = docker_stop_container(ctx->getDockerContext(), &res, ctr_name_id, NULL);
+				break;
+			default:
+				break;
+			}
+		}
+	}
+	return error;
+}
+
+void ContainersWindow::HandleContainerStart(wxCommandEvent& event) {
+	wxArrayInt selections = containerListGrid->GetSelectedRows();
+	if (selections.GetCount() > 0) {
+		int row = selections[0];
+		wxString containerName = containerListGrid->GetCellValue(row, 1);
+		d_err_t error = RunContainerCommand(containerName.ToUTF8().data(), VREX_CONTAINERS_TOOL_START);
+		if (error == E_SUCCESS) {
+			wxMessageBox(wxString::Format("%s is started.", containerName));
+		}
+		else {
+			wxMessageBox(wxString::Format("Error starting %s.", containerName));
+		}
+	}
+	event.Skip();
+}
+
+void ContainersWindow::HandleContainerStop(wxCommandEvent& event) {
+	wxArrayInt selections = containerListGrid->GetSelectedRows();
+	if (selections.GetCount() > 0) {
+		int row = selections[0];
+		wxString containerName = containerListGrid->GetCellValue(row, 1);
+		d_err_t error = RunContainerCommand(containerName.ToUTF8().data(), VREX_CONTAINERS_TOOL_STOP);
+		if (error == E_SUCCESS) {
+			wxMessageBox(wxString::Format("%s is stopped.", containerName));
+		}
+		else {
+			wxMessageBox(wxString::Format("Error stopping %s.", containerName));
+		}
 	}
 	event.Skip();
 }
