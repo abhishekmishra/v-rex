@@ -25,4 +25,5 @@ private:
 	void HandleShowRunning(wxCommandEvent& event);
 	void RefreshContainers();
 	void UpdateContainers(docker_containers_list* containers);
+	void HandleCellSelection(wxGridEvent& event);
 };

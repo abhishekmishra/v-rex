@@ -70,12 +70,6 @@ ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 
 	//SetBackgroundColour(*(new wxColour("red")));
 
-	Bind(DOCKER_CONNECT_EVENT, &ContainersWindow::HandleDockerConnect, this, 0);
-	Bind(PAGE_REFRESH_EVENT, &ContainersWindow::HandlePageRefresh, this, 0);
-	Bind(LIST_CONTAINERS_EVENT, &ContainersWindow::HandleListContainers, this, 0);
-	Bind(wxEVT_TOOL, &ContainersWindow::HandlePageRefresh, this, VREX_CONTAINERS_TOOL_REFRESH);
-	Bind(wxEVT_TOOL, &ContainersWindow::HandleShowRunning, this, VREX_CONTAINERS_TOOL_RUNNING_ONLY);
-
 	containersSizer = new wxFlexGridSizer(1);
 
 	showRunning = true;
@@ -102,8 +96,19 @@ ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 	containerListGrid->SetColLabelValue(4, "State");
 	containerListGrid->HideRowLabels();
 
+	containerListGrid->SetSelectionMode(wxGrid::wxGridSelectionModes::wxGridSelectRows);
+
 	containersSizer->Add(toolBar, 0, wxALIGN_LEFT | wxALL | wxEXPAND, 5);
 	containersSizer->Add(containerListGrid, 0, wxALL | wxEXPAND, 5);
+
+	Bind(DOCKER_CONNECT_EVENT, &ContainersWindow::HandleDockerConnect, this, 0);
+	Bind(PAGE_REFRESH_EVENT, &ContainersWindow::HandlePageRefresh, this, 0);
+	Bind(LIST_CONTAINERS_EVENT, &ContainersWindow::HandleListContainers, this, 0);
+	Bind(wxEVT_TOOL, &ContainersWindow::HandlePageRefresh, this, VREX_CONTAINERS_TOOL_REFRESH);
+	Bind(wxEVT_TOOL, &ContainersWindow::HandleShowRunning, this, VREX_CONTAINERS_TOOL_RUNNING_ONLY);
+	containerListGrid->Bind(wxEVT_GRID_SELECT_CELL, &ContainersWindow::HandleCellSelection, this);
+	containerListGrid->Bind(wxEVT_GRID_CELL_LEFT_CLICK, &ContainersWindow::HandleCellSelection, this);
+
 
 	if (this->ctx->isConnected()) {
 		this->RefreshContainers();
@@ -234,3 +239,9 @@ void ContainersWindow::HandlePageRefresh(wxCommandEvent& event) {
 	}
 }
 
+void ContainersWindow::HandleCellSelection(wxGridEvent& event) {
+	int row = event.GetRow();
+	wxString containerName = containerListGrid->GetCellValue(row, 0);
+	wxMessageBox(wxString::Format(wxT("Conatiner Name is %S"), containerName));
+	event.Skip();
+}
