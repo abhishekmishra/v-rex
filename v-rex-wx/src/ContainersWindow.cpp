@@ -90,7 +90,7 @@ ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 	toolBar->ToggleTool(VREX_CONTAINERS_TOOL_RUNNING_ONLY, true);
 	toolBar->AddTool(VREX_CONTAINERS_TOOL_REFRESH, "Refresh", refresh);
 
-	wxSize toolBarBtnSize = wxSize(60, toolBar->GetClientSize().GetHeight());
+	wxSize toolBarBtnSize = wxSize(60, 34);
 	wxButton* startBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_START, "Start", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
 	toolBar->AddControl(startBtn);
 	wxButton* stopBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_STOP, "Stop", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
