@@ -14,6 +14,7 @@
 #include "DashboardWindow.h"
 #include "ContainersWindow.h"
 #include "ImagesWindow.h"
+#include "VolumesWindow.h"
 
 #include "VRexFrame.h"
 
@@ -51,6 +52,9 @@ VRexFrame::VRexFrame(VRexContext* ctx)
 
 	ImagesWindow* imagesW = new ImagesWindow(this->ctx, notebook);
 	notebook->AddPage(imagesW, "Images");
+
+	VolumesWindow* volumesW = new VolumesWindow(this->ctx, notebook);
+	notebook->AddPage(volumesW, "Volumes");
 
 	notebook->Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &VRexFrame::OnNBPageChanged, this);
 
