@@ -159,7 +159,7 @@ void NetworksWindow::UpdateNetworks(arraylist* networks) {
 		networkListGrid->SetCellValue(row_num, col_num, net->scope);
 		col_num += 1;
 
-		networkListGrid->SetCellValue(row_num, col_num, wxString::Format(wxT("%d", net->attachable)));
+		networkListGrid->SetCellValue(row_num, col_num, wxString::Format(wxT("%d"), net->attachable));
 		col_num += 1;
 
 		row_num += 1;
