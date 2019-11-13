@@ -17,14 +17,17 @@
 
 wxDEFINE_EVENT(LIST_CONTAINERS_EVENT, wxCommandEvent);
 
+#define VREX_CONTAINERS_TOOL_RUNNING_ONLY	201
+#define VREX_CONTAINERS_TOOL_REFRESH		202
+
 // a thread class that will periodically send events to the GUI thread
 class ListContainersThread : public wxThread
 {
-	wxPanel* m_parent;
+	ContainersWindow* m_parent;
 	VRexContext* ctx;
 
 public:
-	ListContainersThread(wxPanel* parent, VRexContext* ctx)
+	ListContainersThread(ContainersWindow* parent, VRexContext* ctx)
 	{
 		m_parent = parent;
 		this->ctx = ctx;
@@ -35,13 +38,13 @@ public:
 
 wxThread::ExitCode ListContainersThread::Entry()
 {
-	bool show_running = true;
-	long limit = 100;
+	int all = m_parent->isShowRunningEnabled() == true ? 0 : 1;
+	long limit = 0;
 	docker_containers_list* containers;
 	docker_result* res;
 
 	//Lookup containers
-	docker_container_list(this->ctx->getDockerContext(), &res, &containers, show_running ? 0 : 1,
+	docker_container_list(this->ctx->getDockerContext(), &res, &containers, all,
 		limit, 1, NULL);
 	char* report = this->ctx->handleDockerResult(res);
 	docker_log_debug("Read %d containers.\n",
@@ -70,15 +73,19 @@ ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 	Bind(DOCKER_CONNECT_EVENT, &ContainersWindow::HandleDockerConnect, this, 0);
 	Bind(PAGE_REFRESH_EVENT, &ContainersWindow::HandlePageRefresh, this, 0);
 	Bind(LIST_CONTAINERS_EVENT, &ContainersWindow::HandleListContainers, this, 0);
+	Bind(wxEVT_TOOL, &ContainersWindow::HandlePageRefresh, this, VREX_CONTAINERS_TOOL_REFRESH);
+	Bind(wxEVT_TOOL, &ContainersWindow::HandleShowRunning, this, VREX_CONTAINERS_TOOL_RUNNING_ONLY);
 
 	containersSizer = new wxFlexGridSizer(1);
 
-	wxToolBar* toolBar = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_FLAT | wxTB_HORIZONTAL | wxTB_HORZ_TEXT);
+	showRunning = true;
+	toolBar = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_FLAT | wxTB_HORIZONTAL | wxTB_HORZ_TEXT);
 	wxBitmap refresh = wxArtProvider::GetBitmap(wxART_REDO, wxART_TOOLBAR);
 	wxBitmap show_run = wxArtProvider::GetBitmap(wxART_TICK_MARK, wxART_TOOLBAR);
 
-	toolBar->AddCheckTool(3, "Show Running", show_run);
-	toolBar->AddTool(4, "Refresh", refresh);
+	toolBar->AddCheckTool(VREX_CONTAINERS_TOOL_RUNNING_ONLY, "Show Running", show_run);
+	toolBar->ToggleTool(VREX_CONTAINERS_TOOL_RUNNING_ONLY, true);
+	toolBar->AddTool(VREX_CONTAINERS_TOOL_REFRESH, "Refresh", refresh);
 
 	toolBar->Realize();
 
@@ -105,6 +112,18 @@ ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 	SetAutoLayout(true);
 }
 
+bool ContainersWindow::isShowRunningEnabled() {
+	return showRunning;
+}
+
+void ContainersWindow::HandleShowRunning(wxCommandEvent& event) {
+	if (event.GetId() == VREX_CONTAINERS_TOOL_RUNNING_ONLY) {
+		showRunning = toolBar->GetToolState(VREX_CONTAINERS_TOOL_RUNNING_ONLY);
+		RefreshContainers();
+	}
+	event.Skip();
+}
+
 void ContainersWindow::HandleDockerConnect(wxCommandEvent& event) {
 	if (this->ctx->isConnected()) {
 		this->RefreshContainers();
@@ -117,20 +136,25 @@ void ContainersWindow::HandleListContainers(wxCommandEvent& event) {
 }
 
 void ContainersWindow::RefreshContainers() {
-	// create the thread
-	ListContainersThread* t = new ListContainersThread(this, this->ctx);
-	wxThreadError err = t->Create();
+	if (this->ctx->isConnected()) {
+		// create the thread
+		ListContainersThread* t = new ListContainersThread(this, this->ctx);
+		wxThreadError err = t->Create();
 
-	if (err != wxTHREAD_NO_ERROR)
-	{
-		wxMessageBox(_("Couldn't create thread!"));
+		if (err != wxTHREAD_NO_ERROR)
+		{
+			wxMessageBox(_("Couldn't create thread!"));
+		}
+
+		err = t->Run();
+
+		if (err != wxTHREAD_NO_ERROR)
+		{
+			wxMessageBox(_("Couldn't run thread!"));
+		}
 	}
-
-	err = t->Run();
-
-	if (err != wxTHREAD_NO_ERROR)
-	{
-		wxMessageBox(_("Couldn't run thread!"));
+	else {
+		//TODO: show error here - send to frame's status bar
 	}
 }
 
