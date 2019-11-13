@@ -4,6 +4,11 @@
  *
  */
 
+#include <wx/wxprec.h>
+#ifndef WX_PRECOMP
+#include <wx/wx.h>
+#endif
+
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -97,3 +102,6 @@ char* handle_error(docker_result* res) {
 	return docker_simple_error_handler_sprintf(res);
 }
 
+void registerWebColours() {
+	wxTheColourDatabase->AddColour(wxT("VREX_WHITESMOKE"), wxColour(245, 245, 245));
+}

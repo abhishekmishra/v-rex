@@ -59,4 +59,9 @@ char* handle_error(docker_result* res);
 wxDECLARE_EVENT(DOCKER_CONNECT_EVENT, wxCommandEvent);
 wxDECLARE_EVENT(PAGE_REFRESH_EVENT, wxCommandEvent);
 
+// See web colours
+// https://en.wikipedia.org/wiki/Web_colors
+
+void registerWebColours();
+
 #endif /* SRC_VREX_UTIL_H_ */

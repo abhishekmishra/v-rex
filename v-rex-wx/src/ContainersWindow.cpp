@@ -96,7 +96,9 @@ ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 	containerListGrid->SetColLabelValue(4, "State");
 	containerListGrid->HideRowLabels();
 
+	containerListGrid->SetGridLineColour(wxTheColourDatabase->Find(wxT("VREX_WHITESMOKE")));
 	containerListGrid->SetSelectionMode(wxGrid::wxGridSelectionModes::wxGridSelectRows);
+	containerListGrid->EnableEditing(false);
 
 	containersSizer->Add(toolBar, 0, wxALIGN_LEFT | wxALL | wxEXPAND, 5);
 	containersSizer->Add(containerListGrid, 0, wxALL | wxEXPAND, 5);

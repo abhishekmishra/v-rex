@@ -51,6 +51,8 @@ bool VRexApp::OnInit()
 	if (!wxApp::OnInit())
 		return false;
 
+	registerWebColours();
+
 	ctx = new VRexContext();
 
 	VRexFrame* frame = new VRexFrame(ctx);
