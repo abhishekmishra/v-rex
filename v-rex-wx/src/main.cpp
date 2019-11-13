@@ -51,7 +51,7 @@ bool VRexApp::OnInit()
 	if (!wxApp::OnInit())
 		return false;
 
-	registerWebColours();
+	registerX11Colours();
 
 	ctx = new VRexContext();
 

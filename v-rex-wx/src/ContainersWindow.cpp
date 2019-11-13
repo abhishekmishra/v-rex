@@ -238,13 +238,13 @@ void ContainersWindow::UpdateContainers(docker_containers_list* containers) {
 
 		containerListGrid->SetCellValue(row_num, col_num, item->state);
 		if (strcmp(item->state, "running") == 0) {
-			containerListGrid->SetCellBackgroundColour(row_num, col_num, wxTheColourDatabase->Find(wxT("GREEN")));
+			containerListGrid->SetCellBackgroundColour(row_num, col_num, wxTheColourDatabase->Find(VREX_LIGHTGREEN));
 		}
 		if (strcmp(item->state, "created") == 0) {
-			containerListGrid->SetCellBackgroundColour(row_num, col_num, *wxLIGHT_GREY);
+			containerListGrid->SetCellBackgroundColour(row_num, col_num, wxTheColourDatabase->Find(VREX_ALICEBLUE));
 		}
 		if (strcmp(item->state, "exited") == 0) {
-			containerListGrid->SetCellBackgroundColour(row_num, col_num, *wxYELLOW);
+			containerListGrid->SetCellBackgroundColour(row_num, col_num, wxTheColourDatabase->Find(VREX_PAPAYAWHIP));
 		}
 		col_num += 1;
 
