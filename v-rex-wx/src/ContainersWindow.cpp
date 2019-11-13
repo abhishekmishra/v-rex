@@ -19,6 +19,14 @@ wxDEFINE_EVENT(LIST_CONTAINERS_EVENT, wxCommandEvent);
 
 #define VREX_CONTAINERS_TOOL_RUNNING_ONLY	201
 #define VREX_CONTAINERS_TOOL_REFRESH		202
+#define VREX_CONTAINERS_TOOL_START			203
+#define VREX_CONTAINERS_TOOL_STOP			204
+#define VREX_CONTAINERS_TOOL_KILL			205
+#define VREX_CONTAINERS_TOOL_RESTART		206
+#define VREX_CONTAINERS_TOOL_PAUSE			207
+#define VREX_CONTAINERS_TOOL_RESUME			208
+#define VREX_CONTAINERS_TOOL_REMOVE			209
+#define VREX_CONTAINERS_TOOL_ADD			210
 
 // a thread class that will periodically send events to the GUI thread
 class ListContainersThread : public wxThread
@@ -76,11 +84,29 @@ ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 	toolBar = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_FLAT | wxTB_HORIZONTAL | wxTB_HORZ_TEXT);
 	wxBitmap refresh = wxArtProvider::GetBitmap(wxART_REDO, wxART_TOOLBAR);
 	wxBitmap show_run = wxArtProvider::GetBitmap(wxART_TICK_MARK, wxART_TOOLBAR);
+	wxBitmap other = wxArtProvider::GetBitmap(wxART_CDROM, wxART_TOOLBAR);
 
 	toolBar->AddCheckTool(VREX_CONTAINERS_TOOL_RUNNING_ONLY, "Show Running", show_run);
 	toolBar->ToggleTool(VREX_CONTAINERS_TOOL_RUNNING_ONLY, true);
 	toolBar->AddTool(VREX_CONTAINERS_TOOL_REFRESH, "Refresh", refresh);
 
+	wxSize toolBarBtnSize = wxSize(60, toolBar->GetClientSize().GetHeight());
+	wxButton* startBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_START, "Start", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
+	toolBar->AddControl(startBtn);
+	wxButton* stopBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_STOP, "Stop", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
+	toolBar->AddControl(stopBtn);
+	wxButton* killBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_KILL, "Kill", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
+	toolBar->AddControl(killBtn);
+	wxButton* restartBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_RESTART, "Restart", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
+	toolBar->AddControl(restartBtn);
+	wxButton* pauseBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_PAUSE, "Pause", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
+	toolBar->AddControl(pauseBtn);
+	wxButton* resumeBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_RESUME, "Resume", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
+	toolBar->AddControl(resumeBtn);
+	wxButton* removeBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_REMOVE, "Remove", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
+	toolBar->AddControl(removeBtn);
+	wxButton* addBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_ADD, "Add", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
+	toolBar->AddControl(addBtn);
 	toolBar->Realize();
 
 	containerListGrid = new wxGrid(this,
@@ -244,6 +270,9 @@ void ContainersWindow::HandlePageRefresh(wxCommandEvent& event) {
 void ContainersWindow::HandleCellSelection(wxGridEvent& event) {
 	int row = event.GetRow();
 	wxString containerName = containerListGrid->GetCellValue(row, 0);
-	wxMessageBox(wxString::Format(wxT("Conatiner Name is %S"), containerName));
+	//wxMessageBox(wxString::Format(wxT("Container Name is %S"), containerName));
+	if (event.GetId() == wxEVT_GRID_SELECT_CELL) {
+		containerListGrid->SelectRow(row);
+	}
 	event.Skip();
 }
