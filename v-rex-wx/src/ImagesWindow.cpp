@@ -15,6 +15,8 @@
 #include "VRexContext.h"
 #include "vrex_util.h"
 
+#define VREX_IMAGES_TOOL_REFRESH		301
+
 wxDEFINE_EVENT(LIST_IMAGES_EVENT, wxCommandEvent);
 
 // a thread class that will periodically send events to the GUI thread
@@ -69,6 +71,7 @@ ImagesWindow::ImagesWindow(VRexContext* ctx, wxWindow* parent)
 	Bind(DOCKER_CONNECT_EVENT, &ImagesWindow::HandleDockerConnect, this, 0);
 	Bind(PAGE_REFRESH_EVENT, &ImagesWindow::HandlePageRefresh, this, 0);
 	Bind(LIST_IMAGES_EVENT, &ImagesWindow::HandleListImages, this, 0);
+	Bind(wxEVT_TOOL, &ImagesWindow::HandlePageRefresh, this, VREX_IMAGES_TOOL_REFRESH);
 
 	imagesSizer = new wxFlexGridSizer(1);
 
@@ -76,8 +79,7 @@ ImagesWindow::ImagesWindow(VRexContext* ctx, wxWindow* parent)
 	wxBitmap refresh = wxArtProvider::GetBitmap(wxART_REDO, wxART_TOOLBAR);
 	wxBitmap show_run = wxArtProvider::GetBitmap(wxART_TICK_MARK, wxART_TOOLBAR);
 
-	toolBar->AddCheckTool(3, "Show Running", show_run);
-	toolBar->AddTool(4, "Refresh", refresh);
+	toolBar->AddTool(VREX_IMAGES_TOOL_REFRESH, "Refresh", refresh);
 
 	toolBar->Realize();
 
@@ -114,20 +116,25 @@ void ImagesWindow::HandleListImages(wxCommandEvent& event) {
 }
 
 void ImagesWindow::RefreshImages() {
-	// create the thread
-	ListImagesThread* t = new ListImagesThread(this, this->ctx);
-	wxThreadError err = t->Create();
+	if (this->ctx->isConnected()) {
+		// create the thread
+		ListImagesThread* t = new ListImagesThread(this, this->ctx);
+		wxThreadError err = t->Create();
 
-	if (err != wxTHREAD_NO_ERROR)
-	{
-		wxMessageBox(_("Couldn't create thread!"));
+		if (err != wxTHREAD_NO_ERROR)
+		{
+			wxMessageBox(_("Couldn't create thread!"));
+		}
+
+		err = t->Run();
+
+		if (err != wxTHREAD_NO_ERROR)
+		{
+			wxMessageBox(_("Couldn't run thread!"));
+		}
 	}
-
-	err = t->Run();
-
-	if (err != wxTHREAD_NO_ERROR)
-	{
-		wxMessageBox(_("Couldn't run thread!"));
+	else {
+		//TODO: show error here - send to frame's status bar
 	}
 }
 
@@ -198,6 +205,9 @@ void ImagesWindow::UpdateImages(arraylist* images) {
 void ImagesWindow::HandlePageRefresh(wxCommandEvent& event) {
 	if (this->ctx->isConnected()) {
 		this->RefreshImages();
+	}
+	if (event.GetId() == VREX_IMAGES_TOOL_REFRESH) {
+		event.Skip();
 	}
 }
 

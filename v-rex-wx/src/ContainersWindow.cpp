@@ -128,6 +128,9 @@ void ContainersWindow::HandleDockerConnect(wxCommandEvent& event) {
 	if (this->ctx->isConnected()) {
 		this->RefreshContainers();
 	}
+	if (event.GetId() == VREX_CONTAINERS_TOOL_REFRESH) {
+		event.Skip();
+	}
 }
 
 void ContainersWindow::HandleListContainers(wxCommandEvent& event) {
