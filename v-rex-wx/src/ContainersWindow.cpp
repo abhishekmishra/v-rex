@@ -168,8 +168,8 @@ ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 	Bind(wxEVT_TOOL, &ContainersWindow::HandleShowRunning, this, VREX_CONTAINERS_TOOL_RUNNING_ONLY);
 	containerListGrid->Bind(wxEVT_GRID_SELECT_CELL, &ContainersWindow::HandleCellSelection, this);
 	containerListGrid->Bind(wxEVT_GRID_CELL_LEFT_CLICK, &ContainersWindow::HandleCellSelection, this);
-	//startBtn->Bind(VREX_CONTAINERS_TOOL_START, &ContainersWindow::HandleContainerStart, this);
-	//stopBtn->Bind(VREX_CONTAINERS_TOOL_START, &ContainersWindow::HandleContainerStop, this);
+	startBtn->Bind(wxEVT_BUTTON, &ContainersWindow::HandleContainerStart, this);
+	stopBtn->Bind(wxEVT_BUTTON, &ContainersWindow::HandleContainerStop, this);
 
 
 	if (this->ctx->isConnected()) {
@@ -255,7 +255,8 @@ void ContainersWindow::UpdateContainers(docker_containers_list* containers) {
 		}
 		col_num += 1;
 
-		containerListGrid->SetCellValue(row_num, col_num, (char*)arraylist_get(item->names, 0));
+		char* name = (char*)arraylist_get(item->names, 0);
+		containerListGrid->SetCellValue(row_num, col_num, name+1);
 		col_num += 1;
 
 		if (i == 0) {
@@ -400,7 +401,7 @@ void ContainersWindow::HandleContainerStart(wxCommandEvent& event) {
 			wxMessageBox(wxString::Format("Error starting %s.", containerName));
 		}
 	}
-	event.Skip();
+	RefreshContainers();
 }
 
 void ContainersWindow::HandleContainerStop(wxCommandEvent& event) {
@@ -416,5 +417,5 @@ void ContainersWindow::HandleContainerStop(wxCommandEvent& event) {
 			wxMessageBox(wxString::Format("Error stopping %s.", containerName));
 		}
 	}
-	event.Skip();
+	RefreshContainers();
 }
