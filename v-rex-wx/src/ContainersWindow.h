@@ -19,6 +19,15 @@ private:
 	wxGrid* containerListGrid;
 	bool showRunning;
 
+	wxButton* startBtn;
+	wxButton* stopBtn;
+	wxButton* killBtn;
+	wxButton* restartBtn;
+	wxButton* pauseBtn;
+	wxButton* resumeBtn;
+	wxButton* removeBtn;
+	wxButton* addBtn;
+
 	void HandleDockerConnect(wxCommandEvent& event);
 	void HandleListContainers(wxCommandEvent& event);
 	void HandlePageRefresh(wxCommandEvent& event);

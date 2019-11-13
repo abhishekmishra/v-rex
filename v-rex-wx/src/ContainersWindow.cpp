@@ -91,37 +91,42 @@ ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 	toolBar->AddTool(VREX_CONTAINERS_TOOL_REFRESH, "Refresh", refresh);
 
 	wxSize toolBarBtnSize = wxSize(60, 30);
-	wxButton* startBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_START, "Start", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
+	startBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_START, "Start", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
 	startBtn->Disable();
+	startBtn->SetBackgroundColour(wxTheColourDatabase->Find(VREX_LIGHTGREEN));
 	toolBar->AddControl(startBtn);
 
-	wxButton* stopBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_STOP, "Stop", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
+	stopBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_STOP, "Stop", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
 	toolBar->AddControl(stopBtn);
+	stopBtn->SetBackgroundColour(wxTheColourDatabase->Find(VREX_LIGHTSALMON));
 	stopBtn->Disable();
 
-	wxButton* killBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_KILL, "Kill", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
+	killBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_KILL, "Kill", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
 	toolBar->AddControl(killBtn);
+	killBtn->SetBackgroundColour(wxTheColourDatabase->Find(VREX_LIGHTSALMON));
 	killBtn->Disable();
 
-	wxButton* restartBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_RESTART, "Restart", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
+	restartBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_RESTART, "Restart", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
 	toolBar->AddControl(restartBtn);
+	restartBtn->SetBackgroundColour(wxTheColourDatabase->Find(VREX_LIGHTSALMON));
 	restartBtn->Disable();
 
-	wxButton* pauseBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_PAUSE, "Pause", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
+	pauseBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_PAUSE, "Pause", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
 	toolBar->AddControl(pauseBtn);
 	pauseBtn->Disable();
 
-	wxButton* resumeBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_RESUME, "Resume", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
+	resumeBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_RESUME, "Resume", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
 	toolBar->AddControl(resumeBtn);
 	resumeBtn->Disable();
 
-	wxButton* removeBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_REMOVE, "Remove", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
+	removeBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_REMOVE, "Remove", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
 	toolBar->AddControl(removeBtn);
+	removeBtn->SetBackgroundColour(wxTheColourDatabase->Find(VREX_LIGHTSALMON));
 	removeBtn->Disable();
 
-	wxButton* addBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_ADD, "Add", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
+	addBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_ADD, "Add", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
 	toolBar->AddControl(addBtn);
-	addBtn->Disable();
+	addBtn->Enable();
 
 	toolBar->Realize();
 
@@ -313,7 +318,45 @@ void ContainersWindow::HandlePageRefresh(wxCommandEvent& event) {
 
 void ContainersWindow::HandleCellSelection(wxGridEvent& event) {
 	int row = event.GetRow();
-	wxString containerName = containerListGrid->GetCellValue(row, 0);
+	wxString state = containerListGrid->GetCellValue(row, 0);
+	wxString containerName = containerListGrid->GetCellValue(row, 1);
+
+	if (strcmp(state, "running") == 0) {
+		startBtn->Disable();
+		stopBtn->Enable();
+		killBtn->Enable();
+		restartBtn->Enable();
+		pauseBtn->Enable();
+		resumeBtn->Enable();
+		removeBtn->Enable();
+	}
+	else if (strcmp(state, "exited") == 0) {
+		startBtn->Enable();
+		stopBtn->Disable();
+		killBtn->Disable();
+		restartBtn->Disable();
+		pauseBtn->Disable();
+		resumeBtn->Disable();
+		removeBtn->Enable();
+	}
+	else if (strcmp(state, "created") == 0) {
+		startBtn->Enable();
+		stopBtn->Disable();
+		killBtn->Disable();
+		restartBtn->Disable();
+		pauseBtn->Disable();
+		resumeBtn->Disable();
+		removeBtn->Enable();
+	}
+	else {
+		startBtn->Disable();
+		stopBtn->Disable();
+		killBtn->Disable();
+		restartBtn->Disable();
+		pauseBtn->Disable();
+		resumeBtn->Disable();
+		removeBtn->Disable();
+	}
 	//wxMessageBox(wxString::Format(wxT("Container Name is %S"), containerName));
 	if (event.GetId() == wxEVT_GRID_SELECT_CELL) {
 		containerListGrid->SelectRow(row);
