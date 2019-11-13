@@ -127,11 +127,20 @@ ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 
 	containerListGrid = new wxGrid(this,
 		-1,
-		wxPoint(0, 0));
+		wxDefaultPosition,
+		wxDefaultSize);
 	containerListGrid->CreateGrid(1, 6);
+	containerListGrid->SetDefaultCellOverflow(false);
 	containerListGrid->SetRowSize(0, 20);
-	containerListGrid->SetColSize(0, 120);
 	int grid_col_count = 0;
+	containerListGrid->SetColSize(grid_col_count++, 200);
+	containerListGrid->SetColSize(grid_col_count++, 200);
+	containerListGrid->SetColSize(grid_col_count++, 200);
+	containerListGrid->SetColSize(grid_col_count++, 200);
+	containerListGrid->SetColSize(grid_col_count++, 200);
+	containerListGrid->SetColSize(grid_col_count++, 200);
+
+	grid_col_count = 0;
 	containerListGrid->SetColLabelValue(grid_col_count++, "State");
 	containerListGrid->SetColLabelValue(grid_col_count++, "Name");
 	containerListGrid->SetColLabelValue(grid_col_count++, "Image");
@@ -159,7 +168,7 @@ ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 	if (this->ctx->isConnected()) {
 		this->RefreshContainers();
 	}
-	SetSizerAndFit(containersSizer);
+	SetSizer(containersSizer);
 	SetAutoLayout(true);
 }
 
@@ -288,7 +297,11 @@ void ContainersWindow::UpdateContainers(docker_containers_list* containers) {
 
 	arraylist_free(containers);
 
-	containerListGrid->AutoSize();
+	//containerListGrid->AutoSize();
+	containerListGrid->AutoSizeColumn(0);
+	containerListGrid->AutoSizeColumn(1);
+	containerListGrid->AutoSizeColumn(4);
+	containerListGrid->AutoSizeColumn(5);
 	Layout();
 }
 
