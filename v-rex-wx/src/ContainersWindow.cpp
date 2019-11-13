@@ -90,36 +90,54 @@ ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 	toolBar->ToggleTool(VREX_CONTAINERS_TOOL_RUNNING_ONLY, true);
 	toolBar->AddTool(VREX_CONTAINERS_TOOL_REFRESH, "Refresh", refresh);
 
-	wxSize toolBarBtnSize = wxSize(60, 34);
+	wxSize toolBarBtnSize = wxSize(60, 30);
 	wxButton* startBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_START, "Start", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
+	startBtn->Disable();
 	toolBar->AddControl(startBtn);
+
 	wxButton* stopBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_STOP, "Stop", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
 	toolBar->AddControl(stopBtn);
+	stopBtn->Disable();
+
 	wxButton* killBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_KILL, "Kill", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
 	toolBar->AddControl(killBtn);
+	killBtn->Disable();
+
 	wxButton* restartBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_RESTART, "Restart", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
 	toolBar->AddControl(restartBtn);
+	restartBtn->Disable();
+
 	wxButton* pauseBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_PAUSE, "Pause", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
 	toolBar->AddControl(pauseBtn);
+	pauseBtn->Disable();
+
 	wxButton* resumeBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_RESUME, "Resume", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
 	toolBar->AddControl(resumeBtn);
+	resumeBtn->Disable();
+
 	wxButton* removeBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_REMOVE, "Remove", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
 	toolBar->AddControl(removeBtn);
+	removeBtn->Disable();
+
 	wxButton* addBtn = new wxButton(toolBar, VREX_CONTAINERS_TOOL_ADD, "Add", wxDefaultPosition, toolBarBtnSize, wxBORDER_NONE);
 	toolBar->AddControl(addBtn);
+	addBtn->Disable();
+
 	toolBar->Realize();
 
 	containerListGrid = new wxGrid(this,
 		-1,
 		wxPoint(0, 0));
-	containerListGrid->CreateGrid(1, 5);
+	containerListGrid->CreateGrid(1, 6);
 	containerListGrid->SetRowSize(0, 20);
 	containerListGrid->SetColSize(0, 120);
-	containerListGrid->SetColLabelValue(0, "Name");
-	containerListGrid->SetColLabelValue(1, "Image");
-	containerListGrid->SetColLabelValue(2, "Command");
-	containerListGrid->SetColLabelValue(3, "Ports");
-	containerListGrid->SetColLabelValue(4, "State");
+	int grid_col_count = 0;
+	containerListGrid->SetColLabelValue(grid_col_count++, "State");
+	containerListGrid->SetColLabelValue(grid_col_count++, "Name");
+	containerListGrid->SetColLabelValue(grid_col_count++, "Image");
+	containerListGrid->SetColLabelValue(grid_col_count++, "Command");
+	containerListGrid->SetColLabelValue(grid_col_count++, "Ports");
+	containerListGrid->SetColLabelValue(grid_col_count++, "Status");
 	containerListGrid->HideRowLabels();
 
 	containerListGrid->SetGridLineColour(wxTheColourDatabase->Find(wxT("VREX_WHITESMOKE")));
@@ -208,6 +226,19 @@ void ContainersWindow::UpdateContainers(docker_containers_list* containers) {
 		col_num = 0;
 		docker_container_list_item* item = docker_containers_list_get_idx(
 			containers, i);
+
+		containerListGrid->SetCellValue(row_num, col_num, item->state);
+		if (strcmp(item->state, "running") == 0) {
+			containerListGrid->SetCellBackgroundColour(row_num, col_num, wxTheColourDatabase->Find(wxT("GREEN")));
+		}
+		if (strcmp(item->state, "created") == 0) {
+			containerListGrid->SetCellBackgroundColour(row_num, col_num, *wxLIGHT_GREY);
+		}
+		if (strcmp(item->state, "exited") == 0) {
+			containerListGrid->SetCellBackgroundColour(row_num, col_num, *wxYELLOW);
+		}
+		col_num += 1;
+
 		containerListGrid->SetCellValue(row_num, col_num, (char*)arraylist_get(item->names, 0));
 		col_num += 1;
 
