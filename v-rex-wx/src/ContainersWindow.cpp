@@ -11,6 +11,7 @@
 #include <docker_all.h>
 #include <arraylist.h>
 
+#include "ContainerDialog.h"
 #include "ContainersWindow.h"
 #include "VRexContext.h"
 #include "vrex_util.h"
@@ -170,6 +171,7 @@ ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 	containerListGrid->Bind(wxEVT_GRID_CELL_LEFT_CLICK, &ContainersWindow::HandleCellSelection, this);
 	startBtn->Bind(wxEVT_BUTTON, &ContainersWindow::HandleContainerStart, this);
 	stopBtn->Bind(wxEVT_BUTTON, &ContainersWindow::HandleContainerStop, this);
+	addBtn->Bind(wxEVT_BUTTON, &ContainersWindow::HandleContainerAdd, this);
 
 
 	if (this->ctx->isConnected()) {
@@ -418,4 +420,8 @@ void ContainersWindow::HandleContainerStop(wxCommandEvent& event) {
 		}
 	}
 	RefreshContainers();
+}
+
+void ContainersWindow::HandleContainerAdd(wxCommandEvent& event) {
+	ContainerDialog("Add Container").ShowModal();
 }
