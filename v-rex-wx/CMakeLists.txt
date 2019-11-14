@@ -28,6 +28,7 @@ set( V-REX-WX_SOURCES
 	src/ContainersWindow.cpp
 	src/DashboardWindow.cpp
 	src/ContainerDialog.cpp
+	src/ContainerDetailsWindow.cpp
 	src/main.cpp
 	
 	src/VRexFrame.h
@@ -39,6 +40,7 @@ set( V-REX-WX_SOURCES
 	src/ContainersWindow.h
 	src/DashboardWindow.h
 	src/ContainerDialog.h
+	src/ContainerDetailsWindow.h
 )
 
 message (${CMAKE_HOST_SYSTEM_NAME})

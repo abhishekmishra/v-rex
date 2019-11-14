@@ -46,4 +46,5 @@ private:
 	void HandleContainerResume(wxCommandEvent& event);
 	void HandleContainerRemove(wxCommandEvent& event);
 	void HandleContainerAdd(wxCommandEvent& event);
+	void HandleContainerDetails(wxCommandEvent& event);
 };

@@ -11,6 +11,7 @@
 #include <docker_all.h>
 #include <arraylist.h>
 
+#include "ContainerDetailsWindow.h"
 #include "ContainerDialog.h"
 #include "ContainersWindow.h"
 #include "VRexContext.h"
@@ -171,6 +172,7 @@ ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 	Bind(wxEVT_TOOL, &ContainersWindow::HandleShowRunning, this, VREX_CONTAINERS_TOOL_RUNNING_ONLY);
 	containerListGrid->Bind(wxEVT_GRID_SELECT_CELL, &ContainersWindow::HandleCellSelection, this);
 	containerListGrid->Bind(wxEVT_GRID_CELL_LEFT_CLICK, &ContainersWindow::HandleCellSelection, this);
+	containerListGrid->Bind(wxEVT_GRID_CELL_LEFT_DCLICK, &ContainersWindow::HandleContainerDetails, this);
 	startBtn->Bind(wxEVT_BUTTON, &ContainersWindow::HandleContainerStart, this);
 	stopBtn->Bind(wxEVT_BUTTON, &ContainersWindow::HandleContainerStop, this);
 	killBtn->Bind(wxEVT_BUTTON, &ContainersWindow::HandleContainerKill, this);
@@ -509,4 +511,10 @@ void ContainersWindow::HandleContainerRemove(wxCommandEvent& event) {
 
 void ContainersWindow::HandleContainerAdd(wxCommandEvent& event) {
 	ContainerDialog("Add Container").ShowModal();
+}
+
+void ContainersWindow::HandleContainerDetails(wxCommandEvent& event) {
+	char* containerName = getSelectedRowContainerName(containerListGrid);
+	const wxString title = wxString::Format(wxT("Showing Details for Container: %s"), containerName);
+	ContainerDetailsDialog(ctx, title, containerName).ShowModal();
 }
