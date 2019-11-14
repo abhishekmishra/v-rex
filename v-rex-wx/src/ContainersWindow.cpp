@@ -155,7 +155,7 @@ ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 	containerListGrid->SetColLabelValue(grid_col_count++, "Status");
 	containerListGrid->HideRowLabels();
 
-	containerListGrid->SetGridLineColour(wxTheColourDatabase->Find(wxT("VREX_WHITESMOKE")));
+	containerListGrid->SetGridLineColour(VREX_WHITESMOKE);
 	containerListGrid->SetSelectionMode(wxGrid::wxGridSelectionModes::wxGridSelectRows);
 	containerListGrid->EnableEditing(false);
 
@@ -171,6 +171,11 @@ ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 	containerListGrid->Bind(wxEVT_GRID_CELL_LEFT_CLICK, &ContainersWindow::HandleCellSelection, this);
 	startBtn->Bind(wxEVT_BUTTON, &ContainersWindow::HandleContainerStart, this);
 	stopBtn->Bind(wxEVT_BUTTON, &ContainersWindow::HandleContainerStop, this);
+	killBtn->Bind(wxEVT_BUTTON, &ContainersWindow::HandleContainerKill, this);
+	restartBtn->Bind(wxEVT_BUTTON, &ContainersWindow::HandleContainerRestart, this);
+	pauseBtn->Bind(wxEVT_BUTTON, &ContainersWindow::HandleContainerPause, this);
+	resumeBtn->Bind(wxEVT_BUTTON, &ContainersWindow::HandleContainerResume, this);
+	removeBtn->Bind(wxEVT_BUTTON, &ContainersWindow::HandleContainerRemove, this);
 	addBtn->Bind(wxEVT_BUTTON, &ContainersWindow::HandleContainerAdd, this);
 
 
@@ -255,10 +260,13 @@ void ContainersWindow::UpdateContainers(docker_containers_list* containers) {
 		if (strcmp(item->state, "exited") == 0) {
 			containerListGrid->SetCellBackgroundColour(row_num, col_num, wxTheColourDatabase->Find(VREX_PAPAYAWHIP));
 		}
+		if (strcmp(item->state, "paused") == 0) {
+			containerListGrid->SetCellBackgroundColour(row_num, col_num, wxTheColourDatabase->Find(VREX_BEIGE));
+		}
 		col_num += 1;
 
 		char* name = (char*)arraylist_get(item->names, 0);
-		containerListGrid->SetCellValue(row_num, col_num, name+1);
+		containerListGrid->SetCellValue(row_num, col_num, name + 1);
 		col_num += 1;
 
 		if (i == 0) {
@@ -353,6 +361,15 @@ void ContainersWindow::HandleCellSelection(wxGridEvent& event) {
 		resumeBtn->Disable();
 		removeBtn->Enable();
 	}
+	else if (strcmp(state, "paused") == 0) {
+		startBtn->Disable();
+		stopBtn->Enable();
+		killBtn->Enable();
+		restartBtn->Disable();
+		pauseBtn->Disable();
+		resumeBtn->Enable();
+		removeBtn->Enable();
+	}
 	else {
 		startBtn->Disable();
 		stopBtn->Disable();
@@ -382,6 +399,22 @@ d_err_t ContainersWindow::RunContainerCommand(const char* container_name_or_id, 
 			case VREX_CONTAINERS_TOOL_STOP:
 				error = docker_stop_container(ctx->getDockerContext(), &res, ctr_name_id, NULL);
 				break;
+			case VREX_CONTAINERS_TOOL_KILL:
+				error = docker_kill_container(ctx->getDockerContext(), &res, ctr_name_id, NULL);
+				break;
+			case VREX_CONTAINERS_TOOL_RESTART:
+				error = docker_restart_container(ctx->getDockerContext(), &res, ctr_name_id, NULL);
+				break;
+			case VREX_CONTAINERS_TOOL_PAUSE:
+				error = docker_pause_container(ctx->getDockerContext(), &res, ctr_name_id);
+				break;
+			case VREX_CONTAINERS_TOOL_RESUME:
+				error = docker_unpause_container(ctx->getDockerContext(), &res, ctr_name_id);
+				break;
+			case VREX_CONTAINERS_TOOL_REMOVE:
+				//TODO remove container might require a dialog
+				error = docker_remove_container(ctx->getDockerContext(), &res, ctr_name_id, 0, 0, 0);
+				break;
 			default:
 				break;
 			}
@@ -390,36 +423,86 @@ d_err_t ContainersWindow::RunContainerCommand(const char* container_name_or_id, 
 	return error;
 }
 
-void ContainersWindow::HandleContainerStart(wxCommandEvent& event) {
-	wxArrayInt selections = containerListGrid->GetSelectedRows();
+char* getSelectedRowContainerName(wxGrid* containerGrid) {
+	wxArrayInt selections = containerGrid->GetSelectedRows();
 	if (selections.GetCount() > 0) {
 		int row = selections[0];
-		wxString containerName = containerListGrid->GetCellValue(row, 1);
-		d_err_t error = RunContainerCommand(containerName.ToUTF8().data(), VREX_CONTAINERS_TOOL_START);
+		wxString containerName = containerGrid->GetCellValue(row, 1);
+		return str_clone(containerName.ToUTF8().data());
+	}
+	return NULL;
+}
+
+d_err_t ContainersWindow::HandleContainerBtnEvent(wxCommandEvent& event, int eventCommand, wxString success, wxString failure) {
+	char* containerName = getSelectedRowContainerName(containerListGrid);
+	if (containerName != NULL) {
+		d_err_t error = RunContainerCommand(containerName, eventCommand);
 		if (error == E_SUCCESS) {
-			wxMessageBox(wxString::Format("%s is started.", containerName));
+			RefreshContainers();
+			wxMessageBox(wxString::Format(success, containerName));
 		}
 		else {
-			wxMessageBox(wxString::Format("Error starting %s.", containerName));
+			wxMessageBox(wxString::Format(failure, containerName));
 		}
+		free(containerName);
 	}
-	RefreshContainers();
+	return E_UNKNOWN_ERROR;
+}
+
+void ContainersWindow::HandleContainerStart(wxCommandEvent& event) {
+	HandleContainerBtnEvent(
+		event, 
+		VREX_CONTAINERS_TOOL_START,
+		wxT("%s is started."),
+		wxT("Error starting %s."));
 }
 
 void ContainersWindow::HandleContainerStop(wxCommandEvent& event) {
-	wxArrayInt selections = containerListGrid->GetSelectedRows();
-	if (selections.GetCount() > 0) {
-		int row = selections[0];
-		wxString containerName = containerListGrid->GetCellValue(row, 1);
-		d_err_t error = RunContainerCommand(containerName.ToUTF8().data(), VREX_CONTAINERS_TOOL_STOP);
-		if (error == E_SUCCESS) {
-			wxMessageBox(wxString::Format("%s is stopped.", containerName));
-		}
-		else {
-			wxMessageBox(wxString::Format("Error stopping %s.", containerName));
-		}
-	}
-	RefreshContainers();
+	HandleContainerBtnEvent(
+		event,
+		VREX_CONTAINERS_TOOL_STOP,
+		wxT("%s is stopped."),
+		wxT("Error stopping %s."));
+}
+
+void ContainersWindow::HandleContainerKill(wxCommandEvent& event) {
+	HandleContainerBtnEvent(
+		event,
+		VREX_CONTAINERS_TOOL_KILL,
+		wxT("%s is killed."),
+		wxT("Error killing %s."));
+}
+
+void ContainersWindow::HandleContainerRestart(wxCommandEvent& event) {
+	HandleContainerBtnEvent(
+		event,
+		VREX_CONTAINERS_TOOL_RESTART,
+		wxT("%s is restarted."),
+		wxT("Error restarting %s."));
+}
+
+void ContainersWindow::HandleContainerPause(wxCommandEvent& event) {
+	HandleContainerBtnEvent(
+		event,
+		VREX_CONTAINERS_TOOL_PAUSE,
+		wxT("%s is paused."),
+		wxT("Error pausing %s."));
+}
+
+void ContainersWindow::HandleContainerResume(wxCommandEvent& event) {
+	HandleContainerBtnEvent(
+		event,
+		VREX_CONTAINERS_TOOL_RESUME,
+		wxT("%s has resumed."),
+		wxT("Error resuming %s."));
+}
+
+void ContainersWindow::HandleContainerRemove(wxCommandEvent& event) {
+	HandleContainerBtnEvent(
+		event,
+		VREX_CONTAINERS_TOOL_REMOVE,
+		wxT("%s is removed."),
+		wxT("Error removing %s."));
 }
 
 void ContainersWindow::HandleContainerAdd(wxCommandEvent& event) {
