@@ -60,6 +60,8 @@ VRexFrame::VRexFrame(VRexContext* ctx)
 	NetworksWindow* networksW = new NetworksWindow(this->ctx, notebook);
 	notebook->AddPage(networksW, "Networks");
 
+	//make containers the default page
+	notebook->ChangeSelection(1);
 	notebook->Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &VRexFrame::OnNBPageChanged, this);
 
 	wxToolBar* toolBar = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_FLAT | wxTB_HORIZONTAL | wxTB_HORZ_TEXT);
@@ -81,13 +83,13 @@ void VRexFrame::OnExit(wxCommandEvent& event)
 
 void VRexFrame::OnAbout(wxCommandEvent& event)
 {
-	wxMessageBox("This is a wxWidgets Hello World example",
-		"About Hello World", wxOK | wxICON_INFORMATION);
+	wxMessageBox("V-Rex: Container Management\nVersion: 0.1a\nAuthor: Abhishek Mishra <abhishekmishra3@gmail.com>",
+		"About V-Rex", wxOK | wxICON_INFORMATION);
 }
 
 void VRexFrame::OnHello(wxCommandEvent& event)
 {
-	wxLogMessage("Hello world from wxWidgets!");
+	wxLogMessage("Hello world from V-Rex!");
 }
 
 void VRexFrame::PostEventToCurrentTab(const wxCommandEvent& event)

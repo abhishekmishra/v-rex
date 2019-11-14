@@ -29,6 +29,8 @@ wxDEFINE_EVENT(LIST_CONTAINERS_EVENT, wxCommandEvent);
 #define VREX_CONTAINERS_TOOL_REMOVE			209
 #define VREX_CONTAINERS_TOOL_ADD			210
 
+#define VREX_CONTAINERS_DEFAULT_COLUMN_WIDTH 300
+
 // a thread class that will periodically send events to the GUI thread
 class ListContainersThread : public wxThread
 {
@@ -139,12 +141,12 @@ ContainersWindow::ContainersWindow(VRexContext* ctx, wxWindow* parent)
 	containerListGrid->SetDefaultCellOverflow(false);
 	containerListGrid->SetRowSize(0, 20);
 	int grid_col_count = 0;
-	containerListGrid->SetColSize(grid_col_count++, 200);
-	containerListGrid->SetColSize(grid_col_count++, 200);
-	containerListGrid->SetColSize(grid_col_count++, 200);
-	containerListGrid->SetColSize(grid_col_count++, 200);
-	containerListGrid->SetColSize(grid_col_count++, 200);
-	containerListGrid->SetColSize(grid_col_count++, 200);
+	containerListGrid->SetColSize(grid_col_count++, VREX_CONTAINERS_DEFAULT_COLUMN_WIDTH);
+	containerListGrid->SetColSize(grid_col_count++, VREX_CONTAINERS_DEFAULT_COLUMN_WIDTH);
+	containerListGrid->SetColSize(grid_col_count++, VREX_CONTAINERS_DEFAULT_COLUMN_WIDTH);
+	containerListGrid->SetColSize(grid_col_count++, VREX_CONTAINERS_DEFAULT_COLUMN_WIDTH);
+	containerListGrid->SetColSize(grid_col_count++, VREX_CONTAINERS_DEFAULT_COLUMN_WIDTH);
+	containerListGrid->SetColSize(grid_col_count++, VREX_CONTAINERS_DEFAULT_COLUMN_WIDTH);
 
 	grid_col_count = 0;
 	containerListGrid->SetColLabelValue(grid_col_count++, "State");
