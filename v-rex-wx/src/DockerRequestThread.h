@@ -21,4 +21,7 @@ public:
 	}
 
 	virtual ExitCode Entry();
+	virtual void* DockerRequest(docker_result** res);
+	void SendEventToParent(const wxEventTypeTag<wxCommandEvent> eventType, void* clientData);
+	void DockerRequestThread::HandleDockerResult(docker_result* res);
 };

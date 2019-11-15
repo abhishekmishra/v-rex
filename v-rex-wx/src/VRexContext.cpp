@@ -89,3 +89,7 @@ char* VRexContext::handleDockerResult(docker_result* res) {
 bool VRexContext::isConnected() {
 	return this->connected;
 }
+
+void VRexContext::RegisterTopLevelWindow(wxWindow* toplevel) {
+	this->toplevel = toplevel;
+}
