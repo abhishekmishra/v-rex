@@ -34,14 +34,10 @@ ContainerDialog::ContainerDialog(const wxString& title)
 	wxBoxSizer* main_sizer = new wxBoxSizer(wxVERTICAL);
 	wxFlexGridSizer* grid_sizer = new wxFlexGridSizer(2);
 
-	grid_sizer->Add(new wxStaticText(this, wxID_ANY, "Name"),
-		wxSizerFlags().CentreVertical());
-	grid_sizer->Add(new EnterHandlingTextCtrl(this, wxID_ANY, "container0"),
-		wxSizerFlags().Expand().CentreVertical());
-	grid_sizer->Add(new wxStaticText(this, wxID_ANY, "Repository"),
-		wxSizerFlags().CentreVertical());
-	grid_sizer->Add(new EnterHandlingTextCtrl(this, wxID_ANY, "DockerHub"),
-		wxSizerFlags().CentreVertical());
+	grid_sizer->Add(new wxStaticText(this, wxID_ANY, "Name"));
+	grid_sizer->Add(new EnterHandlingTextCtrl(this, wxID_ANY, "container0"));
+	grid_sizer->Add(new wxStaticText(this, wxID_ANY, "Repository"));
+	grid_sizer->Add(new EnterHandlingTextCtrl(this, wxID_ANY, "DockerHub"));
 
 	main_sizer->Add(grid_sizer, wxSizerFlags().DoubleBorder());
 
