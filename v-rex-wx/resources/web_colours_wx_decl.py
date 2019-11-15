@@ -1,16 +1,18 @@
 import csv
+import os
 
-with open('WebColours.csv', newline='\n') as csvfile:
+currentpath = os.path.dirname(os.path.realpath(__file__))
+
+with open(os.path.join(currentpath,'WebColours.csv'), newline='\n') as csvfile:
     # write defines
     colours_reader = csv.reader(csvfile, delimiter=',')
     count = 0
     for row in colours_reader:
         if count != 0:
-            print('#define VREX_{} wxT("VREX_{}")'.format(row[0].upper(), row[0].upper()));
+            print('#define VREX_{} wxT("VREX_{}")'.format(row[0].upper(), row[0].upper()))
         count += 1
-        colours_reader = csv.reader(csvfile, delimiter=',')
 
-with open('WebColours.csv', newline='\n') as csvfile:
+with open(os.path.join(currentpath,'WebColours.csv'), newline='\n') as csvfile:
     # write colour declarations
     colours_reader = csv.reader(csvfile, delimiter=',')
     count = 0
