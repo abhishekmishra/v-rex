@@ -8,5 +8,7 @@ cd ./build
 # cmake .. -DCMAKE_TOOLCHAIN_FILE=/home/abhishek/code/vcpkg/scripts/buildsystems/vcpkg.cmake
 cmake ..
 
+make clean all
+
 # go back to parent directory
 cd ..
