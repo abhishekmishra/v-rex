@@ -72,7 +72,7 @@ vrex_err_t VRexContext::TryConnectURL(const char* url) {
 					this->docker_ctx->socket == NULL ?
 					this->docker_ctx->url : this->docker_ctx->socket, this->version->os);
 			}
-			free_docker_result(&res);
+			//free_docker_result(&res);
 			this->connected = true;
 			return VREX_SUCCESS;
 		}

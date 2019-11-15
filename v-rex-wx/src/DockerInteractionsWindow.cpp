@@ -2,6 +2,7 @@
 #include <wx/gbsizer.h>
 #include "arraylist.h"
 #include "vrex_util.h"
+#include "docker_log.h"
 
 wxDEFINE_EVENT(DOCKER_INTERACTION_RESULT_EVENT, wxCommandEvent);
 
@@ -85,7 +86,7 @@ void DockerInteractionsWindow::SetValuesForSelection() {
 	urlText->SetValue(res->url);
 	startTimeText->SetValue((new wxDateTime(res->start_time))->Format());
 	endTimeText->SetValue((new wxDateTime(res->end_time))->Format());
-	errorCodeText->SetValue(wxString::Format(wxT("%ld"), res->error_code));
+	errorCodeText->SetValue(wxString::Format(wxT("%d"), (int)(res->error_code)));
 	httpErrorCodeText->SetValue(wxString::Format(wxT("%ld"), res->http_error_code));
 	requestText->SetValue(res->request_json_str);
 	responseText->SetValue(res->response_json_str);
@@ -105,7 +106,7 @@ void DockerInteractionsWindow::HandleDockerResultEvent(wxCommandEvent& event) {
 		interactionsList->Delete(0);
 	}
 	if (res != NULL && res->url != NULL) {
-		interactionsList->AppendString(wxString::Format(wxT("Request %S"), res->url));
+		interactionsList->AppendString(wxString::Format(wxT("Request %s"), res->url));
 		arraylist_add(resList, res);
 		interactionsList->SetSelection(arraylist_length(resList) - 1);
 		SetValuesForSelection();
