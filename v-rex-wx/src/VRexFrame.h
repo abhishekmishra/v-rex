@@ -15,6 +15,7 @@
 #include "VRexContext.h"
 #include "DashboardWindow.h"
 #include "ContainersWindow.h"
+#include "DockerInteractionsWindow.h"
 
 class VRexFrame : public wxFrame
 {
@@ -30,9 +31,11 @@ private:
 	void OnAbout(wxCommandEvent& event);
 	void OnNBPageChanged(wxBookCtrlEvent& event);
 	void HandleShowInteractions(wxCommandEvent& event);
+	void HandleHideInteractions(wxCommandEvent& event);
 
 	VRexContext* ctx = NULL;
 	wxNotebook* notebook;
+	DockerInteractionsWindow* interactionsW;
 };
 
 enum

@@ -16,18 +16,18 @@ public:
 	docker_version* getDockerVersion();
 	docker_info* getDockerInfo();
 	char* handleDockerResult(docker_result* res);
-
 	vrex_err_t TryConnectLocal();
 	vrex_err_t TryConnectURL(const char* url);
-
 	bool isConnected();
-
 	void RegisterTopLevelWindow(wxWindow* toplevel);
+	void RegisterInteractionsWindow(wxWindow* interactionsW);
+
 private:
 	docker_context* docker_ctx;
 	docker_version* version;
 	arraylist* results;
 	bool connected;
 	wxWindow* toplevel;
+	wxWindow* interactionsW;
 };
 

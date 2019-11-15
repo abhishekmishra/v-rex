@@ -59,6 +59,7 @@ char* handle_error(docker_result* res);
 wxDECLARE_EVENT(DOCKER_CONNECT_EVENT, wxCommandEvent);
 wxDECLARE_EVENT(PAGE_REFRESH_EVENT, wxCommandEvent);
 wxDECLARE_EVENT(DOCKER_INTERACTION_RESULT_EVENT, wxCommandEvent);
+wxDECLARE_EVENT(DOCKER_INTERACTION_HIDE_EVENT, wxCommandEvent);
 
 
 // See X11 colours

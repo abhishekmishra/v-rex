@@ -37,7 +37,6 @@ void DockerRequestThread::SendEventToParent(const wxEventTypeTag<wxCommandEvent>
 	wxCommandEvent event_to_parent(eventType);
 	event_to_parent.SetClientData(clientData);
 	m_parent->GetEventHandler()->AddPendingEvent(event_to_parent);
-
 }
 
 void DockerRequestThread::HandleDockerResult(docker_result* res) {
@@ -47,8 +46,8 @@ void DockerRequestThread::HandleDockerResult(docker_result* res) {
 	if (report != NULL && res->http_error_code == 200) {
 		wxLogDebug(report);
 	}
-	if (res != NULL) {
-		free_docker_result(&res);
-	}
+	//if (res != NULL) {
+	//	free_docker_result(&res);
+	//}
 	free(report);
 }

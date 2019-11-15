@@ -49,9 +49,9 @@ wxThread::ExitCode ListImagesThread::Entry()
 		docker_log_debug(report);
 		free(report);
 	}
-	if (res != NULL) {
-		free_docker_result(&res);
-	}
+	//if (res != NULL) {
+	//	free_docker_result(&res);
+	//}
 
 	// notify the main thread
 	wxCommandEvent list_images_event(LIST_IMAGES_EVENT);

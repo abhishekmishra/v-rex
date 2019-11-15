@@ -65,9 +65,9 @@ wxThread::ExitCode ListContainersThread::Entry()
 	if (report != NULL && res->http_error_code == 200) {
 		docker_log_debug(report);
 	}
-	if (res != NULL) {
-		free_docker_result(&res);
-	}
+	//if (res != NULL) {
+	//	free_docker_result(&res);
+	//}
 
 	// notify the main thread
 	wxCommandEvent list_containers_event(LIST_CONTAINERS_EVENT);

@@ -48,9 +48,9 @@ wxThread::ExitCode ListNetworksThread::Entry()
 		docker_log_debug(report);
 		free(report);
 	}
-	if (res != NULL) {
-		free_docker_result(&res);
-	}
+	//if (res != NULL) {
+	//	free_docker_result(&res);
+	//}
 
 	// notify the main thread
 	wxCommandEvent list_networks_event(LIST_NETWORKS_EVENT);

@@ -25,9 +25,9 @@ docker_info* VRexContext::getDockerInfo() {
 	if (report != NULL && res->http_error_code == 200) {
 		docker_log_debug(report);
 	}
-	if (res != NULL) {
-		free_docker_result(&res);
-	}
+	//if (res != NULL) {
+	//	free_docker_result(&res);
+	//}
 	return info;
 }
 
@@ -47,13 +47,13 @@ vrex_err_t VRexContext::TryConnectLocal() {
 					this->docker_ctx->socket == NULL ?
 					this->docker_ctx->url : this->docker_ctx->socket, this->version->os);
 			}
-			free_docker_result(&res);
+			//free_docker_result(&res);
 			this->connected = true;
 			return VREX_SUCCESS;
 		}
 	}
 
-	free_docker_result(&res);
+	//free_docker_result(&res);
 	return VREX_E_UNKNOWN;
 }
 
@@ -78,11 +78,14 @@ vrex_err_t VRexContext::TryConnectURL(const char* url) {
 		}
 	}
 
-	free_docker_result(&res);
+	//free_docker_result(&res);
 	return VREX_E_UNKNOWN;
 }
 
 char* VRexContext::handleDockerResult(docker_result* res) {
+	wxCommandEvent event_to_parent(DOCKER_INTERACTION_RESULT_EVENT);
+	event_to_parent.SetClientData(res);
+	interactionsW->GetEventHandler()->AddPendingEvent(event_to_parent);
 	return handle_error(res);
 }
 
@@ -92,4 +95,8 @@ bool VRexContext::isConnected() {
 
 void VRexContext::RegisterTopLevelWindow(wxWindow* toplevel) {
 	this->toplevel = toplevel;
+}
+
+void VRexContext::RegisterInteractionsWindow(wxWindow* interactionsW) {
+	this->interactionsW = interactionsW;
 }

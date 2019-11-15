@@ -17,8 +17,11 @@
 #include "VolumesWindow.h"
 #include "NetworksWindow.h"
 #include "DockerInteractionsWindow.h"
+#include "vrex_util.h"
 
 #include "VRexFrame.h"
+
+wxDEFINE_EVENT(DOCKER_INTERACTION_HIDE_EVENT, wxCommandEvent);
 
 #define VREX_FRAME_TOOL_INTERACTIONS	120
 
@@ -27,6 +30,8 @@ VRexFrame::VRexFrame(VRexContext* ctx)
 		wxSize(1024, 768))
 {
 	SetContext(ctx);
+	interactionsW = new DockerInteractionsWindow(this);
+	ctx->RegisterInteractionsWindow(interactionsW);
 	wxMenu* menuFile = new wxMenu;
 	menuFile->Append(ID_Hello, "&Hello...\tCtrl-H",
 		"Help string shown in status bar for this menu item");
@@ -46,6 +51,7 @@ VRexFrame::VRexFrame(VRexContext* ctx)
 	Bind(wxEVT_MENU, &VRexFrame::OnAbout, this, wxID_ABOUT);
 	Bind(wxEVT_MENU, &VRexFrame::OnExit, this, wxID_EXIT);
 	Bind(wxEVT_TOOL, &VRexFrame::HandleShowInteractions, this, VREX_FRAME_TOOL_INTERACTIONS);
+	Bind(DOCKER_INTERACTION_HIDE_EVENT, &VRexFrame::HandleHideInteractions, this, 0);
 
 	notebook = new wxNotebook(this, -1, wxPoint(0, 0));
 
@@ -73,7 +79,9 @@ VRexFrame::VRexFrame(VRexContext* ctx)
 	wxBitmap interactions = wxArtProvider::GetBitmap(wxART_INFORMATION, wxART_TOOLBAR);
 	wxBitmap exit = wxArtProvider::GetBitmap(wxART_QUIT, wxART_TOOLBAR);
 
-	toolBar->AddTool(VREX_FRAME_TOOL_INTERACTIONS, "Interactions", interactions);
+	toolBar->AddCheckTool(VREX_FRAME_TOOL_INTERACTIONS, "Interactions", interactions);
+	toolBar->ToggleTool(VREX_FRAME_TOOL_INTERACTIONS, false);
+
 	toolBar->AddTool(wxID_EXIT, "Exit", exit);
 	toolBar->Realize();
 }
@@ -122,5 +130,15 @@ void VRexFrame::OnNBPageChanged(wxBookCtrlEvent& event) {
 }
 
 void VRexFrame::HandleShowInteractions(wxCommandEvent& event) {
-	(new DockerInteractionsWindow(this))->Show(true);
+	bool showInteractions = GetToolBar()->GetToolState(VREX_FRAME_TOOL_INTERACTIONS);
+	if (showInteractions) {
+		interactionsW->Show();
+	}
+	else {
+		interactionsW->Hide();
+	}
+}
+
+void VRexFrame::HandleHideInteractions(wxCommandEvent& event) {
+	GetToolBar()->ToggleTool(VREX_FRAME_TOOL_INTERACTIONS, false);
 }
