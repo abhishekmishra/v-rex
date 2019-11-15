@@ -28,5 +28,7 @@ wxThread::ExitCode DockerRequestThread::Entry()
 	wxCommandEvent ping_event(DOCKER_PING_EVENT);
 	ping_event.SetClientData(new wxString("Ping"));
 	m_parent->GetEventHandler()->AddPendingEvent(ping_event);
+
+	free(report);
 	return 0;
 }
