@@ -11,6 +11,8 @@
 class DockerRequestThread : public wxThread
 {
 	wxWindow* m_parent;
+
+protected:
 	VRexContext* ctx;
 
 public:
@@ -19,9 +21,10 @@ public:
 		m_parent = parent;
 		this->ctx = ctx;
 	}
-
+	virtual const wxEventTypeTag<wxCommandEvent> DockerRequest(docker_result** res, void** clientData);
 	virtual ExitCode Entry();
-	virtual void* DockerRequest(docker_result** res);
+
+private:
 	void SendEventToParent(const wxEventTypeTag<wxCommandEvent> eventType, void* clientData);
 	void DockerRequestThread::HandleDockerResult(docker_result* res);
 };

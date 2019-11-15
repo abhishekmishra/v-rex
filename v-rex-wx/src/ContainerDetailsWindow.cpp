@@ -3,12 +3,15 @@
 #include <wx/toolbar.h>
 #include <wx/gbsizer.h>
 
+#include "DockerRequestThread.h"
 #include "ContainerDetailsWindow.h"
 #include "VRexContext.h"
 #include "vrex_util.h"
 
+#include "docker_all.h"
+
 ContainerDetailsDialog::ContainerDetailsDialog(VRexContext* ctx, const wxString& title, char* container_name_or_id)
-	: wxDialog(NULL, -1, title, wxDefaultPosition, wxSize(250, 230)) {
+	: wxDialog(NULL, -1, title, wxDefaultPosition, wxSize(500, 800)) {
 	this->ctx = ctx;
 	this->container_name_or_id = container_name_or_id;
 
@@ -22,6 +25,7 @@ ContainerDetailsDialog::ContainerDetailsDialog(VRexContext* ctx, const wxString&
 		main_sizer->Add(button_sizer, wxSizerFlags().Expand().Border());
 
 	SetSizerAndFit(main_sizer);
+	SetAutoLayout(true);
 }
 
 ContainerDetailsWindow::ContainerDetailsWindow(VRexContext* ctx, wxWindow* parent, char* container_name_or_id) 
@@ -51,12 +55,80 @@ ContainerDetailsPanel::ContainerDetailsPanel(VRexContext* ctx, wxWindow* parent,
 
 }
 
+wxDEFINE_EVENT(DOCKER_LOGS_EVENT, wxCommandEvent);
+
+class ContainerLogsRequestThread : public DockerRequestThread {
+private:
+	char* container_name_or_id;
+public:
+	ContainerLogsRequestThread(wxWindow* parent, VRexContext* ctx, char* container_name_or_id)
+		: DockerRequestThread(parent, ctx)
+	{
+		this->container_name_or_id = container_name_or_id;
+	}
+
+	virtual const wxEventTypeTag<wxCommandEvent> DockerRequest(docker_result** res, void** clientData);
+};
+
+const wxEventTypeTag<wxCommandEvent> ContainerLogsRequestThread::DockerRequest(docker_result** res, void** clientData) {
+	char* log;
+	docker_container_logs(ctx->getDockerContext(), res, &log, container_name_or_id, 0, 1, 1, -1, -1, 1, 100);
+	*clientData = log;
+	return DOCKER_LOGS_EVENT;
+}
+
+
 ContainerLogsPanel::ContainerLogsPanel(VRexContext* ctx, wxWindow* parent, char* container_name_or_id)
 	: wxPanel(parent) {
 	this->ctx = ctx;
 	this->container_name_or_id = container_name_or_id;
 
+	wxBoxSizer* main_sizer = new wxBoxSizer(wxVERTICAL);
+	logs_text = new wxTextCtrl(this, 0, wxEmptyString, wxDefaultPosition, wxSize(800, 600), wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2);
+	logs_text->SetBackgroundColour(*wxBLACK);
+	logs_text->SetDefaultStyle(wxTextAttr(*wxGREEN, *wxBLACK));
+
+	Bind(DOCKER_LOGS_EVENT, &ContainerLogsPanel::HandleLogs, this, 0);
+
+	main_sizer->Add(logs_text);
+
+	RefreshLogs();
+
+	SetSizerAndFit(main_sizer);
+	SetAutoLayout(true);
 }
+
+void ContainerLogsPanel::HandleLogs(wxCommandEvent& event) {
+	char* logs = (char*)event.GetClientData();
+	if (logs != NULL) {
+		logs_text->AppendText(logs);
+		//free(logs);
+	}
+}
+
+void ContainerLogsPanel::RefreshLogs() {
+	if (this->ctx->isConnected()) {
+		// create the thread
+		ContainerLogsRequestThread* t = new ContainerLogsRequestThread(this, this->ctx, container_name_or_id);
+		wxThreadError err = t->Create();
+
+		if (err != wxTHREAD_NO_ERROR)
+		{
+			wxMessageBox(_("Couldn't create thread!"));
+		}
+
+		err = t->Run();
+
+		if (err != wxTHREAD_NO_ERROR)
+		{
+			wxMessageBox(_("Couldn't run thread!"));
+		}
+	}
+	else {
+		//TODO: show error here - send to frame's status bar
+	}
+}
+
 
 ContainerStatsPanel::ContainerStatsPanel(VRexContext* ctx, wxWindow* parent, char* container_name_or_id)
 	: wxPanel(parent) {

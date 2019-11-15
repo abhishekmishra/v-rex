@@ -12,20 +12,25 @@ wxDEFINE_EVENT(DOCKER_PING_EVENT, wxCommandEvent);
 wxThread::ExitCode DockerRequestThread::Entry()
 {
 	docker_result* res;
-	void* clientData = DockerRequest(&res);
+	void* clientData;
+
+	// Override this to make a docker request and send some data back to the parent.
+	const wxEventTypeTag<wxCommandEvent> eventType = DockerRequest(&res, &clientData);
 
 	// handler the requests of the docker request
 	HandleDockerResult(res);
 
 	// notify the main thread
-	SendEventToParent(DOCKER_PING_EVENT, clientData);
+	SendEventToParent(eventType, clientData);
 
 	return 0;
 }
 
-void* DockerRequestThread::DockerRequest(docker_result** res) {
+const wxEventTypeTag<wxCommandEvent> DockerRequestThread::DockerRequest(docker_result** res, void** clientData) {
 	docker_ping(this->ctx->getDockerContext(), res);
-	return new wxString("Ping complete.");
+	wxString* resp = new wxString("Ping complete.");
+	*clientData = resp;
+	return DOCKER_PING_EVENT;
 }
 
 void DockerRequestThread::SendEventToParent(const wxEventTypeTag<wxCommandEvent> eventType, void* clientData) {

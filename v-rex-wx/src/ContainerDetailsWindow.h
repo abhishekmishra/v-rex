@@ -43,8 +43,12 @@ public:
 	ContainerLogsPanel(VRexContext* ctx, wxWindow* parent, char* container_name_or_id);
 
 private:
+	void HandleLogs(wxCommandEvent& event);
+	void RefreshLogs();
+
 	VRexContext* ctx;
 	char* container_name_or_id;
+	wxTextCtrl* logs_text;
 };
 
 class ContainerStatsPanel : public wxPanel {
