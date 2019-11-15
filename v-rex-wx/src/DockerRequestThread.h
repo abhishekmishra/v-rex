@@ -26,5 +26,5 @@ public:
 
 private:
 	void SendEventToParent(const wxEventTypeTag<wxCommandEvent> eventType, void* clientData);
-	void DockerRequestThread::HandleDockerResult(docker_result* res);
+	void HandleDockerResult(docker_result* res);
 };
