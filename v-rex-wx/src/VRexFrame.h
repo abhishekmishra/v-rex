@@ -29,6 +29,7 @@ private:
 	void OnExit(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
 	void OnNBPageChanged(wxBookCtrlEvent& event);
+	void HandleShowInteractions(wxCommandEvent& event);
 
 	VRexContext* ctx = NULL;
 	wxNotebook* notebook;

@@ -16,8 +16,11 @@
 #include "ImagesWindow.h"
 #include "VolumesWindow.h"
 #include "NetworksWindow.h"
+#include "DockerInteractionsWindow.h"
 
 #include "VRexFrame.h"
+
+#define VREX_FRAME_TOOL_INTERACTIONS	120
 
 VRexFrame::VRexFrame(VRexContext* ctx)
 	: wxFrame(NULL, wxID_ANY, "V-Rex: Container GUI", wxPoint(0, 0),
@@ -42,6 +45,7 @@ VRexFrame::VRexFrame(VRexContext* ctx)
 	Bind(wxEVT_MENU, &VRexFrame::OnHello, this, ID_Hello);
 	Bind(wxEVT_MENU, &VRexFrame::OnAbout, this, wxID_ABOUT);
 	Bind(wxEVT_MENU, &VRexFrame::OnExit, this, wxID_EXIT);
+	Bind(wxEVT_TOOL, &VRexFrame::HandleShowInteractions, this, VREX_FRAME_TOOL_INTERACTIONS);
 
 	notebook = new wxNotebook(this, -1, wxPoint(0, 0));
 
@@ -66,8 +70,10 @@ VRexFrame::VRexFrame(VRexContext* ctx)
 
 	wxToolBar* toolBar = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_FLAT | wxTB_HORIZONTAL | wxTB_HORZ_TEXT);
 	SetToolBar(toolBar);
+	wxBitmap interactions = wxArtProvider::GetBitmap(wxART_INFORMATION, wxART_TOOLBAR);
 	wxBitmap exit = wxArtProvider::GetBitmap(wxART_QUIT, wxART_TOOLBAR);
 
+	toolBar->AddTool(VREX_FRAME_TOOL_INTERACTIONS, "Interactions", interactions);
 	toolBar->AddTool(wxID_EXIT, "Exit", exit);
 	toolBar->Realize();
 }
@@ -113,4 +119,8 @@ void VRexFrame::OnNBPageChanged(wxBookCtrlEvent& event) {
 	wxPostEvent(this->notebook->GetPage(page_id), page_refresh_event);
 
 	event.Skip();
+}
+
+void VRexFrame::HandleShowInteractions(wxCommandEvent& event) {
+	(new DockerInteractionsWindow(this))->Show(true);
 }

@@ -20,6 +20,7 @@ include_directories( src )
 # Setup the list of source files
 set( V-REX-WX_SOURCES
 	src/VRexFrame.cpp
+	src/DockerInteractionsWindow.cpp
 	src/VRexContext.cpp
 	src/vrex_util.cpp
 	src/DockerRequestThread.cpp
@@ -33,6 +34,7 @@ set( V-REX-WX_SOURCES
 	src/main.cpp
 	
 	src/VRexFrame.h
+	src/DockerInteractionsWindow.h
 	src/VRexContext.h
 	src/vrex_util.h
 	src/DockerRequestThread.h

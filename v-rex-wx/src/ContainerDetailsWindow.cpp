@@ -72,7 +72,8 @@ public:
 
 const wxEventTypeTag<wxCommandEvent> ContainerLogsRequestThread::DockerRequest(docker_result** res, void** clientData) {
 	char* log;
-	docker_container_logs(ctx->getDockerContext(), res, &log, container_name_or_id, 0, 1, 1, -1, -1, 1, 100);
+	docker_container_logs(ctx->getDockerContext(), res, &log, container_name_or_id, 0, 1, 1, -1, -1, 1, 0);
+	int len = strlen(log);
 	*clientData = log;
 	return DOCKER_LOGS_EVENT;
 }

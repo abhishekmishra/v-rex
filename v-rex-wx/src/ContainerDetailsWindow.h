@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 
 #include <wx/panel.h>
 #include <wx/grid.h>
