@@ -39,7 +39,7 @@ void DockerRequestThread::SendEventToParent(const wxEventTypeTag<wxCommandEvent>
 }
 
 void DockerRequestThread::HandleDockerResult(docker_result* res) {
-	char* report = ctx->handleDockerResult(res);
+	char* report = ctx->HandleDockerResult(res);
 	wxLogDebug("Docker request complete.\n");
 
 	if (report != NULL && res->http_error_code == 200) {

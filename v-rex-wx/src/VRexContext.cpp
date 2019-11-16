@@ -21,7 +21,7 @@ docker_info* VRexContext::getDockerInfo() {
 	docker_info* info;
 	docker_result* res;
 	docker_system_info(this->docker_ctx, &res, &info);
-	char* report = this->handleDockerResult(res);
+	char* report = this->HandleDockerResult(res);
 	if (report != NULL && res->http_error_code == 200) {
 		docker_log_debug(report);
 	}
@@ -39,7 +39,7 @@ vrex_err_t VRexContext::TryConnectLocal() {
 	d_err_t err = make_docker_context_default_local(&this->docker_ctx);
 	if (err == E_SUCCESS) {
 		docker_system_version(this->docker_ctx, &res, &this->version);
-		char* report = this->handleDockerResult(res);
+		char* report = this->HandleDockerResult(res);
 		if (report != NULL && res->http_error_code == 200) {
 			char* version_info = (char*)calloc(10240, sizeof(char));
 			if (version_info != NULL) {
@@ -64,7 +64,7 @@ vrex_err_t VRexContext::TryConnectURL(const char* url) {
 	d_err_t err = make_docker_context_url(&this->docker_ctx, url);
 	if (err == E_SUCCESS) {
 		docker_system_version(this->docker_ctx, &res, &this->version);
-		char* report = this->handleDockerResult(res);
+		char* report = this->HandleDockerResult(res);
 		if (report != NULL && res->http_error_code == 200) {
 			char* version_info = (char*)calloc(10240, sizeof(char));
 			if (version_info != NULL) {
@@ -82,7 +82,7 @@ vrex_err_t VRexContext::TryConnectURL(const char* url) {
 	return VREX_E_UNKNOWN;
 }
 
-char* VRexContext::handleDockerResult(docker_result* res) {
+char* VRexContext::HandleDockerResult(docker_result* res) {
 	wxCommandEvent event_to_parent(DOCKER_INTERACTION_RESULT_EVENT);
 	event_to_parent.SetClientData(res);
 	interactionsW->GetEventHandler()->AddPendingEvent(event_to_parent);

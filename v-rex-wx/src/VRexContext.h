@@ -15,7 +15,7 @@ public:
 	docker_context* getDockerContext();
 	docker_version* getDockerVersion();
 	docker_info* getDockerInfo();
-	char* handleDockerResult(docker_result* res);
+	char* HandleDockerResult(docker_result* res);
 	vrex_err_t TryConnectLocal();
 	vrex_err_t TryConnectURL(const char* url);
 	bool isConnected();

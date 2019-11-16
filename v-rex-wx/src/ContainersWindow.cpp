@@ -58,7 +58,7 @@ wxThread::ExitCode ListContainersThread::Entry()
 	//Lookup containers
 	docker_container_list(this->ctx->getDockerContext(), &res, &containers, all,
 		limit, 1, NULL);
-	char* report = this->ctx->handleDockerResult(res);
+	char* report = this->ctx->HandleDockerResult(res);
 	docker_log_debug("Read %d containers.\n",
 		docker_containers_list_length(containers));
 
