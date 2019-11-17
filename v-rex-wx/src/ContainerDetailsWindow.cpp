@@ -130,13 +130,128 @@ void ContainerLogsPanel::RefreshLogs() {
 	}
 }
 
+wxDEFINE_EVENT(DOCKER_STATS_EVENT, wxCommandEvent);
+
+class ContainerStatsRequestThread : public DockerRequestThread {
+private:
+	char* container_name_or_id;
+public:
+	ContainerStatsRequestThread(wxWindow* parent, VRexContext* ctx, char* container_name_or_id)
+		: DockerRequestThread(parent, ctx)
+	{
+		this->container_name_or_id = container_name_or_id;
+	}
+
+	virtual const wxEventTypeTag<wxCommandEvent> DockerRequest(docker_result** res, void** clientData);
+};
+
+const wxEventTypeTag<wxCommandEvent> ContainerStatsRequestThread::DockerRequest(docker_result** res, void** clientData) {
+	docker_container_stats* stats;
+	docker_container_get_stats(ctx->getDockerContext(), res, &stats, container_name_or_id);
+	*clientData = stats;
+	return DOCKER_STATS_EVENT;
+}
+
+#define VREX_CONTAINER_STATS_DEFAULT_COLUMN_WIDTH 60
 
 ContainerStatsPanel::ContainerStatsPanel(VRexContext* ctx, wxWindow* parent, char* container_name_or_id)
 	: wxPanel(parent) {
 	this->ctx = ctx;
 	this->container_name_or_id = container_name_or_id;
 
+	wxBoxSizer* main_sizer = new wxBoxSizer(wxHORIZONTAL);
+	Bind(DOCKER_STATS_EVENT, &ContainerStatsPanel::HandleStats, this, 0);
+
+	memStatsListGrid = new wxGrid(this,
+		-1,
+		wxDefaultPosition,
+		wxDefaultSize);
+	memStatsListGrid->CreateGrid(1, 4);
+	memStatsListGrid->SetDefaultCellOverflow(false);
+	memStatsListGrid->SetRowSize(0, 20);
+	int grid_col_count = 0;
+	memStatsListGrid->SetColSize(grid_col_count++, VREX_CONTAINER_STATS_DEFAULT_COLUMN_WIDTH);
+	memStatsListGrid->SetColSize(grid_col_count++, VREX_CONTAINER_STATS_DEFAULT_COLUMN_WIDTH);
+	memStatsListGrid->SetColSize(grid_col_count++, VREX_CONTAINER_STATS_DEFAULT_COLUMN_WIDTH);
+	memStatsListGrid->SetColSize(grid_col_count++, VREX_CONTAINER_STATS_DEFAULT_COLUMN_WIDTH);
+
+	grid_col_count = 0;
+	memStatsListGrid->SetColLabelValue(grid_col_count++, "Max Usage");
+	memStatsListGrid->SetColLabelValue(grid_col_count++, "Usage");
+	memStatsListGrid->SetColLabelValue(grid_col_count++, "Fail Count");
+	memStatsListGrid->SetColLabelValue(grid_col_count++, "Limit");
+	memStatsListGrid->HideRowLabels();
+
+	memStatsListGrid->SetGridLineColour(VREX_WHITESMOKE);
+	memStatsListGrid->SetSelectionMode(wxGrid::wxGridSelectionModes::wxGridSelectRows);
+	memStatsListGrid->EnableEditing(false);
+
+	cpuStatsListGrid = new wxGrid(this,
+		-1,
+		wxDefaultPosition,
+		wxDefaultSize);
+	cpuStatsListGrid->CreateGrid(1, 4);
+	cpuStatsListGrid->SetDefaultCellOverflow(false);
+	cpuStatsListGrid->SetRowSize(0, 20);
+	grid_col_count = 0;
+	cpuStatsListGrid->SetColSize(grid_col_count++, VREX_CONTAINER_STATS_DEFAULT_COLUMN_WIDTH);
+	cpuStatsListGrid->SetColSize(grid_col_count++, VREX_CONTAINER_STATS_DEFAULT_COLUMN_WIDTH);
+	cpuStatsListGrid->SetColSize(grid_col_count++, VREX_CONTAINER_STATS_DEFAULT_COLUMN_WIDTH);
+	cpuStatsListGrid->SetColSize(grid_col_count++, VREX_CONTAINER_STATS_DEFAULT_COLUMN_WIDTH);
+
+	grid_col_count = 0;
+	cpuStatsListGrid->SetColLabelValue(grid_col_count++, "Total Usage");
+	cpuStatsListGrid->SetColLabelValue(grid_col_count++, "Usage In UserMode");
+	cpuStatsListGrid->SetColLabelValue(grid_col_count++, "Usage in KernelMode");
+	cpuStatsListGrid->SetColLabelValue(grid_col_count++, "System CPU Usage");
+	cpuStatsListGrid->HideRowLabels();
+
+	cpuStatsListGrid->SetGridLineColour(VREX_WHITESMOKE);
+	cpuStatsListGrid->SetSelectionMode(wxGrid::wxGridSelectionModes::wxGridSelectRows);
+	cpuStatsListGrid->EnableEditing(false);
+
+	main_sizer->Add(memStatsListGrid);
+	main_sizer->Add(cpuStatsListGrid);
+	memStatsListGrid->AutoSize();
+	cpuStatsListGrid->AutoSize();
+
+	RefreshStats();
+
+	SetSizerAndFit(main_sizer);
+	SetAutoLayout(true);
 }
+
+void ContainerStatsPanel::HandleStats(wxCommandEvent& event) {
+	docker_container_stats* stats = (docker_container_stats*)event.GetClientData();
+	//if (logs != NULL) {
+	//	logs_text->AppendText(logs);
+	//	//free(logs);
+	//}
+}
+
+void ContainerStatsPanel::RefreshStats() {
+	if (this->ctx->isConnected()) {
+		// create the thread
+		ContainerLogsRequestThread* t = new ContainerLogsRequestThread(this, this->ctx, container_name_or_id);
+		wxThreadError err = t->Create();
+
+		if (err != wxTHREAD_NO_ERROR)
+		{
+			wxMessageBox(_("Couldn't create thread!"));
+		}
+
+		err = t->Run();
+
+		if (err != wxTHREAD_NO_ERROR)
+		{
+			wxMessageBox(_("Couldn't run thread!"));
+		}
+	}
+	else {
+		//TODO: show error here - send to frame's status bar
+	}
+}
+
 
 ContainerPSPanel::ContainerPSPanel(VRexContext* ctx, wxWindow* parent, char* container_name_or_id)
 	: wxPanel(parent) {

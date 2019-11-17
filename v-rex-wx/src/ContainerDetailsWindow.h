@@ -55,8 +55,13 @@ public:
 	ContainerStatsPanel(VRexContext* ctx, wxWindow* parent, char* container_name_or_id);
 
 private:
+	void HandleStats(wxCommandEvent& event);
+	void RefreshStats();
+
 	VRexContext* ctx;
 	char* container_name_or_id;
+	wxGrid* memStatsListGrid;
+	wxGrid* cpuStatsListGrid;
 };
 
 class ContainerPSPanel : public wxPanel {
