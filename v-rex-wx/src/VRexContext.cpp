@@ -4,8 +4,11 @@
 #include <vrex_util.h>
 
 VRexContext::VRexContext() {
-	this->connected = false;
-	this->docker_ctx = NULL;
+	interactionsW = NULL;
+	toplevel = NULL;
+	version = NULL;
+	connected = false;
+	docker_ctx = NULL;
 	arraylist_new(&this->results, (void (*)(void*)) & free_docker_result);
 }
 
@@ -25,9 +28,6 @@ docker_info* VRexContext::getDockerInfo() {
 	if (report != NULL && res->http_error_code == 200) {
 		docker_log_debug(report);
 	}
-	//if (res != NULL) {
-	//	free_docker_result(&res);
-	//}
 	return info;
 }
 
@@ -47,13 +47,11 @@ vrex_err_t VRexContext::TryConnectLocal() {
 					this->docker_ctx->socket == NULL ?
 					this->docker_ctx->url : this->docker_ctx->socket, this->version->os);
 			}
-			//free_docker_result(&res);
 			this->connected = true;
 			return VREX_SUCCESS;
 		}
 	}
 
-	//free_docker_result(&res);
 	return VREX_E_UNKNOWN;
 }
 
@@ -72,13 +70,11 @@ vrex_err_t VRexContext::TryConnectURL(const char* url) {
 					this->docker_ctx->socket == NULL ?
 					this->docker_ctx->url : this->docker_ctx->socket, this->version->os);
 			}
-			//free_docker_result(&res);
 			this->connected = true;
 			return VREX_SUCCESS;
 		}
 	}
 
-	//free_docker_result(&res);
 	return VREX_E_UNKNOWN;
 }
 
