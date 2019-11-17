@@ -9,7 +9,9 @@ wxDEFINE_EVENT(DOCKER_INTERACTION_RESULT_EVENT, wxCommandEvent);
 //TODO: may need pretty print of json response string.
 DockerInteractionsWindow::DockerInteractionsWindow(wxWindow* parent)
 	: wxFrame(parent, -1, "Docker Interactions Window") {
-	SetBackgroundColour(*(new wxColour(VREX_WHITESMOKE)));
+	//TODO: removed background colour for now but need to figure out 
+	//why the window has grey background in win 10
+	//SetBackgroundColour(*(new wxColour(VREX_WHITESMOKE)));
 	arraylist_new(&resList, NULL);
 	limit = 10;
 
