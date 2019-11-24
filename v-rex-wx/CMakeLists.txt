@@ -49,7 +49,7 @@ set( V-REX-WX_SOURCES
 
 message (${CMAKE_HOST_SYSTEM_NAME})
 
-if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
 	message(STATUS ">>> Linux/Darwin, using pkg-config since vcpkg build is broken")
 	find_package(PkgConfig REQUIRED)
 	pkg_check_modules(json-c REQUIRED IMPORTED_TARGET json-c)
@@ -62,7 +62,7 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 11)
 
 set(CMAKE_FIND_USE_PACKAGE_REGISTRY ON)
 
-if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
 	target_link_libraries(${PROJECT_NAME} PUBLIC json-c)
 	target_link_libraries(${PROJECT_NAME} PUBLIC curl)
 	target_link_libraries(${PROJECT_NAME} PUBLIC archive)
@@ -83,11 +83,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC clibdocker::clibdocker)
 if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
 	set (wxWidgets_ROOT_DIR "D:\\wxWidgets-3.1.3")
 	set (wxWidgets_LIB_DIR "D:\\wxWidgets-3.1.3\\lib\\vc_x64_lib")
-endif()
-
-if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
-	#set (wxWidgets_CONFIG_EXECUTABLE "/usr/local/Cellar/wxmac/3.0.4_2/bin/wx-config")
-	set(wxWidgets_CONFIG_OPTIONS --prefix="/usr/local/Cellar/wxmac/3.0.4_2/")
 endif()
 
 # richtext, html and xml are required for RichText widget
