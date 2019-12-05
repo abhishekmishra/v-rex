@@ -1,5 +1,5 @@
 #include "VRexContext.h"
-
+#include <docker_all.h>
 #include <docker_log.h>
 #include <vrex_util.h>
 
@@ -44,7 +44,7 @@ vrex_err_t VRexContext::TryConnectLocal() {
 			char* version_info = (char*)calloc(10240, sizeof(char));
 			if (version_info != NULL) {
 				sprintf(version_info, "Docker: %s [%s]",
-					this->docker_ctx->url, this->version->os);
+					this->docker_ctx->url, docker_version_os_get(this->version));
 			}
 			this->connected = true;
 			return VREX_SUCCESS;
@@ -66,7 +66,7 @@ vrex_err_t VRexContext::TryConnectURL(const char* url) {
 			char* version_info = (char*)calloc(10240, sizeof(char));
 			if (version_info != NULL) {
 				sprintf(version_info, "Docker: %s [%s]",
-					this->docker_ctx->url, this->version->os);
+					this->docker_ctx->url, docker_version_os_get(this->version));
 			}
 			this->connected = true;
 			return VREX_SUCCESS;

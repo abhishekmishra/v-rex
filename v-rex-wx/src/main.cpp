@@ -73,7 +73,8 @@ bool VRexApp::OnInit()
 		char* version_info = (char*)calloc(1024, sizeof(char));
 		if (version_info != NULL) {
 			sprintf(version_info, "Docker v%s on %s [%s] @ %s",
-				version->version, version->os, version->arch, ctx->getDockerContext()->url);
+				docker_version_version_get(version), docker_version_os_get(version), 
+				docker_version_arch_get(version), ctx->getDockerContext()->url);
 			frame->SetStatusText(version_info, 2);
 		}
 

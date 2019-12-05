@@ -37,8 +37,8 @@ public:
 
 wxThread::ExitCode ListVolumesThread::Entry()
 {
-	arraylist* volumes;
-	arraylist* warnings;
+	docker_volume_list* volumes;
+	docker_volume_warnings* warnings;
 	docker_result* res;
 
 	//Lookup volumes
@@ -58,7 +58,7 @@ wxThread::ExitCode ListVolumesThread::Entry()
 	list_volumes_event.SetClientData(volumes);
 	m_parent->GetEventHandler()->AddPendingEvent(list_volumes_event);
 
-	arraylist_free(warnings);
+	free_docker_warnings(warnings);
 	return 0;
 }
 
@@ -112,7 +112,7 @@ void VolumesWindow::HandleDockerConnect(wxCommandEvent& event) {
 }
 
 void VolumesWindow::HandleListVolumes(wxCommandEvent& event) {
-	arraylist* volumes = (arraylist*)event.GetClientData();
+	docker_volume_list* volumes = (docker_volume_list*)event.GetClientData();
 	UpdateVolumes(volumes);
 }
 
@@ -139,35 +139,35 @@ void VolumesWindow::RefreshVolumes() {
 	}
 }
 
-void VolumesWindow::UpdateVolumes(arraylist* volumes) {
+void VolumesWindow::UpdateVolumes(docker_volume_list* volumes) {
 	//Empty the grid by removing all current rows
 	volumeListGrid->DeleteRows(0, volumeListGrid->GetNumberRows());
 
 	//Add enough rows in the volume grid
-	volumeListGrid->InsertRows(0, arraylist_length(volumes));
+	volumeListGrid->InsertRows(0, docker_volume_list_length(volumes));
 
 	int col_num = 0, row_num = 0;
-	int len_volumes = arraylist_length(volumes);
+	int len_volumes = docker_volume_list_length(volumes);
 	for (int i = 0; i < len_volumes; i++) {
-		docker_volume* vol = (docker_volume*)arraylist_get(volumes, i);
+		docker_volume* vol = (docker_volume*)docker_volume_list_get_idx(volumes, i);
 		col_num = 0;
 
-		volumeListGrid->SetCellValue(row_num, col_num, vol->name);
+		volumeListGrid->SetCellValue(row_num, col_num, docker_volume_name_get(vol));
 		col_num += 1;
 
-		volumeListGrid->SetCellValue(row_num, col_num, vol->driver);
+		volumeListGrid->SetCellValue(row_num, col_num, docker_volume_driver_get(vol));
 		col_num += 1;
 
-		volumeListGrid->SetCellValue(row_num, col_num, vol->scope);
+		volumeListGrid->SetCellValue(row_num, col_num, docker_volume_go_scope_get(vol));
 		col_num += 1;
 
-		volumeListGrid->SetCellValue(row_num, col_num, vol->mountpoint);
+		volumeListGrid->SetCellValue(row_num, col_num, docker_volume_mountpoint_vol_get(vol));
 		col_num += 1;
 
 		row_num += 1;
 	}
 
-	arraylist_free(volumes);
+	free_docker_volume_list(volumes);
 
 	volumeListGrid->AutoSize();
 	Layout();

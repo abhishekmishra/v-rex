@@ -37,7 +37,7 @@ public:
 
 wxThread::ExitCode ListNetworksThread::Entry()
 {
-	arraylist* networks;
+	docker_network_list* networks;
 	docker_result* res;
 
 	//Lookup networks
@@ -110,7 +110,7 @@ void NetworksWindow::HandleDockerConnect(wxCommandEvent& event) {
 }
 
 void NetworksWindow::HandleListNetworks(wxCommandEvent& event) {
-	arraylist* networks = (arraylist*)event.GetClientData();
+	docker_network_list* networks = (docker_network_list*)event.GetClientData();
 	UpdateNetworks(networks);
 }
 
@@ -137,35 +137,35 @@ void NetworksWindow::RefreshNetworks() {
 	}
 }
 
-void NetworksWindow::UpdateNetworks(arraylist* networks) {
+void NetworksWindow::UpdateNetworks(docker_network_list* networks) {
 	//Empty the grid by removing all current rows
 	networkListGrid->DeleteRows(0, networkListGrid->GetNumberRows());
 
 	//Add enough rows in the network grid
-	networkListGrid->InsertRows(0, arraylist_length(networks));
+	networkListGrid->InsertRows(0, docker_network_list_length(networks));
 
 	int col_num = 0, row_num = 0;
-	int len_networks = arraylist_length(networks);
+	int len_networks = docker_network_list_length(networks);
 	for (int i = 0; i < len_networks; i++) {
-		docker_network* net = (docker_network*)arraylist_get(networks, i);
+		docker_network* net = (docker_network*)docker_network_list_get_idx(networks, i);
 		col_num = 0;
 
-		networkListGrid->SetCellValue(row_num, col_num, net->name);
+		networkListGrid->SetCellValue(row_num, col_num, docker_network_name_get(net));
 		col_num += 1;
 
-		networkListGrid->SetCellValue(row_num, col_num, net->driver);
+		networkListGrid->SetCellValue(row_num, col_num, docker_network_driver_get(net));
 		col_num += 1;
 
-		networkListGrid->SetCellValue(row_num, col_num, net->scope);
+		networkListGrid->SetCellValue(row_num, col_num, docker_network_scope_get(net));
 		col_num += 1;
 
-		networkListGrid->SetCellValue(row_num, col_num, wxString::Format(wxT("%d"), net->attachable));
+		networkListGrid->SetCellValue(row_num, col_num, wxString::Format(wxT("%d"), docker_network_attachable_get(net)));
 		col_num += 1;
 
 		row_num += 1;
 	}
 
-	arraylist_free(networks);
+	free_docker_network_list(networks);
 
 	networkListGrid->AutoSize();
 	Layout();

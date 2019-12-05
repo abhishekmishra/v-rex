@@ -19,5 +19,5 @@ private:
 	void HandleListNetworks(wxCommandEvent& event);
 	void HandlePageRefresh(wxCommandEvent& event);
 	void RefreshNetworks();
-	void UpdateNetworks(arraylist* networks);
+	void UpdateNetworks(docker_network_list* networks);
 };

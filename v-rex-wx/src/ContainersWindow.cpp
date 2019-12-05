@@ -52,7 +52,7 @@ wxThread::ExitCode ListContainersThread::Entry()
 {
 	int all = m_parent->isShowRunningEnabled() == true ? 0 : 1;
 	long limit = 0;
-	docker_containers_list* containers;
+	docker_ctr_list* containers;
 	docker_result* res;
 
 	//Lookup containers
@@ -60,7 +60,7 @@ wxThread::ExitCode ListContainersThread::Entry()
 		limit, 1, NULL);
 	char* report = this->ctx->HandleDockerResult(res);
 	docker_log_debug("Read %d containers.\n",
-		docker_containers_list_length(containers));
+		docker_ctr_list_length(containers));
 
 	if (report != NULL && res->http_error_code == 200) {
 		docker_log_debug(report);
@@ -212,7 +212,7 @@ void ContainersWindow::HandleDockerConnect(wxCommandEvent& event) {
 }
 
 void ContainersWindow::HandleListContainers(wxCommandEvent& event) {
-	docker_containers_list* containers = (docker_containers_list*)event.GetClientData();
+	docker_ctr_list* containers = (docker_ctr_list*)event.GetClientData();
 	UpdateContainers(containers);
 }
 
@@ -239,64 +239,64 @@ void ContainersWindow::RefreshContainers() {
 	}
 }
 
-void ContainersWindow::UpdateContainers(docker_containers_list* containers) {
+void ContainersWindow::UpdateContainers(docker_ctr_list* containers) {
 	//Empty the grid by removing all current rows
 	containerListGrid->DeleteRows(0, containerListGrid->GetNumberRows());
 
 	//Add enough rows in the container grid
-	containerListGrid->InsertRows(0, docker_containers_list_length(containers));
+	containerListGrid->InsertRows(0, docker_ctr_list_length(containers));
 
 	int col_num = 0;
 	int row_num = 0;
 	char* first_id;
-	for (int i = 0; i < docker_containers_list_length(containers); i++) {
+	for (int i = 0; i < docker_ctr_list_length(containers); i++) {
 		col_num = 0;
-		docker_container_list_item* item = docker_containers_list_get_idx(
+		docker_ctr_ls_item* item = docker_ctr_list_get_idx(
 			containers, i);
 
-		containerListGrid->SetCellValue(row_num, col_num, item->state);
-		if (strcmp(item->state, "running") == 0) {
+		containerListGrid->SetCellValue(row_num, col_num, docker_ctr_ls_item_state_get(item));
+		if (strcmp(docker_ctr_ls_item_state_get(item), "running") == 0) {
 			containerListGrid->SetCellBackgroundColour(row_num, col_num, wxTheColourDatabase->Find(VREX_LIGHTGREEN));
 		}
-		if (strcmp(item->state, "created") == 0) {
+		if (strcmp(docker_ctr_ls_item_state_get(item), "created") == 0) {
 			containerListGrid->SetCellBackgroundColour(row_num, col_num, wxTheColourDatabase->Find(VREX_ALICEBLUE));
 		}
-		if (strcmp(item->state, "exited") == 0) {
+		if (strcmp(docker_ctr_ls_item_state_get(item), "exited") == 0) {
 			containerListGrid->SetCellBackgroundColour(row_num, col_num, wxTheColourDatabase->Find(VREX_PAPAYAWHIP));
 		}
-		if (strcmp(item->state, "paused") == 0) {
+		if (strcmp(docker_ctr_ls_item_state_get(item), "paused") == 0) {
 			containerListGrid->SetCellBackgroundColour(row_num, col_num, wxTheColourDatabase->Find(VREX_BEIGE));
 		}
 		col_num += 1;
 
-		char* name = (char*)arraylist_get(item->names, 0);
+		char* name = (char*)docker_ctr_ls_item_names_get_idx(item, 0);
 		containerListGrid->SetCellValue(row_num, col_num, name + 1);
 		col_num += 1;
 
 		if (i == 0) {
-			first_id = (item->id);
+			first_id = (docker_ctr_ls_item_id_get(item));
 		}
 
-		containerListGrid->SetCellValue(row_num, col_num, item->image);
+		containerListGrid->SetCellValue(row_num, col_num, docker_ctr_ls_item_image_get(item));
 		col_num += 1;
 
-		containerListGrid->SetCellValue(row_num, col_num, item->command);
+		containerListGrid->SetCellValue(row_num, col_num, docker_ctr_ls_item_command_get(item));
 		col_num += 1;
 
 		//TODO: list all port pairs instead of only the first port
 		//TODO: check if intermediate strings can be freed immediately
-		if (arraylist_length(item->ports) > 0) {
-			docker_container_ports* first_port = (docker_container_ports*)
-				arraylist_get(item->ports, 0);
+		if (docker_ctr_ls_item_ports_length(item) > 0) {
+			docker_ctr_port* first_port = (docker_ctr_port*)
+				docker_ctr_ls_item_ports_get_idx(item, 0);
 			if (first_port
-				&& first_port->public_port > 0
-				&& first_port->private_port
+				&& docker_ctr_port_public_port_get(item) > 0
+				&& docker_ctr_port_private_port_get(item)
 							> 0) {
 				char* ports_str = (char*)calloc(128, sizeof(char));
 				if (ports_str != NULL) {
 					sprintf(ports_str, "%ld:%ld",
-						first_port->public_port,
-						first_port->private_port);
+						docker_ctr_port_public_port_get(item),
+						docker_ctr_port_private_port_get(item));
 
 					containerListGrid->SetCellValue(row_num, col_num, ports_str);
 				}
@@ -307,9 +307,9 @@ void ContainersWindow::UpdateContainers(docker_containers_list* containers) {
 		//TODO: size should be based on the size of state and status
 		char* status = (char*)calloc(1024, sizeof(char));
 		if (status != NULL) {
-			strcpy(status, item->state);
+			strcpy(status, docker_ctr_ls_item_state_get(item));
 			strcat(status, ":");
-			strcat(status, item->status);
+			strcat(status, docker_ctr_ls_item_status_get(item));
 
 			containerListGrid->SetCellValue(row_num, col_num, status);
 		}
@@ -317,7 +317,7 @@ void ContainersWindow::UpdateContainers(docker_containers_list* containers) {
 		row_num += 1;
 	}
 
-	arraylist_free(containers);
+	free_docker_ctr_list(containers);
 
 	//containerListGrid->AutoSize();
 	containerListGrid->AutoSizeColumn(0);

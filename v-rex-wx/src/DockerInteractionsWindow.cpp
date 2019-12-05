@@ -104,7 +104,7 @@ void DockerInteractionsWindow::HandleDockerResultEvent(wxCommandEvent& event) {
 		}
 		arraylist_delete(resList, len - 1);
 		len = arraylist_length(resList);
-		free_docker_result(&dropped_res);
+		free_docker_result(dropped_res);
 		interactionsList->Delete(0);
 	}
 	if (res != NULL && res->url != NULL) {

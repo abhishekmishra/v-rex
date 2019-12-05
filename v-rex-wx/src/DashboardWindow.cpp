@@ -1,3 +1,4 @@
+#include "docker_all.h"
 #include <wx/commandlinkbutton.h>
 #include "DashboardWindow.h"
 
@@ -73,16 +74,16 @@ void DashboardWindow::HandleDockerConnect(wxCommandEvent& event) {
 	wxString containersNote;
 	containersNote.Printf(
 		wxT("Total:%lu Running:%lu Paused:%lu Stopped:%lu"),
-		info->containers,
-		info->containers_running,
-		info->containers_paused,
-		info->containers_stopped);
+		docker_info_containers_get(info),
+		docker_info_containers_running_get(info),
+		docker_info_containers_paused_get(info),
+		docker_info_containers_stopped_get(info));
 	containersBtn->SetNote(containersNote);
 
 	wxString imagesNote;
 	imagesNote.Printf(
 		wxT("Total:%lu"),
-		info->images);
+		docker_info_images_get(info));
 	imagesBtn->SetNote(imagesNote);
 
 	Fit();

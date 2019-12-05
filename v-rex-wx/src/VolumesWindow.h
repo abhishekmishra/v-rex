@@ -19,5 +19,5 @@ private:
 	void HandleListVolumes(wxCommandEvent& event);
 	void HandlePageRefresh(wxCommandEvent& event);
 	void RefreshVolumes();
-	void UpdateVolumes(arraylist* volumes);
+	void UpdateVolumes(docker_volume_list* volumes);
 };

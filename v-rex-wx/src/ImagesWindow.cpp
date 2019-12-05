@@ -37,7 +37,7 @@ public:
 
 wxThread::ExitCode ListImagesThread::Entry()
 {
-	arraylist* images;
+	docker_image_list* images;
 	docker_result* res;
 
 	//Lookup images
@@ -138,11 +138,11 @@ void ImagesWindow::RefreshImages() {
 
 char* get_image_tags_concat(docker_image* img) {
 	char* tags = NULL;
-	if (img->repo_tags) {
-		int len_tags = arraylist_length(img->repo_tags);
+	if (docker_image_repo_tags_get(img)) {
+		int len_tags = docker_image_repo_tags_length(img);
 		int tag_strlen = 0;
 		for (int i = 0; i < len_tags; i++) {
-			tag_strlen += strlen((char*)arraylist_get(img->repo_tags, i));
+			tag_strlen += strlen((char*)docker_image_repo_tags_get_idx(img, i));
 			tag_strlen += 1; //for newline
 		}
 		tag_strlen += 1; //for null terminator
@@ -150,7 +150,7 @@ char* get_image_tags_concat(docker_image* img) {
 		if (tags != NULL) {
 			tags[0] = '\0';
 			for (int i = 0; i < len_tags; i++) {
-				strcat(tags, (char*)arraylist_get(img->repo_tags, i));
+				strcat(tags, (char*)docker_image_repo_tags_get_idx(img, i));
 				if (i != (len_tags - 1)) {
 					strcat(tags, "\n");
 				}
@@ -178,11 +178,11 @@ void ImagesWindow::UpdateImages(arraylist* images) {
 		imageListGrid->SetCellValue(row_num, col_num, tags);
 		col_num += 1;
 
-		char* size = calculate_size(img->size);
+		char* size = calculate_size(docker_image_size_get(img));
 		imageListGrid->SetCellValue(row_num, col_num, size);
 		col_num += 1;
 
-		char* virtual_size = calculate_size(img->virtual_size);
+		char* virtual_size = calculate_size(docker_image_virtual_size_get(img));
 		imageListGrid->SetCellValue(row_num, col_num, virtual_size);
 		col_num += 1;
 
