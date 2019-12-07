@@ -32,7 +32,7 @@ set( V-REX-WX_SOURCES
 	src/ContainerDialog.cpp
 	src/ContainerDetailsWindow.cpp
 	src/main.cpp
-	
+
 	src/VRexFrame.h
 	src/DockerInteractionsWindow.h
 	src/VRexContext.h
@@ -49,30 +49,30 @@ set( V-REX-WX_SOURCES
 
 message (${CMAKE_HOST_SYSTEM_NAME})
 
-if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
-	message(STATUS ">>> Linux/Darwin, using pkg-config since vcpkg build is broken")
-	find_package(PkgConfig REQUIRED)
-	pkg_check_modules(json-c REQUIRED IMPORTED_TARGET json-c)
-	pkg_check_modules(curl REQUIRED IMPORTED_TARGET libcurl)
-	pkg_check_modules(archive REQUIRED IMPORTED_TARGET libarchive)
-endif()
+#if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+#	message(STATUS ">>> Linux/Darwin, using pkg-config since vcpkg build is broken")
+#	find_package(PkgConfig REQUIRED)
+#	pkg_check_modules(json-c REQUIRED IMPORTED_TARGET json-c)
+#	pkg_check_modules(curl REQUIRED IMPORTED_TARGET libcurl)
+#	pkg_check_modules(archive REQUIRED IMPORTED_TARGET libarchive)
+#endif()
 
 add_executable( ${PROJECT_NAME} WIN32 ${V-REX-WX_SOURCES} )
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 11)
 
 set(CMAKE_FIND_USE_PACKAGE_REGISTRY ON)
 
-if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
-	target_link_libraries(${PROJECT_NAME} PUBLIC json-c)
-	target_link_libraries(${PROJECT_NAME} PUBLIC curl)
-	target_link_libraries(${PROJECT_NAME} PUBLIC archive)
-else()
-	find_package(json-c CONFIG REQUIRED)
-	target_link_libraries(${PROJECT_NAME} PUBLIC json-c::json-c)
+#if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+#	target_link_libraries(${PROJECT_NAME} PUBLIC json-c)
+#	target_link_libraries(${PROJECT_NAME} PUBLIC curl)
+#	target_link_libraries(${PROJECT_NAME} PUBLIC archive)
+#else()
+find_package(json-c CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PUBLIC json-c::json-c)
 
-	find_package(CURL CONFIG REQUIRED)
-	target_link_libraries(${PROJECT_NAME} PUBLIC CURL::libcurl)
-endif()
+find_package(CURL CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PUBLIC CURL::libcurl)
+#endif()
 
 find_package(coll CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PUBLIC coll::coll)
