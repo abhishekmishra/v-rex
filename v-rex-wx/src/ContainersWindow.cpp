@@ -53,21 +53,12 @@ wxThread::ExitCode ListContainersThread::Entry()
 	int all = m_parent->isShowRunningEnabled() == true ? 0 : 1;
 	long limit = 0;
 	docker_ctr_list* containers;
-	docker_result* res;
 
 	//Lookup containers
-	docker_container_list(this->ctx->getDockerContext(), &res, &containers, all,
+	d_err_t err = docker_container_list(this->ctx->getDockerContext(), &containers, all,
 		limit, 1, NULL);
-	char* report = this->ctx->HandleDockerResult(res);
 	docker_log_debug("Read %d containers.\n",
 		docker_ctr_list_length(containers));
-
-	if (report != NULL && res->http_error_code == 200) {
-		docker_log_debug(report);
-	}
-	//if (res != NULL) {
-	//	free_docker_result(&res);
-	//}
 
 	// notify the main thread
 	wxCommandEvent list_containers_event(LIST_CONTAINERS_EVENT);

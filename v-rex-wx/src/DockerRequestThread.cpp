@@ -26,7 +26,7 @@ wxThread::ExitCode DockerRequestThread::Entry()
 }
 
 const wxEventTypeTag<wxCommandEvent> DockerRequestThread::DockerRequest(docker_result** res, void** clientData) {
-	docker_ping(this->ctx->getDockerContext(), res);
+	d_err_t err = docker_ping(this->ctx->getDockerContext());
 	wxString* resp = new wxString("Ping complete.");
 	*clientData = resp;
 	return DOCKER_PING_EVENT;
