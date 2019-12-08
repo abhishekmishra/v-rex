@@ -38,19 +38,9 @@ public:
 wxThread::ExitCode ListNetworksThread::Entry()
 {
 	docker_network_list* networks;
-	docker_result* res;
 
 	//Lookup networks
-	docker_networks_list(this->ctx->getDockerContext(), &res, &networks, NULL, NULL, NULL, NULL, NULL, NULL);
-	char* report = this->ctx->HandleDockerResult(res);
-
-	if (report != NULL && res->http_error_code == 200) {
-		docker_log_debug(report);
-		free(report);
-	}
-	//if (res != NULL) {
-	//	free_docker_result(&res);
-	//}
+	docker_networks_list(this->ctx->getDockerContext(), &networks, NULL, NULL, NULL, NULL, NULL, NULL);
 
 	// notify the main thread
 	wxCommandEvent list_networks_event(LIST_NETWORKS_EVENT);

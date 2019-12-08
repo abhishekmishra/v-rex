@@ -21,10 +21,9 @@ public:
 		m_parent = parent;
 		this->ctx = ctx;
 	}
-	virtual const wxEventTypeTag<wxCommandEvent> DockerRequest(docker_result** res, void** clientData);
+	virtual const wxEventTypeTag<wxCommandEvent> DockerRequest(void** clientData);
 	virtual ExitCode Entry();
 
 private:
 	void SendEventToParent(const wxEventTypeTag<wxCommandEvent> eventType, void* clientData);
-	void HandleDockerResult(docker_result* res);
 };

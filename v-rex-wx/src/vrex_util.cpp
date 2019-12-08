@@ -16,10 +16,9 @@
 #include "vrex_util.h"
 #include <arraylist.h>
 
-#include <docker_connection_util.h>
+#include <docker_all.h>
 #include <docker_system.h>
 #include <docker_log.h>
-
 
 vrex_err_t init_results_list(vrex_context* vrex) {
 	if (vrex != NULL) {

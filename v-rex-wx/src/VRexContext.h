@@ -15,12 +15,13 @@ public:
 	docker_context* getDockerContext();
 	docker_version* getDockerVersion();
 	docker_info* getDockerInfo();
-	char* HandleDockerResult(docker_result* res);
+	void HandleDockerResult(docker_result* res);
 	vrex_err_t TryConnectLocal();
 	vrex_err_t TryConnectURL(const char* url);
 	bool isConnected();
 	void RegisterTopLevelWindow(wxWindow* toplevel);
 	void RegisterInteractionsWindow(wxWindow* interactionsW);
+	wxWindow* getInteractionsWindow();
 
 private:
 	docker_context* docker_ctx;
@@ -31,3 +32,4 @@ private:
 	wxWindow* interactionsW;
 };
 
+void handleDockerResult(docker_context* docker_ctx, docker_result* res);

@@ -386,29 +386,28 @@ d_err_t ContainersWindow::RunContainerCommand(const char* container_name_or_id, 
 	if (container_name_or_id != NULL) {
 		char* ctr_name_id = str_clone(container_name_or_id);
 		if (ctr_name_id != NULL) {
-			docker_result* res;
 			switch (command) {
 			case VREX_CONTAINERS_TOOL_START:
-				error = docker_start_container(ctx->getDockerContext(), &res, ctr_name_id, NULL);
+				error = docker_start_container(ctx->getDockerContext(), ctr_name_id, NULL);
 				break;
 			case VREX_CONTAINERS_TOOL_STOP:
-				error = docker_stop_container(ctx->getDockerContext(), &res, ctr_name_id, NULL);
+				error = docker_stop_container(ctx->getDockerContext(), ctr_name_id, NULL);
 				break;
 			case VREX_CONTAINERS_TOOL_KILL:
-				error = docker_kill_container(ctx->getDockerContext(), &res, ctr_name_id, NULL);
+				error = docker_kill_container(ctx->getDockerContext(), ctr_name_id, NULL);
 				break;
 			case VREX_CONTAINERS_TOOL_RESTART:
-				error = docker_restart_container(ctx->getDockerContext(), &res, ctr_name_id, NULL);
+				error = docker_restart_container(ctx->getDockerContext(), ctr_name_id, NULL);
 				break;
 			case VREX_CONTAINERS_TOOL_PAUSE:
-				error = docker_pause_container(ctx->getDockerContext(), &res, ctr_name_id);
+				error = docker_pause_container(ctx->getDockerContext(), ctr_name_id);
 				break;
 			case VREX_CONTAINERS_TOOL_RESUME:
-				error = docker_unpause_container(ctx->getDockerContext(), &res, ctr_name_id);
+				error = docker_unpause_container(ctx->getDockerContext(), ctr_name_id);
 				break;
 			case VREX_CONTAINERS_TOOL_REMOVE:
 				//TODO remove container might require a dialog
-				error = docker_remove_container(ctx->getDockerContext(), &res, ctr_name_id, 0, 0, 0);
+				error = docker_remove_container(ctx->getDockerContext(), ctr_name_id, 0, 0, 0);
 				break;
 			default:
 				break;

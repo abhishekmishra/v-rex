@@ -38,20 +38,10 @@ public:
 wxThread::ExitCode ListImagesThread::Entry()
 {
 	docker_image_list* images;
-	docker_result* res;
 
 	//Lookup images
-	docker_images_list(this->ctx->getDockerContext(), &res, &images, 0, 1, NULL, 0, NULL, NULL,
+	docker_images_list(this->ctx->getDockerContext(), &images, 0, 1, NULL, 0, NULL, NULL,
 		NULL);
-	char* report = this->ctx->HandleDockerResult(res);
-
-	if (report != NULL && res->http_error_code == 200) {
-		docker_log_debug(report);
-		free(report);
-	}
-	//if (res != NULL) {
-	//	free_docker_result(&res);
-	//}
 
 	// notify the main thread
 	wxCommandEvent list_images_event(LIST_IMAGES_EVENT);

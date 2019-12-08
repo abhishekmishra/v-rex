@@ -67,12 +67,12 @@ public:
 		this->container_name_or_id = container_name_or_id;
 	}
 
-	virtual const wxEventTypeTag<wxCommandEvent> DockerRequest(docker_result** res, void** clientData);
+	virtual const wxEventTypeTag<wxCommandEvent> DockerRequest(void** clientData);
 };
 
-const wxEventTypeTag<wxCommandEvent> ContainerLogsRequestThread::DockerRequest(docker_result** res, void** clientData) {
+const wxEventTypeTag<wxCommandEvent> ContainerLogsRequestThread::DockerRequest(void** clientData) {
 	char* log;
-	docker_container_logs(ctx->getDockerContext(), res, &log, container_name_or_id, 0, 1, 1, -1, -1, 1, 0);
+	docker_container_logs(ctx->getDockerContext(), &log, container_name_or_id, 0, 1, 1, -1, -1, 1, 0);
 	int len = strlen(log);
 	*clientData = log;
 	return DOCKER_LOGS_EVENT;
@@ -142,12 +142,12 @@ public:
 		this->container_name_or_id = container_name_or_id;
 	}
 
-	virtual const wxEventTypeTag<wxCommandEvent> DockerRequest(docker_result** res, void** clientData);
+	virtual const wxEventTypeTag<wxCommandEvent> DockerRequest(void** clientData);
 };
 
-const wxEventTypeTag<wxCommandEvent> ContainerStatsRequestThread::DockerRequest(docker_result** res, void** clientData) {
+const wxEventTypeTag<wxCommandEvent> ContainerStatsRequestThread::DockerRequest(void** clientData) {
 	docker_container_stats* stats;
-	docker_container_get_stats(ctx->getDockerContext(), res, &stats, container_name_or_id);
+	docker_container_get_stats(ctx->getDockerContext(), &stats, container_name_or_id);
 	*clientData = stats;
 	return DOCKER_STATS_EVENT;
 }
