@@ -19,5 +19,5 @@ private:
 	void HandleListImages(wxCommandEvent& event);
 	void HandlePageRefresh(wxCommandEvent& event);
 	void RefreshImages();
-	void UpdateImages(arraylist* images);
+	void UpdateImages(docker_image_list* images);
 };

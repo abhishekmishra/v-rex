@@ -99,7 +99,7 @@ void ImagesWindow::HandleDockerConnect(wxCommandEvent& event) {
 }
 
 void ImagesWindow::HandleListImages(wxCommandEvent& event) {
-	arraylist* images = (arraylist*)event.GetClientData();
+	docker_image_list* images = (docker_image_list*)event.GetClientData();
 	UpdateImages(images);
 }
 
@@ -151,17 +151,18 @@ char* get_image_tags_concat(docker_image* img) {
 }
 
 
-void ImagesWindow::UpdateImages(arraylist* images) {
+void ImagesWindow::UpdateImages(docker_image_list* images) {
 	//Empty the grid by removing all current rows
 	imageListGrid->DeleteRows(0, imageListGrid->GetNumberRows());
 
+	int len_images = docker_image_list_length(images);
+
 	//Add enough rows in the image grid
-	imageListGrid->InsertRows(0, arraylist_length(images));
+	imageListGrid->InsertRows(0, len_images);
 
 	int col_num = 0, row_num = 0;
-	int len_images = arraylist_length(images);
 	for (int i = 0; i < len_images; i++) {
-		docker_image* img = (docker_image*)arraylist_get(images, i);
+		docker_image* img = (docker_image*)docker_image_list_get_idx(images, i);
 		col_num = 0;
 
 		char* tags = get_image_tags_concat(img);
