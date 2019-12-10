@@ -9,6 +9,12 @@
 #include "VRexContext.h"
 #include "VRexUtil.h"
 
+class DockerLog {
+public:
+	char* log;
+	size_t log_len;
+};
+
 class ContainerDetailsDialog : public wxDialog
 {
 public:

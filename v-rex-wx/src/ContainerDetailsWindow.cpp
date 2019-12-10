@@ -71,10 +71,10 @@ public:
 };
 
 const wxEventTypeTag<wxCommandEvent> ContainerLogsRequestThread::DockerRequest(void** clientData) {
-	char* log;
-	docker_container_logs(ctx->getDockerContext(), &log, container_name_or_id, 0, 1, 1, -1, -1, 1, 0);
-	int len = strlen(log);
-	*clientData = log;
+	DockerLog* dlog = new DockerLog();
+
+	docker_container_logs(ctx->getDockerContext(), &dlog->log, &dlog->log_len, container_name_or_id, 0, 1, 1, -1, -1, 1, 0);
+	*clientData = dlog;
 	return DOCKER_LOGS_EVENT;
 }
 
@@ -99,11 +99,18 @@ ContainerLogsPanel::ContainerLogsPanel(VRexContext* ctx, wxWindow* parent, char*
 	SetAutoLayout(true);
 }
 
+void vrex_log_line_handler(void* args, int stream_id, int line_num, char* line) {
+	wxTextCtrl* logs_text = (wxTextCtrl*)args;
+	if (line_num == 0) {
+		docker_log_info("Stream %d, line# %d :: %s", stream_id, line_num, line);
+		logs_text->AppendText(line);
+	}
+}
+
 void ContainerLogsPanel::HandleLogs(wxCommandEvent& event) {
-	char* logs = (char*)event.GetClientData();
-	if (logs != NULL) {
-		logs_text->AppendText(logs);
-		//free(logs);
+	DockerLog* dlog = (DockerLog*)event.GetClientData();
+	if (dlog != NULL) {
+		docker_container_logs_foreach(logs_text, dlog->log, dlog->log_len, &vrex_log_line_handler);
 	}
 }
 
