@@ -37,7 +37,7 @@ private:
 	void HandleCellSelection(wxGridEvent& event);
 
 	d_err_t RunContainerCommand(const char* container_name_or_id, int command);
-	d_err_t HandleContainerBtnEvent(wxCommandEvent& event, int eventCommand, wxString success, wxString failure);
+	d_err_t HandleContainerBtnEvent(wxCommandEvent& event, int eventCommand, wxString intro, wxString success, wxString failure);
 	void HandleContainerStart(wxCommandEvent& event);
 	void HandleContainerStop(wxCommandEvent& event);
 	void HandleContainerKill(wxCommandEvent& event);

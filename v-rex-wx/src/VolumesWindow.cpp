@@ -104,6 +104,7 @@ void VolumesWindow::HandleDockerConnect(wxCommandEvent& event) {
 void VolumesWindow::HandleListVolumes(wxCommandEvent& event) {
 	docker_volume_list* volumes = (docker_volume_list*)event.GetClientData();
 	UpdateVolumes(volumes);
+	ctx->DockerCallUpdate("Volumes list loaded.");
 }
 
 void VolumesWindow::RefreshVolumes() {

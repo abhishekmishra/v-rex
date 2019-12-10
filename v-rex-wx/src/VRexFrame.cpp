@@ -22,6 +22,7 @@
 #include "VRexFrame.h"
 
 wxDEFINE_EVENT(DOCKER_INTERACTION_HIDE_EVENT, wxCommandEvent);
+wxDEFINE_EVENT(DOCKER_CALL_STATUS_EVENT, wxCommandEvent);
 
 #define VREX_FRAME_TOOL_INTERACTIONS	120
 
@@ -32,6 +33,7 @@ VRexFrame::VRexFrame(VRexContext* ctx)
 	SetContext(ctx);
 	interactionsW = new DockerInteractionsWindow(this);
 	ctx->RegisterInteractionsWindow(interactionsW);
+	ctx->RegisterTopLevelWindow(this);
 	wxMenu* menuFile = new wxMenu;
 	menuFile->Append(ID_Hello, "&Hello...\tCtrl-H",
 		"Help string shown in status bar for this menu item");
@@ -52,6 +54,7 @@ VRexFrame::VRexFrame(VRexContext* ctx)
 	Bind(wxEVT_MENU, &VRexFrame::OnExit, this, wxID_EXIT);
 	Bind(wxEVT_TOOL, &VRexFrame::HandleShowInteractions, this, VREX_FRAME_TOOL_INTERACTIONS);
 	Bind(DOCKER_INTERACTION_HIDE_EVENT, &VRexFrame::HandleHideInteractions, this, 0);
+	Bind(DOCKER_CALL_STATUS_EVENT, &VRexFrame::HandleDockerCallUpdate, this, 0);
 
 	notebook = new wxNotebook(this, -1, wxPoint(0, 0));
 
@@ -141,4 +144,9 @@ void VRexFrame::HandleShowInteractions(wxCommandEvent& event) {
 
 void VRexFrame::HandleHideInteractions(wxCommandEvent& event) {
 	GetToolBar()->ToggleTool(VREX_FRAME_TOOL_INTERACTIONS, false);
+}
+
+void VRexFrame::HandleDockerCallUpdate(wxCommandEvent& event) {
+	wxString msg = (wxString)event.GetString();
+	SetStatusText(msg, 1);
 }

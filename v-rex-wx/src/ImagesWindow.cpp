@@ -101,6 +101,7 @@ void ImagesWindow::HandleDockerConnect(wxCommandEvent& event) {
 void ImagesWindow::HandleListImages(wxCommandEvent& event) {
 	docker_image_list* images = (docker_image_list*)event.GetClientData();
 	UpdateImages(images);
+	ctx->DockerCallUpdate("Images list loaded.");
 }
 
 void ImagesWindow::RefreshImages() {

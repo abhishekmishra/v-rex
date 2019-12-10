@@ -16,6 +16,7 @@ public:
 	docker_version* getDockerVersion();
 	docker_info* getDockerInfo();
 	void HandleDockerResult(docker_result* res);
+	void DockerCallUpdate(wxString statusMessage);
 	vrex_err_t TryConnectLocal();
 	vrex_err_t TryConnectURL(const char* url);
 	bool isConnected();

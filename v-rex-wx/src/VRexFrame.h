@@ -32,6 +32,7 @@ private:
 	void OnNBPageChanged(wxBookCtrlEvent& event);
 	void HandleShowInteractions(wxCommandEvent& event);
 	void HandleHideInteractions(wxCommandEvent& event);
+	void HandleDockerCallUpdate(wxCommandEvent& event);
 
 	VRexContext* ctx = NULL;
 	wxNotebook* notebook;

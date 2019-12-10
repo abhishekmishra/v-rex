@@ -102,6 +102,7 @@ void NetworksWindow::HandleDockerConnect(wxCommandEvent& event) {
 void NetworksWindow::HandleListNetworks(wxCommandEvent& event) {
 	docker_network_list* networks = (docker_network_list*)event.GetClientData();
 	UpdateNetworks(networks);
+	ctx->DockerCallUpdate("Networks list loaded.");
 }
 
 void NetworksWindow::RefreshNetworks() {

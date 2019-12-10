@@ -83,7 +83,12 @@ void VRexContext::HandleDockerResult(docker_result* res) {
 	wxCommandEvent event_to_parent(DOCKER_INTERACTION_RESULT_EVENT);
 	event_to_parent.SetClientData(res);
 	interactionsW->GetEventHandler()->AddPendingEvent(event_to_parent);
-	//return handle_error(res);
+}
+
+void VRexContext::DockerCallUpdate(wxString statusMessage) {
+	wxCommandEvent event_to_parent(DOCKER_CALL_STATUS_EVENT);
+	event_to_parent.SetString(statusMessage);
+	toplevel->GetEventHandler()->AddPendingEvent(event_to_parent);
 }
 
 bool VRexContext::isConnected() {

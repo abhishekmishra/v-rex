@@ -53,6 +53,7 @@ wxThread::ExitCode ListContainersThread::Entry()
 	int all = m_parent->isShowRunningEnabled() == true ? 0 : 1;
 	long limit = 0;
 	docker_ctr_list* containers;
+	ctx->DockerCallUpdate("Getting containers list");
 
 	//Lookup containers
 	d_err_t err = docker_container_list(this->ctx->getDockerContext(), &containers, all,
@@ -205,6 +206,7 @@ void ContainersWindow::HandleDockerConnect(wxCommandEvent& event) {
 void ContainersWindow::HandleListContainers(wxCommandEvent& event) {
 	docker_ctr_list* containers = (docker_ctr_list*)event.GetClientData();
 	UpdateContainers(containers);
+	ctx->DockerCallUpdate("Containers list loaded.");
 }
 
 void ContainersWindow::RefreshContainers() {
@@ -427,16 +429,22 @@ char* getSelectedRowContainerName(wxGrid* containerGrid) {
 	return NULL;
 }
 
-d_err_t ContainersWindow::HandleContainerBtnEvent(wxCommandEvent& event, int eventCommand, wxString success, wxString failure) {
+d_err_t ContainersWindow::HandleContainerBtnEvent(wxCommandEvent& event, 
+	int eventCommand, wxString intro, wxString success, wxString failure) {
 	char* containerName = getSelectedRowContainerName(containerListGrid);
+	ctx->DockerCallUpdate(wxString::Format(intro, containerName));
 	if (containerName != NULL) {
 		d_err_t error = RunContainerCommand(containerName, eventCommand);
 		if (error == E_SUCCESS) {
 			RefreshContainers();
-			wxMessageBox(wxString::Format(success, containerName));
+			wxString successMsg = wxString::Format(success, containerName);
+			wxMessageBox(successMsg);
+			ctx->DockerCallUpdate(successMsg);
 		}
 		else {
-			wxMessageBox(wxString::Format(failure, containerName));
+			wxString failureMsg = wxString::Format(failure, containerName);
+			wxMessageBox(failureMsg);
+			ctx->DockerCallUpdate(failureMsg);
 		}
 		free(containerName);
 	}
@@ -447,6 +455,7 @@ void ContainersWindow::HandleContainerStart(wxCommandEvent& event) {
 	HandleContainerBtnEvent(
 		event, 
 		VREX_CONTAINERS_TOOL_START,
+		wxT("%s is starting."),
 		wxT("%s is started."),
 		wxT("Error starting %s."));
 }
@@ -455,6 +464,7 @@ void ContainersWindow::HandleContainerStop(wxCommandEvent& event) {
 	HandleContainerBtnEvent(
 		event,
 		VREX_CONTAINERS_TOOL_STOP,
+		wxT("%s is stopping."),
 		wxT("%s is stopped."),
 		wxT("Error stopping %s."));
 }
@@ -463,6 +473,7 @@ void ContainersWindow::HandleContainerKill(wxCommandEvent& event) {
 	HandleContainerBtnEvent(
 		event,
 		VREX_CONTAINERS_TOOL_KILL,
+		wxT("Killing %s."),
 		wxT("%s is killed."),
 		wxT("Error killing %s."));
 }
@@ -471,6 +482,7 @@ void ContainersWindow::HandleContainerRestart(wxCommandEvent& event) {
 	HandleContainerBtnEvent(
 		event,
 		VREX_CONTAINERS_TOOL_RESTART,
+		wxT("%s is restarting."),
 		wxT("%s is restarted."),
 		wxT("Error restarting %s."));
 }
@@ -479,6 +491,7 @@ void ContainersWindow::HandleContainerPause(wxCommandEvent& event) {
 	HandleContainerBtnEvent(
 		event,
 		VREX_CONTAINERS_TOOL_PAUSE,
+		wxT("Pauseing %s."),
 		wxT("%s is paused."),
 		wxT("Error pausing %s."));
 }
@@ -487,6 +500,7 @@ void ContainersWindow::HandleContainerResume(wxCommandEvent& event) {
 	HandleContainerBtnEvent(
 		event,
 		VREX_CONTAINERS_TOOL_RESUME,
+		wxT("Resuming %s."),
 		wxT("%s has resumed."),
 		wxT("Error resuming %s."));
 }
@@ -495,6 +509,7 @@ void ContainersWindow::HandleContainerRemove(wxCommandEvent& event) {
 	HandleContainerBtnEvent(
 		event,
 		VREX_CONTAINERS_TOOL_REMOVE,
+		wxT("Removing %s."),
 		wxT("%s is removed."),
 		wxT("Error removing %s."));
 }
