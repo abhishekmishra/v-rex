@@ -103,6 +103,8 @@ void vrex_log_line_handler(void* args, int stream_id, int line_num, char* line) 
 	wxTextCtrl* logs_text = (wxTextCtrl*)args;
 	if (line_num == 0) {
 		docker_log_info("Stream %d, line# %d :: %s", stream_id, line_num, line);
+
+		//TODO: change style based on stream type
 		logs_text->AppendText(line);
 	}
 }
