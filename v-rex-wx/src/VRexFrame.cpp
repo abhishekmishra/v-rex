@@ -17,7 +17,7 @@
 #include "VolumesWindow.h"
 #include "NetworksWindow.h"
 #include "DockerInteractionsWindow.h"
-#include "vrex_util.h"
+#include "VRexUtil.h"
 
 #include "VRexFrame.h"
 

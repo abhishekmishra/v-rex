@@ -1,7 +1,7 @@
 #include "VRexContext.h"
 #include <docker_all.h>
 #include <docker_log.h>
-#include <vrex_util.h>
+#include <VRexUtil.h>
 
 void handleDockerResult(docker_context* docker_ctx, docker_result* res) {
 	VRexContext* vrex_ctx = (VRexContext*)docker_context_client_args_get(docker_ctx);

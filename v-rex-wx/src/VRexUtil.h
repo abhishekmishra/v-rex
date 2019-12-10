@@ -1,5 +1,5 @@
 /*
- * v-rex: vrex_util.h
+ * v-rex: VRexUtil.h
  * Created on: 27-Dec-2018
  *
  * V-Rex

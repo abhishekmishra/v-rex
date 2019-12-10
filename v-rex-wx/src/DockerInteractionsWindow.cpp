@@ -1,7 +1,7 @@
 #include "DockerInteractionsWindow.h"
 #include <wx/gbsizer.h>
 #include "arraylist.h"
-#include "vrex_util.h"
+#include "VRexUtil.h"
 #include "docker_log.h"
 
 wxDEFINE_EVENT(DOCKER_INTERACTION_RESULT_EVENT, wxCommandEvent);

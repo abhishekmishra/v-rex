@@ -22,7 +22,7 @@ set( V-REX-WX_SOURCES
 	src/VRexFrame.cpp
 	src/DockerInteractionsWindow.cpp
 	src/VRexContext.cpp
-	src/vrex_util.cpp
+	src/VRexUtil.cpp
 	src/DockerRequestThread.cpp
 	src/NetworksWindow.cpp
 	src/VolumesWindow.cpp
@@ -31,12 +31,12 @@ set( V-REX-WX_SOURCES
 	src/DashboardWindow.cpp
 	src/ContainerDialog.cpp
 	src/ContainerDetailsWindow.cpp
-	src/main.cpp
+	src/VRexApp.cpp
 
 	src/VRexFrame.h
 	src/DockerInteractionsWindow.h
 	src/VRexContext.h
-	src/vrex_util.h
+	src/VRexUtil.h
 	src/DockerRequestThread.h
 	src/NetworksWindow.h
 	src/VolumesWindow.h

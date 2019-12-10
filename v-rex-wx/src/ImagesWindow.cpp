@@ -13,7 +13,7 @@
 
 #include "ImagesWindow.h"
 #include "VRexContext.h"
-#include "vrex_util.h"
+#include "VRexUtil.h"
 
 #define VREX_IMAGES_TOOL_REFRESH		301
 

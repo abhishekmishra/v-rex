@@ -6,7 +6,7 @@
 #include "DockerRequestThread.h"
 #include "ContainerDetailsWindow.h"
 #include "VRexContext.h"
-#include "vrex_util.h"
+#include "VRexUtil.h"
 
 #include "docker_all.h"
 

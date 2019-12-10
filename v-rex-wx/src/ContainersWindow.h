@@ -5,7 +5,7 @@
 #include <wx/toolbar.h>
 
 #include "VRexContext.h"
-#include "vrex_util.h"
+#include "VRexUtil.h"
 
 class ContainersWindow: public wxPanel {
 public:

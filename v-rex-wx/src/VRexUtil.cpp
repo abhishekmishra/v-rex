@@ -1,5 +1,5 @@
 /*
- * v-rex: vrex_util.c
+ * v-rex: VRexUtil.cpp
  * Created on: 27-Dec-2018
  *
  */
@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "vrex_util.h"
+#include "VRexUtil.h"
 #include <arraylist.h>
 
 #include <docker_all.h>

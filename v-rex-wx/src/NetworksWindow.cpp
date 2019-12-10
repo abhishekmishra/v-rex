@@ -13,7 +13,7 @@
 
 #include "NetworksWindow.h"
 #include "VRexContext.h"
-#include "vrex_util.h"
+#include "VRexUtil.h"
 
 #define VREX_NETWORKS_TOOL_REFRESH		301
 

@@ -13,7 +13,7 @@
 
 #include "VolumesWindow.h"
 #include "VRexContext.h"
-#include "vrex_util.h"
+#include "VRexUtil.h"
 
 #define VREX_VOLUMES_TOOL_REFRESH		301
 

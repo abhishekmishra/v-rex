@@ -15,7 +15,7 @@
 #include "ContainerDialog.h"
 #include "ContainersWindow.h"
 #include "VRexContext.h"
-#include "vrex_util.h"
+#include "VRexUtil.h"
 
 wxDEFINE_EVENT(LIST_CONTAINERS_EVENT, wxCommandEvent);
 

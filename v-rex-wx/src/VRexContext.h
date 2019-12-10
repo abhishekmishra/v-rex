@@ -7,7 +7,7 @@
 #include <docker_connection_util.h>
 #include <docker_system.h>
 
-#include "vrex_util.h"
+#include "VRexUtil.h"
 
 class VRexContext {
 public:

@@ -7,7 +7,7 @@
 #include <wx/dialog.h>
 
 #include "VRexContext.h"
-#include "vrex_util.h"
+#include "VRexUtil.h"
 
 class ContainerDetailsDialog : public wxDialog
 {

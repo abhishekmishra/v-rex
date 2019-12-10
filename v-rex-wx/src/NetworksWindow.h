@@ -4,7 +4,7 @@
 #include <wx/grid.h>
 
 #include "VRexContext.h"
-#include "vrex_util.h"
+#include "VRexUtil.h"
 
 class NetworksWindow : public wxPanel {
 public:
