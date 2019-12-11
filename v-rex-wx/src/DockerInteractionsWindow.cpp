@@ -1,8 +1,10 @@
+#include <docker_all.h>
 #include "DockerInteractionsWindow.h"
 #include <wx/gbsizer.h>
 #include "arraylist.h"
 #include "VRexUtil.h"
 #include "docker_log.h"
+#include <json-c/json_object.h>
 
 wxDEFINE_EVENT(DOCKER_INTERACTION_RESULT_EVENT, wxCommandEvent);
 
@@ -26,46 +28,46 @@ DockerInteractionsWindow::DockerInteractionsWindow(wxWindow* parent)
 	errorCodeText = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
 	httpErrorCodeText = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
 	requestText = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition,
-		wxSize(800, 250), wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2);
+		wxSize(800, 75), wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2);
 	responseText = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition,
 		wxSize(800, 250), wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2);
 	interactionsList = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(800, 100), wxArrayString(), wxLB_SINGLE);
 
 	int row = 0;
 
-	main_sizer->Add(new wxStaticText(this, wxID_ANY, "Select Call"), wxGBPosition(row, 0), wxGBSpan(1, 1), wxALL, 5);
-	main_sizer->Add(interactionsList, wxGBPosition(row, 1), wxGBSpan(1, 3), wxALL, 5);
+	main_sizer->Add(new wxStaticText(this, wxID_ANY, "Select Call"), wxGBPosition(row, 0), wxGBSpan(1, 1), wxALL, 2);
+	main_sizer->Add(interactionsList, wxGBPosition(row, 1), wxGBSpan(1, 3), wxALL, 2);
 
 	row += 1;
 
-	main_sizer->Add(new wxStaticText(this, wxID_ANY, "Method"), wxGBPosition(row, 0), wxGBSpan(1, 1), wxALL, 5);
-	main_sizer->Add(methodText, wxGBPosition(row, 1), wxGBSpan(1, 1), wxALL, 5);
-	main_sizer->Add(new wxStaticText(this, wxID_ANY, "URL"), wxGBPosition(row, 2), wxGBSpan(1, 1), wxALL, 5);
-	main_sizer->Add(urlText, wxGBPosition(row, 3), wxGBSpan(1, 1), wxALL, 5);
+	main_sizer->Add(new wxStaticText(this, wxID_ANY, "Method"), wxGBPosition(row, 0), wxGBSpan(1, 1), wxALL, 2);
+	main_sizer->Add(methodText, wxGBPosition(row, 1), wxGBSpan(1, 1), wxALL, 2);
+	main_sizer->Add(new wxStaticText(this, wxID_ANY, "URL"), wxGBPosition(row, 2), wxGBSpan(1, 1), wxALL, 2);
+	main_sizer->Add(urlText, wxGBPosition(row, 3), wxGBSpan(1, 1), wxALL, 2);
 
 	row += 1;
 
-	main_sizer->Add(new wxStaticText(this, wxID_ANY, "Start Time"), wxGBPosition(row, 0), wxGBSpan(1, 1), wxALL, 5);
-	main_sizer->Add(startTimeText, wxGBPosition(row, 1), wxGBSpan(1, 1), wxALL, 5);
-	main_sizer->Add(new wxStaticText(this, wxID_ANY, "End Time"), wxGBPosition(row, 2), wxGBSpan(1, 1), wxALL, 5);
-	main_sizer->Add(endTimeText, wxGBPosition(row, 3), wxGBSpan(1, 1), wxALL, 5);
+	main_sizer->Add(new wxStaticText(this, wxID_ANY, "Start Time"), wxGBPosition(row, 0), wxGBSpan(1, 1), wxALL, 2);
+	main_sizer->Add(startTimeText, wxGBPosition(row, 1), wxGBSpan(1, 1), wxALL, 2);
+	main_sizer->Add(new wxStaticText(this, wxID_ANY, "End Time"), wxGBPosition(row, 2), wxGBSpan(1, 1), wxALL, 2);
+	main_sizer->Add(endTimeText, wxGBPosition(row, 3), wxGBSpan(1, 1), wxALL, 2);
 
 	row += 1;
 
-	main_sizer->Add(new wxStaticText(this, wxID_ANY, "Error Code"), wxGBPosition(row, 0), wxGBSpan(1, 1), wxALL, 5);
-	main_sizer->Add(errorCodeText, wxGBPosition(row, 1), wxGBSpan(1, 1), wxALL, 5);
-	main_sizer->Add(new wxStaticText(this, wxID_ANY, "HTTP Error Code"), wxGBPosition(row, 2), wxGBSpan(1, 1), wxALL, 5);
-	main_sizer->Add(httpErrorCodeText, wxGBPosition(row, 3), wxGBSpan(1, 1), wxALL, 5);
+	main_sizer->Add(new wxStaticText(this, wxID_ANY, "Error Code"), wxGBPosition(row, 0), wxGBSpan(1, 1), wxALL, 2);
+	main_sizer->Add(errorCodeText, wxGBPosition(row, 1), wxGBSpan(1, 1), wxALL, 2);
+	main_sizer->Add(new wxStaticText(this, wxID_ANY, "HTTP Error Code"), wxGBPosition(row, 2), wxGBSpan(1, 1), wxALL, 2);
+	main_sizer->Add(httpErrorCodeText, wxGBPosition(row, 3), wxGBSpan(1, 1), wxALL, 2);
 
 	row += 1;
 
-	main_sizer->Add(new wxStaticText(this, wxID_ANY, "Request"), wxGBPosition(row, 0), wxGBSpan(1, 1), wxALL, 5);
-	main_sizer->Add(requestText, wxGBPosition(row, 1), wxGBSpan(1, 3), wxALL, 5);
+	main_sizer->Add(new wxStaticText(this, wxID_ANY, "Request"), wxGBPosition(row, 0), wxGBSpan(1, 1), wxALL, 2);
+	main_sizer->Add(requestText, wxGBPosition(row, 1), wxGBSpan(1, 3), wxALL, 2);
 
 	row += 1;
 
-	main_sizer->Add(new wxStaticText(this, wxID_ANY, "Response"), wxGBPosition(row, 0), wxGBSpan(1, 1), wxALL, 5);
-	main_sizer->Add(responseText, wxGBPosition(row, 1), wxGBSpan(1, 3), wxALL, 5);
+	main_sizer->Add(new wxStaticText(this, wxID_ANY, "Response"), wxGBPosition(row, 0), wxGBSpan(1, 1), wxALL, 2);
+	main_sizer->Add(responseText, wxGBPosition(row, 1), wxGBSpan(1, 3), wxALL, 2);
 
 	Bind(wxEVT_CLOSE_WINDOW, &DockerInteractionsWindow::HandleCloseEvent, this);
 	Bind(DOCKER_INTERACTION_RESULT_EVENT, &DockerInteractionsWindow::HandleDockerResultEvent, this, 0);
@@ -90,8 +92,24 @@ void DockerInteractionsWindow::SetValuesForSelection() {
 	endTimeText->SetValue((new wxDateTime(res->end_time))->Format());
 	errorCodeText->SetValue(wxString::Format(wxT("%d"), (int)(res->error_code)));
 	httpErrorCodeText->SetValue(wxString::Format(wxT("%ld"), res->http_error_code));
-	requestText->SetValue(res->request_json_str);
-	responseText->SetValue(res->response_json_str);
+	if (res->request_json_str != NULL) {
+		json_object* obj = json_tokener_parse(res->request_json_str);
+		if (obj == NULL) {
+			requestText->SetValue(res->request_json_str);
+		}
+		else {
+			requestText->SetValue(get_json_string(obj));
+		}
+	}
+	if (res->response_json_str != NULL && res->response_json_str[0] > 3) {
+		json_object* obj = json_tokener_parse(res->response_json_str);
+		if (obj == NULL) {
+			responseText->SetValue(res->response_json_str);
+		}
+		else {
+			responseText->SetValue(get_json_string(obj));
+		}
+	}
 }
 
 void DockerInteractionsWindow::HandleDockerResultEvent(wxCommandEvent& event) {
