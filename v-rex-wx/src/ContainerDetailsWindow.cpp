@@ -28,7 +28,7 @@ ContainerDetailsDialog::ContainerDetailsDialog(VRexContext* ctx, const wxString&
 	SetAutoLayout(true);
 }
 
-ContainerDetailsWindow::ContainerDetailsWindow(VRexContext* ctx, wxWindow* parent, char* container_name_or_id) 
+ContainerDetailsWindow::ContainerDetailsWindow(VRexContext* ctx, wxWindow* parent, char* container_name_or_id)
 	: wxPanel(parent) {
 	this->ctx = ctx;
 	this->container_name_or_id = container_name_or_id;
@@ -168,7 +168,7 @@ ContainerStatsPanel::ContainerStatsPanel(VRexContext* ctx, wxWindow* parent, cha
 	this->ctx = ctx;
 	this->container_name_or_id = container_name_or_id;
 
-	wxBoxSizer* main_sizer = new wxBoxSizer(wxHORIZONTAL);
+	wxBoxSizer* main_sizer = new wxBoxSizer(wxVERTICAL);
 	Bind(DOCKER_STATS_EVENT, &ContainerStatsPanel::HandleStats, this, 0);
 
 	memStatsListGrid = new wxGrid(this,
@@ -232,16 +232,30 @@ ContainerStatsPanel::ContainerStatsPanel(VRexContext* ctx, wxWindow* parent, cha
 
 void ContainerStatsPanel::HandleStats(wxCommandEvent& event) {
 	docker_container_stats* stats = (docker_container_stats*)event.GetClientData();
-	//if (logs != NULL) {
-	//	logs_text->AppendText(logs);
-	//	//free(logs);
-	//}
+	//TODO fix display units
+	docker_cpu_usage* cpu_usage = docker_container_cpu_stats_cpu_usage_get(docker_container_stats_cpu_stats_get(stats));
+	cpuStatsListGrid->SetCellValue(0, 0,
+		wxString::Format("%lld", docker_cpu_usage_total_get(cpu_usage)));
+	cpuStatsListGrid->SetCellValue(0, 1,
+		wxString::Format("%lld", docker_cpu_usage_usermode_get(cpu_usage)));
+	cpuStatsListGrid->SetCellValue(0, 2,
+		wxString::Format("%lld", docker_cpu_usage_kernelmode_get(cpu_usage)));
+	cpuStatsListGrid->SetCellValue(0, 2,
+		wxString::Format("%lld", docker_container_cpu_stats_system_cpu_usage_get(docker_container_stats_cpu_stats_get(stats))));
+	memStatsListGrid->SetCellValue(0, 0,
+		calculate_size(docker_container_mem_stats_max_usage_get(docker_container_stats_mem_stats_get(stats))));
+	memStatsListGrid->SetCellValue(0, 1,
+		calculate_size(docker_container_mem_stats_usage_get(docker_container_stats_mem_stats_get(stats))));
+	memStatsListGrid->SetCellValue(0, 2,
+		wxString::Format("%lld", docker_container_mem_stats_failcnt_get(docker_container_stats_mem_stats_get(stats))));
+	memStatsListGrid->SetCellValue(0, 3,
+		calculate_size(docker_container_mem_stats_limit_get(docker_container_stats_mem_stats_get(stats))));
 }
 
 void ContainerStatsPanel::RefreshStats() {
 	if (this->ctx->isConnected()) {
 		// create the thread
-		ContainerLogsRequestThread* t = new ContainerLogsRequestThread(this, this->ctx, container_name_or_id);
+		ContainerStatsRequestThread* t = new ContainerStatsRequestThread(this, this->ctx, container_name_or_id);
 		wxThreadError err = t->Create();
 
 		if (err != wxTHREAD_NO_ERROR)
