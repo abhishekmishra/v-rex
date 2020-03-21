@@ -33,6 +33,7 @@ DashboardWindow::DashboardWindow(VRexContext* ctx, wxWindow* parent)
 	this->ctx = ctx;
 
 	Bind(DOCKER_CONNECT_EVENT, &DashboardWindow::HandleDockerConnect, this, 0);
+	Bind(PAGE_REFRESH_EVENT, &DashboardWindow::HandleDockerConnect, this, 0);
 
 	dashSizer = new wxFlexGridSizer(3);
 	containersBtn = new wxCommandLinkButton(this, wxID_ANY, "Containers");
